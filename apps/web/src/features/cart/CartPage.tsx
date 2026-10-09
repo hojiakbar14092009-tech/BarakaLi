@@ -97,8 +97,11 @@ export default function CartPage() {
             <div className="min-w-0 flex-1 space-y-2">
               {product ? (
                 <>
-                  <Link to={`/mahsulot/${product.id}`} className="line-clamp-2 font-semibold">
-                    {product.title}
+                  <Link
+                    to={`/mahsulot/${product.id}`}
+                    className="flex min-h-12 items-center font-semibold"
+                  >
+                    <span className="line-clamp-2">{product.title}</span>
                   </Link>
                   <p className="text-sm text-mocha">
                     {t('cart.seller', { name: product.worker.displayName })}

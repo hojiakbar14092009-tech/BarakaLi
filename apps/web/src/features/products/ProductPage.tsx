@@ -49,7 +49,7 @@ export default function ProductPage() {
             {t('product.byWorker')}:{' '}
             <Link
               to={`/hunarmand/${data.worker.id}`}
-              className="font-semibold text-espresso underline"
+              className="inline-flex min-h-12 items-center font-semibold text-espresso underline"
             >
               {data.worker.displayName}
             </Link>

@@ -52,8 +52,8 @@ function ProductRow({ product, onEdit }: { product: ProductDto; onEdit: () => vo
           <ProductImage src={product.images[0]?.url} alt={product.title} />
         </div>
         <div className="min-w-0 flex-1 space-y-1">
-          <Link to={`/mahsulot/${product.id}`} className="line-clamp-2 font-semibold">
-            {product.title}
+          <Link to={`/mahsulot/${product.id}`} className="flex min-h-12 items-center font-semibold">
+            <span className="line-clamp-2">{product.title}</span>
           </Link>
           <p className="text-sm text-mocha">
             {t('cabinet.products.retail')}: {formatPrice(product.retailPrice, currency)}
