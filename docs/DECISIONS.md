@@ -26,7 +26,16 @@ Brifdagi noaniqliklar bo'yicha qabul qilingan qarorlar. Yangi qaror oxiriga qo's
   brauzerda siqilib yuboriladi; `.glb` uchun amaliy chegara 4.5 MB (konstanta 10 MB, S3 adapteridan
   keyin to'liq ishlaydi).
 - **Migratsiya:** `apps/api/migrations/*.sql` (`node-pg-migrate` formati: `-- Up Migration` /
-  `-- Down Migration`). PGlite uchun shu fayllarni o'qiydigan kichik yuklovchi ishlatiladi.
+  `-- Down Migration`). `node-pg-migrate` o'rniga shu fayllarni o'qiydigan o'z kichik yuklovchimiz
+  (`src/db/migrator.ts`) ishlatiladi: PGlite, node-postgres va serverless uchun bitta yo'l, advisory lock
+  bilan bir vaqtda ishga tushishdan himoyalangan. Vercel'da SQL esbuild paketiga joylanadi va birinchi
+  so'rovda avtomatik qo'llanadi (`DATABASE_URL` dan boshqa narsa kerak emas).
+- **Namuna ma'lumotlar:** `pnpm db:seed` yoki `SEED_SAMPLE_DATA=true` (birinchi so'rovda, idempotent).
+  Namuna rasmlar matnsiz yaratiladi: serverlessda shrift yo'q.
+- **Production DB testi:** `src/db/pg-compat.test.ts` PGlite'ni PostgreSQL protokoli orqali ochib, haqiqiy
+  `pg` drayveri bilan butun xarid oqimini tekshiradi.
+- **Mahsulot rasmi:** brauzerda 1600 px gacha kichraytiriladi, serverda kontent bo'yicha tekshirilib WebP'ga o'tkaziladi.
+- **Mahsulot yaratish:** doim qoralama; chop etish uchun kamida bitta rasm kerak (forma shu tartibda ishlaydi).
 - **CSRF:** refresh cookie `SameSite=Strict`; yozuvchi so'rovlarda `Origin` tekshiriladi.
 
 ## Mahsulot qarorlari

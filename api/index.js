@@ -71312,6 +71312,7 @@ var envSchema = external_exports.object({
   ADMIN_PHONES: external_exports.string().default(""),
   SMS_PROVIDER: external_exports.enum(["console"]).default("console"),
   EXPOSE_SMS_CODE: booleanString,
+  SEED_SAMPLE_DATA: booleanString,
   PAYMENT_PROVIDER: external_exports.enum(["internal", "payme", "click", "uzum"]).default("internal"),
   STORAGE_PROVIDER: external_exports.enum(["db"]).default("db")
 });
@@ -71338,6 +71339,7 @@ function loadConfig(env = process.env) {
     adminPhones: splitList(parsed.ADMIN_PHONES),
     smsProvider: parsed.SMS_PROVIDER,
     exposeSmsCode: parsed.EXPOSE_SMS_CODE,
+    seedSampleData: parsed.SEED_SAMPLE_DATA,
     paymentProvider: parsed.PAYMENT_PROVIDER,
     storageProvider: parsed.STORAGE_PROVIDER
   };
@@ -79279,14 +79281,285 @@ async function migrateToLatest(db2, migrations = loadMigrations()) {
   return applied;
 }
 
+// src/db/seed.ts
+var import_node_crypto6 = require("node:crypto");
+
+// src/modules/uploads/glb-fixture.ts
+var SEGMENTS = 32;
+var PROFILE = [
+  [0, 0],
+  [0.55, 0],
+  [0.7, 0.25],
+  [0.75, 0.55],
+  [0.55, 0.9],
+  [0.3, 1.1],
+  [0.32, 1.35],
+  [0.42, 1.5],
+  [0.38, 1.5]
+];
+function buildGeometry() {
+  const rings = PROFILE.length;
+  const positions = new Float32Array(rings * (SEGMENTS + 1) * 3);
+  const normals = new Float32Array(positions.length);
+  const indices = [];
+  PROFILE.forEach(([radius, height], ring) => {
+    for (let seg = 0; seg <= SEGMENTS; seg += 1) {
+      const angle = seg / SEGMENTS * Math.PI * 2;
+      const offset = (ring * (SEGMENTS + 1) + seg) * 3;
+      positions.set([Math.cos(angle) * radius, height - 0.75, Math.sin(angle) * radius], offset);
+      normals.set([Math.cos(angle), 0.2, Math.sin(angle)], offset);
+    }
+  });
+  for (let ring = 0; ring < rings - 1; ring += 1) {
+    for (let seg = 0; seg < SEGMENTS; seg += 1) {
+      const a = ring * (SEGMENTS + 1) + seg;
+      const b = a + SEGMENTS + 1;
+      indices.push(a, b, a + 1, a + 1, b, b + 1);
+    }
+  }
+  return { positions, normals, indices: new Uint16Array(indices) };
+}
+async function buildVaseGlb(color = [0.72, 0.52, 0.38]) {
+  const doc = new Document();
+  const buffer = doc.createBuffer();
+  const { positions, normals, indices } = buildGeometry();
+  const accessor = (array, type) => doc.createAccessor().setArray(array).setType(type).setBuffer(buffer);
+  const material = doc.createMaterial("clay").setBaseColorFactor([...color, 1]).setRoughnessFactor(0.7).setMetallicFactor(0).setDoubleSided(true);
+  const primitive = doc.createPrimitive().setAttribute("POSITION", accessor(positions, "VEC3")).setAttribute("NORMAL", accessor(normals, "VEC3")).setIndices(accessor(indices, "SCALAR")).setMaterial(material);
+  const mesh = doc.createMesh("vase").addPrimitive(primitive);
+  const node = doc.createNode("vase").setMesh(mesh);
+  doc.createScene("scene").addChild(node);
+  return Buffer.from(await new NodeIO().writeBinary(doc));
+}
+
+// src/db/seed.ts
+var WORKERS = [
+  {
+    phone: "+998900000001",
+    name: "Dilfuza Karimova",
+    category: "tikuvchilik",
+    bio: "Atlas va adras matolaridan milliy libos va uy-ro\u02BBzg\u02BBor buyumlari tikaman. 12 yillik tajriba.",
+    verified: true,
+    rating: 4.9,
+    reviews: 38,
+    products: [
+      {
+        title: "Ikat adras ko\u02BBylak",
+        description: "Qo\u02BBlda tanlangan adras matosidan tikilgan ko\u02BBylak. O\u02BBlcham buyurtmaga qarab o\u02BBzgartiriladi.",
+        retailPrice: 42e4,
+        stock: 6,
+        tint: "#b08968"
+      },
+      {
+        title: "Kashta ilingan sumka",
+        description: "Suzani naqshli, astarli kundalik sumka. Ichida cho\u2018ntagi bor.",
+        retailPrice: 95e3,
+        wholesalePrice: 8e4,
+        wholesaleMinQty: 10,
+        stock: 40,
+        tint: "#9c6644"
+      },
+      {
+        title: "Bolalar uchun paxtali kombinezon",
+        description: "Yumshoq paxta, 1\u20133 yosh uchun. Tugmalari xavfsiz mahkamlangan.",
+        retailPrice: 13e4,
+        wholesalePrice: 11e4,
+        wholesaleMinQty: 5,
+        stock: 25,
+        tint: "#ddb892"
+      }
+    ]
+  },
+  {
+    phone: "+998900000002",
+    name: "Madina Yusupova",
+    category: "pishiriq",
+    bio: "Uyda pishirilgan tortlar va xamir ovqatlar. Faqat tabiiy mahsulotlardan.",
+    verified: true,
+    rating: 4.8,
+    reviews: 61,
+    products: [
+      {
+        title: "Medovik tort (1 kg)",
+        description: "Asalli qatlamli klassik tort, qaymoqli krem bilan. Bayramlar uchun.",
+        retailPrice: 18e4,
+        stock: 8,
+        tint: "#e6b17e"
+      },
+      {
+        title: "Tandirda pishgan samsa",
+        description: "Go\u02BBshtli, piyozli samsa. Ulgurji narx kafe va tadbirlar uchun.",
+        retailPrice: 9e3,
+        wholesalePrice: 7500,
+        wholesaleMinQty: 20,
+        stock: 200,
+        tint: "#d4a373"
+      },
+      {
+        title: "Yong\u2018oqli pakhlava",
+        description: "Yupqa qatlamli, yong\u2018oq va asalli pakhlava. 500 g quti.",
+        retailPrice: 85e3,
+        wholesalePrice: 72e3,
+        wholesaleMinQty: 6,
+        stock: 30,
+        tint: "#c08552"
+      }
+    ]
+  },
+  {
+    phone: "+998900000003",
+    name: "Zulfiya Rahimova",
+    category: "qol-mehnati",
+    bio: "Sopol, kashta va to\u02BBqima buyumlar. Har bir ish qo\u02BBlda tayyorlanadi.",
+    verified: true,
+    rating: 4.7,
+    reviews: 24,
+    products: [
+      {
+        title: "Sopol vaza (qo\u02BBlda yasalgan)",
+        description: "O\u02BBrta hajmli sopol vaza. 3D ko\u02BBrinishda aylantirib ko\u02BBring.",
+        retailPrice: 15e4,
+        wholesalePrice: 125e3,
+        wholesaleMinQty: 4,
+        stock: 12,
+        tint: "#b9835a",
+        model: [0.72, 0.5, 0.36]
+      },
+      {
+        title: "Suzani yostiq jildi",
+        description: "Qo\u02BBlda kashta qilingan, 45\xD745 sm yostiq jildi.",
+        retailPrice: 11e4,
+        stock: 15,
+        tint: "#a98467"
+      },
+      {
+        title: "To\u02BBqilgan savat",
+        description: "Tabiiy tolalardan to\u02BBqilgan, uy-ro\u02BBzg\u02BBor uchun mustahkam savat.",
+        retailPrice: 7e4,
+        wholesalePrice: 58e3,
+        wholesaleMinQty: 8,
+        stock: 22,
+        tint: "#cb997e"
+      }
+    ]
+  },
+  {
+    phone: "+998900000004",
+    name: "Nigora Abdullayeva",
+    category: "dizayn",
+    bio: "Taklifnoma, vizitka va kichik biznes uchun bosma materiallar dizayni.",
+    verified: false,
+    rating: 4.6,
+    reviews: 9,
+    products: [
+      {
+        title: "To\u02BBy taklifnomalari (50 dona)",
+        description: "Individual dizayn va bosmaga tayyor taklifnoma to\u02BBplami.",
+        retailPrice: 25e4,
+        stock: 10,
+        tint: "#8d6e63"
+      }
+    ]
+  }
+];
+var IMAGE_SIZE = 900;
+async function renderImage(tint, variant) {
+  const { default: sharp } = await import("sharp");
+  const shift = variant * 70;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${IMAGE_SIZE}" height="${IMAGE_SIZE}">
+    <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fcf8f0"/><stop offset="1" stop-color="${tint}"/>
+    </linearGradient></defs>
+    <rect width="100%" height="100%" fill="url(#g)"/>
+    <circle cx="${300 + shift}" cy="${330 + shift / 2}" r="${190 - variant * 20}" fill="${tint}" fill-opacity="0.55"/>
+    <circle cx="${620 - shift}" cy="${560}" r="${230}" fill="#392e26" fill-opacity="0.12"/>
+  </svg>`;
+  return sharp(Buffer.from(svg)).webp({ quality: 78 }).toBuffer();
+}
+async function categoryIds(db2) {
+  const rows = await db2.selectFrom("categories").select(["id", "slug"]).execute();
+  return new Map(rows.map((row) => [row.slug, row.id]));
+}
+async function seedWorker(db2, storage, seed, categories) {
+  const categoryId = categories.get(seed.category);
+  if (!categoryId) throw new Error(`Unknown category ${seed.category}`);
+  const user = await db2.insertInto("users").values({ phone: seed.phone, name: seed.name, role: "worker" }).returning("id").executeTakeFirstOrThrow();
+  const worker = await db2.insertInto("workers").values({
+    user_id: user.id,
+    category_id: categoryId,
+    display_name: seed.name,
+    bio: seed.bio,
+    avatar_url: null,
+    rating: seed.rating,
+    reviews_count: seed.reviews,
+    is_verified: seed.verified
+  }).returning("id").executeTakeFirstOrThrow();
+  for (const product of seed.products) {
+    await seedProduct(db2, storage, worker.id, categoryId, product);
+  }
+}
+async function seedProduct(db2, storage, workerId, categoryId, product) {
+  const row = await db2.insertInto("products").values({
+    worker_id: workerId,
+    category_id: categoryId,
+    title: product.title,
+    description: product.description,
+    retail_price: product.retailPrice,
+    wholesale_price: product.wholesalePrice ?? null,
+    wholesale_min_qty: product.wholesaleMinQty ?? null,
+    stock: product.stock,
+    status: "published",
+    updated_at: /* @__PURE__ */ new Date()
+  }).returning("id").executeTakeFirstOrThrow();
+  const urls = [];
+  for (const variant of [0, 1]) {
+    const image = await renderImage(product.tint, variant);
+    urls.push(await storage.put(`${(0, import_node_crypto6.randomUUID)()}.webp`, image, "image/webp"));
+  }
+  await db2.insertInto("product_images").values(urls.map((url, position) => ({ product_id: row.id, url, position }))).execute();
+  if (product.model) {
+    const glb = await buildVaseGlb(product.model);
+    const fileUrl = await storage.put(`${(0, import_node_crypto6.randomUUID)()}.glb`, glb, MODEL_MIME_TYPE);
+    await db2.insertInto("product_models").values({
+      product_id: row.id,
+      file_url: fileUrl,
+      file_size: glb.length,
+      poster_url: urls[0] ?? null
+    }).execute();
+  }
+}
+async function seedSampleData(db2) {
+  const storage = new DbStorageProvider(db2);
+  const categories = await categoryIds(db2);
+  let created = 0;
+  for (const seed of WORKERS) {
+    const exists = await db2.selectFrom("users").select("id").where("phone", "=", seed.phone).executeTakeFirst();
+    if (exists) continue;
+    await seedWorker(db2, storage, seed, categories);
+    created += 1;
+  }
+  return created;
+}
+
 // src/vercel.ts
 var config = loadConfig();
 if (!config.databaseUrl) throw new Error("DATABASE_URL is required");
 var db = createPgDb(config.databaseUrl);
 var migrated;
+async function seedWithoutBlocking() {
+  try {
+    const created = await seedSampleData(db);
+    if (created > 0) logger.info("Sample data added", { workers: created });
+  } catch (error) {
+    logger.warn("Sample data was not added", {
+      message: error instanceof Error ? error.message : "unknown"
+    });
+  }
+}
 function ensureMigrated() {
-  migrated ??= migrateToLatest(db, migrations_default).then((applied) => {
+  migrated ??= migrateToLatest(db, migrations_default).then(async (applied) => {
     if (applied.length > 0) logger.info("Migrations applied", { applied });
+    if (config.seedSampleData) await seedWithoutBlocking();
   }).catch((error) => {
     migrated = void 0;
     throw error;

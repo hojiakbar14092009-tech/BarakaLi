@@ -159,10 +159,9 @@ const WORKERS: SeedWorker[] = [
 
 const IMAGE_SIZE = 900;
 
-async function renderImage(title: string, tint: string, variant: number): Promise<Buffer> {
+async function renderImage(tint: string, variant: number): Promise<Buffer> {
   const { default: sharp } = await import('sharp');
   const shift = variant * 70;
-  const safeTitle = title.replace(/[<>&"]/g, '');
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${IMAGE_SIZE}" height="${IMAGE_SIZE}">
     <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0" stop-color="#fcf8f0"/><stop offset="1" stop-color="${tint}"/>
@@ -170,8 +169,6 @@ async function renderImage(title: string, tint: string, variant: number): Promis
     <rect width="100%" height="100%" fill="url(#g)"/>
     <circle cx="${300 + shift}" cy="${330 + shift / 2}" r="${190 - variant * 20}" fill="${tint}" fill-opacity="0.55"/>
     <circle cx="${620 - shift}" cy="${560}" r="${230}" fill="#392e26" fill-opacity="0.12"/>
-    <text x="50%" y="88%" text-anchor="middle" font-family="sans-serif" font-size="44"
-      font-weight="700" fill="#392e26">${safeTitle}</text>
   </svg>`;
   return sharp(Buffer.from(svg)).webp({ quality: 78 }).toBuffer();
 }
@@ -238,7 +235,7 @@ async function seedProduct(
     .executeTakeFirstOrThrow();
   const urls: string[] = [];
   for (const variant of [0, 1]) {
-    const image = await renderImage(product.title, product.tint, variant);
+    const image = await renderImage(product.tint, variant);
     urls.push(await storage.put(`${randomUUID()}.webp`, image, 'image/webp'));
   }
   await db
