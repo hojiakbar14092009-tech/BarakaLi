@@ -1,0 +1,153 @@
+import type { Selectable } from 'kysely';
+import type { UserDto } from '@barakali/shared';
+import type { Db } from '../../db/client.js';
+import type { SmsCodesTable } from '../../db/schema.js';
+
+export type SmsCodeRow = Selectable<SmsCodesTable>;
+
+interface UserRow {
+  id: string;
+  phone: string;
+  name: string | null;
+  role: UserDto['role'];
+  language: UserDto['language'];
+  worker_id: string | null;
+}
+
+function toUserDto(row: UserRow): UserDto {
+  return {
+    id: row.id,
+    phone: row.phone,
+    name: row.name,
+    role: row.role,
+    language: row.language,
+    workerId: row.worker_id,
+  };
+}
+
+export class AuthRepository {
+  constructor(private readonly db: Db) {}
+
+  async countRecentCodes(phone: string, since: Date): Promise<number> {
+    const row = await this.db
+      .selectFrom('sms_codes')
+      .select((eb) => eb.fn.countAll<number>().as('count'))
+      .where('phone', '=', phone)
+      .where('created_at', '>', since)
+      .executeTakeFirstOrThrow();
+    return Number(row.count);
+  }
+
+  async insertCode(phone: string, codeHash: string, expiresAt: Date): Promise<void> {
+    await this.db
+      .insertInto('sms_codes')
+      .values({ phone, code_hash: codeHash, expires_at: expiresAt })
+      .execute();
+  }
+
+  async findActiveCode(phone: string): Promise<SmsCodeRow | undefined> {
+    return this.db
+      .selectFrom('sms_codes')
+      .selectAll()
+      .where('phone', '=', phone)
+      .where('consumed_at', 'is', null)
+      .orderBy('created_at', 'desc')
+      .limit(1)
+      .executeTakeFirst();
+  }
+
+  async incrementAttempts(id: string): Promise<void> {
+    await this.db
+      .updateTable('sms_codes')
+      .set((eb) => ({ attempts: eb('attempts', '+', 1) }))
+      .where('id', '=', id)
+      .execute();
+  }
+
+  async consumeCode(id: string): Promise<boolean> {
+    const result = await this.db
+      .updateTable('sms_codes')
+      .set({ consumed_at: new Date() })
+      .where('id', '=', id)
+      .where('consumed_at', 'is', null)
+      .executeTakeFirst();
+    return Number(result.numUpdatedRows) === 1;
+  }
+
+  async findUserById(id: string): Promise<UserDto | undefined> {
+    const row = await this.userQuery().where('u.id', '=', id).executeTakeFirst();
+    return row ? toUserDto(row) : undefined;
+  }
+
+  async findUserByPhone(phone: string): Promise<UserDto | undefined> {
+    const row = await this.userQuery().where('u.phone', '=', phone).executeTakeFirst();
+    return row ? toUserDto(row) : undefined;
+  }
+
+  async createUser(
+    phone: string,
+    name: string | null,
+    role: 'customer' | 'admin',
+  ): Promise<string> {
+    const row = await this.db
+      .insertInto('users')
+      .values({ phone, name, role })
+      .returning('id')
+      .executeTakeFirstOrThrow();
+    return row.id;
+  }
+
+  async setRole(userId: string, role: 'customer' | 'worker' | 'admin'): Promise<void> {
+    await this.db.updateTable('users').set({ role }).where('id', '=', userId).execute();
+  }
+
+  async updateProfile(userId: string, name: string, language?: 'uz' | 'ru'): Promise<void> {
+    await this.db
+      .updateTable('users')
+      .set(language ? { name, language } : { name })
+      .where('id', '=', userId)
+      .execute();
+  }
+
+  async insertRefreshToken(userId: string, tokenHash: string, expiresAt: Date): Promise<void> {
+    await this.db
+      .insertInto('refresh_tokens')
+      .values({ user_id: userId, token_hash: tokenHash, expires_at: expiresAt })
+      .execute();
+  }
+
+  async findRefreshToken(tokenHash: string) {
+    return this.db
+      .selectFrom('refresh_tokens')
+      .selectAll()
+      .where('token_hash', '=', tokenHash)
+      .executeTakeFirst();
+  }
+
+  /** Atomically revokes a token; returns false when it was already revoked (reuse). */
+  async revokeRefreshToken(tokenHash: string): Promise<boolean> {
+    const result = await this.db
+      .updateTable('refresh_tokens')
+      .set({ revoked_at: new Date() })
+      .where('token_hash', '=', tokenHash)
+      .where('revoked_at', 'is', null)
+      .executeTakeFirst();
+    return Number(result.numUpdatedRows) === 1;
+  }
+
+  async revokeAllRefreshTokens(userId: string): Promise<void> {
+    await this.db
+      .updateTable('refresh_tokens')
+      .set({ revoked_at: new Date() })
+      .where('user_id', '=', userId)
+      .where('revoked_at', 'is', null)
+      .execute();
+  }
+
+  private userQuery() {
+    return this.db
+      .selectFrom('users as u')
+      .leftJoin('workers as w', 'w.user_id', 'u.id')
+      .select(['u.id', 'u.phone', 'u.name', 'u.role', 'u.language', 'w.id as worker_id']);
+  }
+}
