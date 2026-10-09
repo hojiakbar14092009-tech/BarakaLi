@@ -7,3 +7,10 @@ build/
 *.log
 .DS_Store
 Thumbs.db
+
+.data/
+.vercel
+*.tsbuildinfo
+coverage/
+playwright-report/
+test-results/

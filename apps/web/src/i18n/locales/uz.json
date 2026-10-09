@@ -1,0 +1,93 @@
+{
+  "common": {
+    "loading": "Yuklanmoqda…",
+    "retry": "Qayta urinish",
+    "currency": "soʻm",
+    "from": "dan",
+    "back": "Orqaga",
+    "save": "Saqlash",
+    "cancel": "Bekor qilish",
+    "close": "Yopish",
+    "delete": "Oʻchirish",
+    "edit": "Tahrirlash",
+    "optional": "ixtiyoriy",
+    "pieces": "dona",
+    "search": "Qidirish",
+    "all": "Barchasi",
+    "language": "Til",
+    "skipToContent": "Asosiy qismga oʻtish"
+  },
+  "nav": {
+    "home": "Bosh sahifa",
+    "orders": "Buyurtmalar",
+    "products": "Ishlarim",
+    "earnings": "Daromad",
+    "profile": "Profil",
+    "cart": "Savat",
+    "main": "Asosiy navigatsiya"
+  },
+  "header": {
+    "signIn": "Kirish",
+    "cart": "Savat"
+  },
+  "categories": {
+    "tikuvchilik": "Tikuvchilik",
+    "pishiriq": "Pishiriq",
+    "qol-mehnati": "Qoʻl mehnati",
+    "dizayn": "Dizayn",
+    "masofaviy-ishlar": "Masofaviy ishlar",
+    "barchasi": "Barcha ishlar"
+  },
+  "home": {
+    "searchLabel": "Nima kerak?",
+    "searchPlaceholder": "Nima tikish yoki pishirish kerak?",
+    "categoriesTitle": "Toifalar",
+    "becomeWorkerTitle": "Hunarmand boʻling",
+    "becomeWorkerText": "Uyingizdan chiqmasdan ishlang: ishlaringizni joylang, buyurtma qabul qiling, daromadingizni oʻzingiz boshqaring.",
+    "becomeWorkerCta": "Hunarmand boʻlish",
+    "featuredTitle": "Tavsiya etilgan hunarmandlar",
+    "featuredEmpty": "Hunarmandlar tez orada shu yerda paydo boʻladi.",
+    "featuredError": "Hunarmandlarni yuklab boʻlmadi.",
+    "orderCta": "Buyurtma berish",
+    "verified": "Tasdiqlangan",
+    "howTitle": "Qanday ishlaydi",
+    "steps": {
+      "choose": { "title": "Tanlang", "text": "Kerakli ish yoki mahsulotni toping." },
+      "order": { "title": "Buyurtma bering", "text": "Miqdorni belgilang va toʻlang." },
+      "receive": { "title": "Oling", "text": "Hunarmand tayyorlaydi, siz qabul qilasiz." }
+    },
+    "lessonsTitle": "Darslar",
+    "lessons": {
+      "income": {
+        "title": "Daromadni hisoblash",
+        "text": "Xarajat, narx va foydani oddiy jadvalda yuritishni oʻrganing."
+      },
+      "pricing": {
+        "title": "Narxni toʻgʻri belgilash",
+        "text": "Ishingizning haqiqiy qiymatini qanday aniqlash mumkin."
+      },
+      "clients": {
+        "title": "Birinchi mijozlar",
+        "text": "Mijozlarni topish va ular bilan ishonchli aloqa oʻrnatish."
+      }
+    }
+  },
+  "footer": {
+    "tagline": "Halol mehnat, oila va iqtisodiy mustaqillik.",
+    "rights": "Barcha huquqlar himoyalangan."
+  },
+  "notFound": {
+    "title": "Sahifa topilmadi",
+    "text": "Bunday sahifa mavjud emas yoki koʻchirilgan.",
+    "home": "Bosh sahifaga qaytish"
+  },
+  "errors": {
+    "NETWORK_ERROR": "Internet bilan aloqa yoʻq. Qayta urinib koʻring.",
+    "INTERNAL_ERROR": "Nimadir xato ketdi. Birozdan soʻng qayta urinib koʻring.",
+    "VALIDATION_ERROR": "Kiritilgan maʼlumotlarni tekshiring.",
+    "UNAUTHENTICATED": "Davom etish uchun tizimga kiring.",
+    "FORBIDDEN": "Bu amal uchun ruxsat yoʻq.",
+    "NOT_FOUND": "Topilmadi.",
+    "RATE_LIMITED": "Juda koʻp urinish. Birozdan soʻng qayta urinib koʻring."
+  }
+}

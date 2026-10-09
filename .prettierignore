@@ -1,0 +1,10 @@
+node_modules
+dist
+build
+pnpm-lock.yaml
+api/index.js
+.data
+coverage
+playwright-report
+test-results
+CLAUDE.md

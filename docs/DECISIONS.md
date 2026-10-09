@@ -1,0 +1,42 @@
+# Qarorlar (DECISIONS)
+
+Brifdagi noaniqliklar bo'yicha qabul qilingan qarorlar. Yangi qaror oxiriga qo'shiladi.
+
+## MVP doirasi
+
+- 23:00 muddatiga MVP: poydevor, baza, kirish, katalog va mahsulot sahifasi (dona/ulgurji), hunarmand
+  kabineti (mahsulot + `.glb`), 3D ko'rsatkich, buyurtma va 5% komissiya. Qolgani `TODO.md` da.
+- Kalendar, sharh, shikoyat, materiallar, jamg'arma, darslar sahifasi, admin paneli MVP'ga kirmaydi.
+  Arxitektura (holatlar jadvali, `orders.type`, `StorageProvider`, `PaymentProvider`) ularga tayyor.
+
+## Texnik
+
+- **Paket menejeri:** pnpm 12 workspaces. Vercel'da `npx pnpm@12.10.1` bilan o'rnatiladi (`vercel.json`).
+- **Versiyalar:** React 18.3, Vite 6, Vitest 3, ESLint 9, Tailwind 4, zod 3, Express 5.
+- **Ma'lumotlar bazasi:** production'da PostgreSQL (`DATABASE_URL`, masalan Neon). `DATABASE_URL`
+  bo'sh bo'lsa development va testlarda ichki PostgreSQL (PGlite, `btree_gist` + `pg_trgm`) ishlaydi:
+  Docker yoki lokal Postgres shart emas. Production kodi PGlite'ni yuklamaydi.
+- **Vercel'da API:** `apps/api` esbuild bilan bitta `api/index.js` fayliga yig'iladi (CommonJS).
+  Vercel funksiyalarni build'dan oldin aniqlagani uchun bu fayl repoda saqlanadi
+  (`pnpm build:api` qayta yaratadi). `api/package.json` uni CommonJS deb belgilaydi.
+- **Fayl saqlash:** Vercel diski doimiy emas, shuning uchun `StorageProvider` hozir fayllarni
+  PostgreSQL'da (`files` jadvali) saqlaydi va `/api/files/:name` orqali to'g'ri `Content-Type` va
+  kesh sarlavhalari bilan beradi. Keyin S3-mos adapter bilan almashtiriladi.
+- **Vercel so'rov hajmi:** Vercel funksiyalari so'rov tanasini 4.5 MB bilan cheklaydi. Rasmlar
+  brauzerda siqilib yuboriladi; `.glb` uchun amaliy chegara 4.5 MB (konstanta 10 MB, S3 adapteridan
+  keyin to'liq ishlaydi).
+- **Migratsiya:** `apps/api/migrations/*.sql` (`node-pg-migrate` formati: `-- Up Migration` /
+  `-- Down Migration`). PGlite uchun shu fayllarni o'qiydigan kichik yuklovchi ishlatiladi.
+- **CSRF:** refresh cookie `SameSite=Strict`; yozuvchi so'rovlarda `Origin` tekshiriladi.
+
+## Mahsulot qarorlari
+
+- **Hunarmand tasdig'i:** admin paneli yo'q, shuning uchun MVP'da har bir hunarmand darhol
+  mahsulot joylay oladi. "Tasdiqlangan" belgisi (`workers.is_verified`) faqat admin qo'lda
+  belgilagan hunarmandlarda ko'rinadi (seed'dagi hunarmandlar).
+- **SMS:** SMS shlyuzi (Eskiz/Play Mobile) hali ulanmagan. `EXPOSE_SMS_CODE=true` bo'lsa kod API
+  javobida qaytadi va kirish formasida ko'rsatiladi (faqat shlyuzsiz ko'rik uchun; xavfsiz emas).
+  Real foydalanuvchilar uchun `SmsProvider` adapteri ulanib, bu o'zgaruvchi `false` bo'lishi shart.
+- **To'lov:** `internal` provayder. Payme/Click/Uzum adapterlari bo'sh (`NotImplemented`), UI'da
+  ular ulangan deb yozilmaydi. Karta ma'lumotlari saqlanmaydi va loglanmaydi.
+- **Komissiya:** buyurtma `delivered` bo'lganda `earnings` yoziladi: `commission = round(total*5/100)`.
