@@ -1,0 +1,21 @@
+{
+  "title": "Savat",
+  "empty": "Savatingiz boʻsh",
+  "emptyHint": "Yoqqan ishlarni tanlab, savatga qoʻshing.",
+  "browse": "Ishlarni koʻrish",
+  "remove": "Olib tashlash",
+  "seller": "Hunarmand: {{name}}",
+  "wholesaleApplied": "Ulgurji narx",
+  "unavailable": "Mahsulot hozir mavjud emas",
+  "fulfillment": "Qanday olasiz?",
+  "pickup": "Oʻzim olib ketaman",
+  "delivery": "Yetkazib berish",
+  "address": "Yetkazib berish manzili",
+  "addressPlaceholder": "Shahar, koʻcha, uy",
+  "deliveryNote": "Yetkazib berishni hunarmand bilan telefon orqali kelishasiz. Raqam buyurtma qabul qilingach ochiladi.",
+  "multiNote": "Savatda bir nechta hunarmand bor: har biri uchun alohida buyurtma yaratiladi.",
+  "total": "Jami",
+  "checkout": "Buyurtma berish",
+  "signInToOrder": "Buyurtma berish uchun kiring",
+  "creating": "Buyurtma yaratilmoqda…"
+}

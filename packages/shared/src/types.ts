@@ -96,6 +96,8 @@ export interface OrderDto {
   id: string;
   type: OrderType;
   status: OrderStatus;
+  /** Which side of the order the requesting user is on. */
+  viewerRole: 'customer' | 'worker';
   total: number;
   commission: number;
   workerAmount: number;

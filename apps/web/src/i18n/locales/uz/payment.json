@@ -1,0 +1,19 @@
+{
+  "title": "Toʻlov",
+  "amount": "Toʻlov summasi",
+  "cardNumber": "Karta raqami",
+  "expiry": "Amal qilish muddati",
+  "expiryPlaceholder": "OO/YY",
+  "cvc": "CVC",
+  "pay": "{{amount}} toʻlash",
+  "paying": "Toʻlanmoqda…",
+  "secure": "Karta maʼlumotlari saqlanmaydi.",
+  "ledgerNote": "Hozircha toʻlov platforma ichki hisobida qayd etiladi: bank kartangizdan pul yechilmaydi.",
+  "success": "Toʻlov qabul qilindi",
+  "successText": "Hunarmand buyurtmani 24 soat ichida qabul qiladi.",
+  "nextUnpaid": "Yana {{count}} ta toʻlanmagan buyurtma bor.",
+  "toNext": "Keyingisini toʻlash",
+  "toOrder": "Buyurtmani koʻrish",
+  "alreadyPaid": "Bu buyurtma allaqachon toʻlangan.",
+  "orderSummary": "Buyurtma tarkibi"
+}

@@ -1,0 +1,50 @@
+{
+  "title": "Buyurtmalarim",
+  "incomingTitle": "Kelgan buyurtmalar",
+  "tabMine": "Men buyurtma berdim",
+  "tabIncoming": "Menga kelgan",
+  "empty": "Hozircha buyurtmalar yoʻq",
+  "emptyIncoming": "Hozircha sizga buyurtma kelmagan",
+  "orderNo": "Buyurtma №{{id}}",
+  "details": "Batafsil",
+  "status": {
+    "awaiting_payment": "Toʻlov kutilmoqda",
+    "new": "Yangi",
+    "accepted": "Qabul qilingan",
+    "in_progress": "Bajarilmoqda",
+    "ready": "Tayyor",
+    "delivered": "Topshirildi",
+    "cancelled": "Bekor qilingan",
+    "refunded": "Pul qaytarilgan"
+  },
+  "total": "Jami",
+  "commission": "Platforma komissiyasi (5%)",
+  "workerAmount": "Hunarmandga",
+  "youReceive": "Sizga tegadi",
+  "items": "Tarkibi",
+  "priceType": {
+    "retail": "dona narxi",
+    "wholesale": "ulgurji narx"
+  },
+  "fulfillment": {
+    "pickup": "Oʻzi olib ketadi",
+    "delivery": "Yetkazib berish"
+  },
+  "address": "Manzil",
+  "counterpartWorker": "Hunarmand",
+  "counterpartCustomer": "Buyurtmachi",
+  "phone": "Telefon",
+  "phoneHidden": "Telefon raqami buyurtma qabul qilingach koʻrinadi.",
+  "payNow": "Toʻlash",
+  "progress": "Buyurtma holati",
+  "actions": {
+    "accept": "Qabul qilish",
+    "reject": "Rad etish",
+    "start": "Ishni boshlash",
+    "ready": "Tayyor",
+    "deliver": "Topshirildi"
+  },
+  "rejectHint": "Rad etsangiz, buyurtmachiga pul qaytariladi.",
+  "waitingWorker": "Hunarmand buyurtmani tez orada qabul qiladi.",
+  "created": "Yaratilgan: {{date}}"
+}

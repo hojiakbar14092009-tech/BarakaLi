@@ -1,0 +1,22 @@
+{
+  "searchLabel": "Поиск",
+  "searchPlaceholder": "Поиск по названию",
+  "results": "Найдено: {{count}}",
+  "sortLabel": "Порядок",
+  "sort": {
+    "new": "Сначала новые",
+    "price_asc": "Подешевле",
+    "price_desc": "Подороже"
+  },
+  "empty": "Ничего не найдено",
+  "emptyHint": "Попробуйте другое слово или выберите другую категорию.",
+  "loadError": "Не удалось загрузить список.",
+  "page": "{{page}} / {{pages}}",
+  "prev": "Назад",
+  "next": "Далее",
+  "workerProducts": "Работы мастерицы",
+  "workerNotFound": "Мастерица не найдена.",
+  "productsCount": "Количество работ: {{count}}",
+  "wholesaleFrom": "от {{qty}} шт.: {{price}}",
+  "inStock": "В наличии: {{count}}"
+}

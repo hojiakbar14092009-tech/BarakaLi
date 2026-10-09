@@ -1,0 +1,18 @@
+{
+  "title": "Profil",
+  "phone": "Telefon",
+  "nameLabel": "Ism",
+  "language": "Til",
+  "save": "Saqlash",
+  "saved": "Saqlandi",
+  "signOut": "Chiqish",
+  "role": {
+    "customer": "Buyurtmachi",
+    "worker": "Hunarmand",
+    "admin": "Administrator"
+  },
+  "becomeWorkerText": "Oʻz ishlaringizni joylab, buyurtma qabul qilishni xohlaysizmi?",
+  "becomeWorker": "Hunarmand boʻlish",
+  "openCabinet": "Hunarmand kabineti",
+  "roleLabel": "Rol"
+}

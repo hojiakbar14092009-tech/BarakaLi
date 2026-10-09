@@ -105,6 +105,7 @@ export class OrderRepository {
           id: row.id,
           type: row.type,
           status: row.status as OrderStatus,
+          viewerRole: asWorker ? 'worker' : 'customer',
           total: row.total,
           commission: row.commission,
           workerAmount: row.worker_amount,

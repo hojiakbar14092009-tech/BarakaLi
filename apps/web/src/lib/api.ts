@@ -67,7 +67,11 @@ async function send(path: string, options: RequestOptions, token: string | null)
   }
 }
 
-async function toApiError(response: Response): Promise<ApiError> {
+async function toApiError(response: Response, path: string): Promise<ApiError> {
+  // The hosting platform rejects oversized bodies with a non-JSON 413 before the API sees them.
+  if (response.status === 413 && !response.headers.get('content-type')?.includes('json')) {
+    return new ApiError(path.includes('/images') ? 'IMAGE_TOO_LARGE' : 'MODEL_TOO_LARGE', 413);
+  }
   try {
     const data = (await response.json()) as ApiErrorBody;
     return new ApiError(data.error.code, response.status, data.error.details);
@@ -82,7 +86,7 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
     const fresh = await refreshAccessToken();
     if (fresh) response = await send(path, options, fresh);
   }
-  if (!response.ok) throw await toApiError(response);
+  if (!response.ok) throw await toApiError(response, path);
   if (response.status === 204) return undefined as T;
   return (await response.json()) as T;
 }

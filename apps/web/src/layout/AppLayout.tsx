@@ -1,23 +1,51 @@
+import { ShoppingBasket } from 'lucide-react';
 import { Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, Outlet } from 'react-router-dom';
+import { buttonClasses } from '../components/Button';
 import { LanguageSwitch } from '../components/LanguageSwitch';
 import { Logo } from '../components/Logo';
-import { buttonClasses } from '../components/Button';
+import { useAuthStore } from '../stores/auth';
+import { selectCartCount, useCartStore } from '../stores/cart';
+import { NavBar } from './NavBar';
+
+function CartLink() {
+  const { t } = useTranslation();
+  const count = useCartStore(selectCartCount);
+  return (
+    <Link
+      to="/savat"
+      aria-label={count > 0 ? `${t('header.cart')}: ${count}` : t('header.cart')}
+      className="relative grid size-12 place-items-center rounded-field text-mocha hover:bg-bisque/60"
+    >
+      <ShoppingBasket className="size-6" strokeWidth={1.75} aria-hidden="true" />
+      {count > 0 && (
+        <span className="absolute right-0.5 top-0.5 grid min-w-5 place-items-center rounded-full bg-mocha px-1 text-xs font-bold text-sugar">
+          {count}
+        </span>
+      )}
+    </Link>
+  );
+}
 
 function Header() {
   const { t } = useTranslation();
+  const user = useAuthStore((s) => s.user);
+  const status = useAuthStore((s) => s.status);
   return (
     <header className="sticky top-0 z-30 border-b border-bisque bg-sugar/95 pt-[env(safe-area-inset-top)] backdrop-blur">
-      <div className="mx-auto flex min-h-16 max-w-6xl items-center justify-between gap-3 px-4">
+      <div className="mx-auto flex min-h-16 max-w-6xl items-center justify-between gap-2 px-4">
         <Link to="/" className="inline-flex min-h-12 items-center text-2xl" aria-label="BarakaLi">
           <Logo />
         </Link>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
           <LanguageSwitch />
-          <Link to="/kirish" className={buttonClasses('primary', 'md', 'px-4')}>
-            {t('header.signIn')}
-          </Link>
+          <CartLink />
+          {status === 'ready' && !user && (
+            <Link to="/kirish" className={buttonClasses('primary', 'md', 'px-4')}>
+              {t('header.signIn')}
+            </Link>
+          )}
         </div>
       </div>
     </header>
@@ -27,7 +55,7 @@ function Header() {
 function Footer() {
   const { t } = useTranslation();
   return (
-    <footer className="mt-16 border-t border-bisque bg-bisque/40 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+    <footer className="mt-16 border-t border-bisque bg-bisque/40">
       <div className="mx-auto flex max-w-6xl flex-col gap-2 px-4 py-8">
         <Logo className="text-xl" />
         <p className="text-mocha">{t('footer.tagline')}</p>
@@ -41,6 +69,7 @@ function Footer() {
 
 export function AppLayout() {
   const { t } = useTranslation();
+  const hasNav = useAuthStore((s) => s.user !== null);
   return (
     <div className="flex min-h-dvh flex-col">
       <a
@@ -50,12 +79,19 @@ export function AppLayout() {
         {t('common.skipToContent')}
       </a>
       <Header />
-      <main id="content" className="mx-auto w-full max-w-6xl flex-1 px-4 pt-6">
-        <Suspense fallback={<p className="py-12 text-center text-mocha">{t('common.loading')}</p>}>
-          <Outlet />
-        </Suspense>
-      </main>
-      <Footer />
+      <div className="mx-auto flex w-full max-w-6xl flex-1">
+        <NavBar />
+        <div className={`flex min-w-0 flex-1 flex-col ${hasNav ? 'pb-20 sm:pb-0' : ''}`}>
+          <main id="content" className="w-full flex-1 px-4 pt-6">
+            <Suspense
+              fallback={<p className="py-12 text-center text-mocha">{t('common.loading')}</p>}
+            >
+              <Outlet />
+            </Suspense>
+          </main>
+          <Footer />
+        </div>
+      </div>
     </div>
   );
 }

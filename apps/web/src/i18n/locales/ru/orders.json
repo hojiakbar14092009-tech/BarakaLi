@@ -1,0 +1,50 @@
+{
+  "title": "Мои заказы",
+  "incomingTitle": "Входящие заказы",
+  "tabMine": "Я заказал(а)",
+  "tabIncoming": "Мне пришли",
+  "empty": "Заказов пока нет",
+  "emptyIncoming": "Вам пока никто не заказал",
+  "orderNo": "Заказ №{{id}}",
+  "details": "Подробнее",
+  "status": {
+    "awaiting_payment": "Ожидает оплаты",
+    "new": "Новый",
+    "accepted": "Принят",
+    "in_progress": "В работе",
+    "ready": "Готов",
+    "delivered": "Передан",
+    "cancelled": "Отменён",
+    "refunded": "Деньги возвращены"
+  },
+  "total": "Итого",
+  "commission": "Комиссия платформы (5%)",
+  "workerAmount": "Мастерице",
+  "youReceive": "Вам достанется",
+  "items": "Состав",
+  "priceType": {
+    "retail": "розничная цена",
+    "wholesale": "оптовая цена"
+  },
+  "fulfillment": {
+    "pickup": "Самовывоз",
+    "delivery": "Доставка"
+  },
+  "address": "Адрес",
+  "counterpartWorker": "Мастерица",
+  "counterpartCustomer": "Покупатель",
+  "phone": "Телефон",
+  "phoneHidden": "Номер телефона откроется после принятия заказа.",
+  "payNow": "Оплатить",
+  "progress": "Статус заказа",
+  "actions": {
+    "accept": "Принять",
+    "reject": "Отклонить",
+    "start": "Начать работу",
+    "ready": "Готово",
+    "deliver": "Передано"
+  },
+  "rejectHint": "Если вы откажетесь, деньги будут возвращены покупателю.",
+  "waitingWorker": "Мастерица скоро примет заказ.",
+  "created": "Создан: {{date}}"
+}

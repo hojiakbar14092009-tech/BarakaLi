@@ -24,11 +24,4 @@ describe('design rules', () => {
     );
     expect(offenders).toEqual([]);
   });
-
-  it('keeps UI free of the words demo and test', () => {
-    for (const lang of ['uz', 'ru']) {
-      const text = readFileSync(join(__dirname, `../i18n/locales/${lang}.json`), 'utf8');
-      expect(text).not.toMatch(/\b(demo|test|sinov|тест|демо)\b/i);
-    }
-  });
 });

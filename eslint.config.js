@@ -10,6 +10,7 @@ export default tseslint.config(
       '**/dist/**',
       '**/build/**',
       'api/index.js',
+      'apps/web/public/draco/**',
       '.data/**',
       '**/coverage/**',
       '**/playwright-report/**',
@@ -43,7 +44,12 @@ export default tseslint.config(
     rules: { '@typescript-eslint/no-require-imports': 'off' },
   },
   {
-    files: ['apps/api/scripts/**', 'apps/api/src/server.ts', 'apps/api/src/db/cli/**'],
+    files: [
+      'apps/api/scripts/**',
+      'apps/web/scripts/**',
+      'apps/api/src/server.ts',
+      'apps/api/src/db/cli/**',
+    ],
     rules: { 'no-console': 'off' },
   },
 );

@@ -73469,6 +73469,7 @@ var OrderRepository = class {
           id: row.id,
           type: row.type,
           status: row.status,
+          viewerRole: asWorker ? "worker" : "customer",
           total: row.total,
           commission: row.commission,
           workerAmount: row.worker_amount,

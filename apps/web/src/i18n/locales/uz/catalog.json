@@ -1,0 +1,22 @@
+{
+  "searchLabel": "Qidirish",
+  "searchPlaceholder": "Mahsulot nomi boʻyicha qidirish",
+  "results": "Topildi: {{count}}",
+  "sortLabel": "Tartib",
+  "sort": {
+    "new": "Yangilari",
+    "price_asc": "Arzonroq",
+    "price_desc": "Qimmatroq"
+  },
+  "empty": "Hech narsa topilmadi",
+  "emptyHint": "Boshqa soʻz bilan qidirib koʻring yoki boshqa toifani tanlang.",
+  "loadError": "Roʻyxatni yuklab boʻlmadi.",
+  "page": "{{page}} / {{pages}}",
+  "prev": "Oldingi",
+  "next": "Keyingi",
+  "workerProducts": "Hunarmand ishlari",
+  "workerNotFound": "Hunarmand topilmadi.",
+  "productsCount": "Ishlar soni: {{count}}",
+  "wholesaleFrom": "{{qty}} dona: {{price}}",
+  "inStock": "Zaxirada: {{count}}"
+}
