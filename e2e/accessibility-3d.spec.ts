@@ -7,6 +7,7 @@ import {
   loginAsAdmin,
   publishedProductId,
   productWithModelId,
+  productWithPhotoId,
   signIn,
 } from './helpers';
 import { translator } from './i18n';
@@ -54,8 +55,10 @@ test.describe('accessibility (axe, WCAG 2.1 AA)', () => {
       for (const route of [
         '/',
         '/xizmatlar/tikuvchilik',
+        '/xizmatlar/barchasi',
         `/mahsulot/${productId}`,
         '/kirish',
+        '/admin-kirish',
         '/darslar',
         '/savat',
       ]) {
@@ -63,6 +66,9 @@ test.describe('accessibility (axe, WCAG 2.1 AA)', () => {
         await page.waitForLoadState('networkidle');
         expect(await violations(page), route).toEqual([]);
       }
+      await page.goto(`/mahsulot/${await productWithPhotoId(request)}`);
+      await page.getByRole('tab', { name: translator('uz')('product.tabRotate') }).click();
+      expect(await violations(page), 'rotate view').toEqual([]);
     });
   }
 

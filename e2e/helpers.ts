@@ -3,6 +3,7 @@ import { expect, type APIRequestContext, type BrowserContext, type Page } from '
 
 export const VIEWPORTS = [
   { name: 'phone', width: 360, height: 800 },
+  { name: 'phone-large', width: 390, height: 844 },
   { name: 'tablet', width: 768, height: 1024 },
   { name: 'desktop', width: 1280, height: 800 },
 ] as const;
@@ -210,6 +211,15 @@ export async function createPublishedProduct(
   });
   expect(published.ok()).toBe(true);
   return id;
+}
+
+/** A product with at least one photo and no 3D model, so its viewer tab is the rotate view. */
+export async function productWithPhotoId(request: APIRequestContext): Promise<string> {
+  const res = await request.get('/api/products?pageSize=20');
+  const page = (await res.json()) as { items: { id: string; images: unknown[]; model: unknown }[] };
+  const found = page.items.find((item) => item.images.length > 0 && !item.model);
+  expect(found, 'sample data should include a product with a photo').toBeTruthy();
+  return (found as { id: string }).id;
 }
 
 /** Product from the sample data that carries a 3D model. */

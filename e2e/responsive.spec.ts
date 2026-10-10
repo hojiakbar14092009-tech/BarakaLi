@@ -22,11 +22,13 @@ for (const viewport of VIEWPORTS) {
       const routes = [
         '/',
         '/xizmatlar/tikuvchilik',
+        '/xizmatlar/barchasi',
         `/mahsulot/${productId}`,
         `/hunarmand/${workers[0]?.id ?? ''}`,
         '/darslar',
         '/kirish',
         '/royxatdan-otish',
+        '/admin-kirish',
         '/savat',
         '/yoq-sahifa',
       ];
