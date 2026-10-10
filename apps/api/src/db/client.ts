@@ -47,5 +47,7 @@ export function createPgDb(connectionString: string): Db {
 
 export async function createDb(config: AppConfig): Promise<Db> {
   if (config.databaseUrl) return createPgDb(config.databaseUrl);
+  // Throwaway databases (browser tests) ask for memory so nothing is left on disk between runs.
+  if (process.env.PGLITE_DATA_DIR === 'memory') return createPgliteDb(undefined);
   return createPgliteDb(localDataDir());
 }

@@ -1,6 +1,7 @@
 import { Trash2 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 import {
   QUICK_SLOTS,
   tashkentDay,
@@ -14,6 +15,8 @@ import { EmptyState, ErrorState, LoadingState } from '../../components/StateView
 import { dayOf, formatDay, formatTimeRange } from '../../lib/dates';
 import { errorMessage } from '../../lib/errors';
 import { formatPrice } from '../../lib/format';
+import { useOrders } from '../orders/api';
+import { StatusBadge } from '../orders/StatusBadge';
 import { useAddWindow, useMyAvailability, useRemoveWindow, useSetHourlyRate } from './api';
 
 const HOUR_MS = 60 * 60 * 1000;
@@ -178,6 +181,59 @@ function WindowList({ windows }: { windows: AvailabilityWindowDto[] }) {
   );
 }
 
+/** The worker's own upcoming service bookings, so free windows and taken hours read as one plan. */
+function UpcomingBookings() {
+  const { t, i18n } = useTranslation();
+  const orders = useOrders('worker');
+  const upcoming = useMemo(() => {
+    const now = Date.now();
+    return (orders.data ?? [])
+      .filter(
+        (order) =>
+          order.type === 'service' &&
+          order.startTime !== null &&
+          new Date(order.endTime ?? 0).getTime() > now &&
+          ['new', 'accepted', 'in_progress'].includes(order.status),
+      )
+      .sort((a, b) => (a.startTime ?? '').localeCompare(b.startTime ?? ''));
+  }, [orders.data]);
+
+  return (
+    <section aria-labelledby="cal-bookings" className="space-y-3">
+      <h2 id="cal-bookings" className="text-lg font-bold">
+        {t('calendar.bookingsTitle')}
+      </h2>
+      {orders.isPending && <LoadingState />}
+      {orders.isError && <p role="alert">{errorMessage(orders.error, t)}</p>}
+      {orders.data && upcoming.length === 0 && (
+        <p className="rounded-field bg-bisque px-4 py-3">{t('calendar.bookingsEmpty')}</p>
+      )}
+      <ul className="space-y-2">
+        {upcoming.map((order) =>
+          order.startTime && order.endTime ? (
+            <li key={order.id}>
+              <Link
+                to={`/buyurtmalar/${order.id}`}
+                className="flex min-h-14 flex-wrap items-center justify-between gap-2 rounded-card border border-bisque bg-white/60 p-4"
+              >
+                <span>
+                  <span className="block font-semibold">
+                    {formatDay(dayOf(order.startTime), i18n.language)}
+                  </span>
+                  <span className="block text-mocha">
+                    {formatTimeRange(order.startTime, order.endTime)} · {order.counterpart.name}
+                  </span>
+                </span>
+                <StatusBadge status={order.status} />
+              </Link>
+            </li>
+          ) : null,
+        )}
+      </ul>
+    </section>
+  );
+}
+
 export default function CalendarPage() {
   const { t } = useTranslation();
   const query = useMyAvailability();
@@ -212,6 +268,9 @@ export default function CalendarPage() {
           </h2>
           <WindowList windows={windows} />
         </section>
+        <div className="lg:col-span-2">
+          <UpcomingBookings />
+        </div>
       </div>
     </div>
   );

@@ -85,3 +85,13 @@ Brifdagi noaniqliklar bo'yicha qabul qilingan qarorlar. Yangi qaror oxiriga qo's
   tozalanadi.
 - **24 soatlik qaytarish:** `new` holatida 24 soatdan oshgan buyurtma avtomatik `refunded` boʻladi,
   toʻlov provayder orqali qaytariladi va zaxira tiklanadi (bitta tranzaksiya).
+
+## Brauzer testlari va moslashuvchanlik
+
+- **Playwright:** `pnpm e2e` (oldin `pnpm --filter @barakali/web build`). Web ilovaning production
+  build'i (`vite preview`, `/api` proksi) va xotiradagi vaqtinchalik baza (`PGLITE_DATA_DIR=memory`)
+  bilan ishlaydi; diskda iz qolmaydi. Playwright versiyasi (1.63) kompyuterda oʻrnatilgan Chromium
+  bilan mos tanlandi.
+- **Moslashuv tekshiruvi:** `e2e/responsive.spec.ts` 360 / 768 / 1280 px da ommaviy va kirilgan
+  sahifalarda gorizontal scroll yoʻqligini va tugma/havolalar kamida 48 px ekanini tekshiradi.
+  Tekshiruv sarlavhadagi 1 px chiqib ketishni va kirish sahifasidagi kichik havolani topdi (tuzatildi).

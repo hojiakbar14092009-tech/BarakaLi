@@ -22,5 +22,7 @@
   "listTitle": "Boʻsh vaqtlarim",
   "empty": "Hali boʻsh vaqt belgilamagansiz",
   "emptyHint": "Vaqt qoʻshsangiz, buyurtmachilar shu soatlarga buyurtma bera oladi.",
-  "remove": "Vaqtni oʻchirish"
+  "remove": "Vaqtni oʻchirish",
+  "bookingsTitle": "Band vaqtlar",
+  "bookingsEmpty": "Hozircha band qilingan vaqt yoʻq."
 }

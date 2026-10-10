@@ -89,7 +89,7 @@ function AuthFlow({ mode }: AuthPageProps) {
           {mode === 'signin' ? t('auth.noAccount') : t('auth.haveAccount')}{' '}
           <Link
             to={mode === 'signin' ? '/royxatdan-otish' : '/kirish'}
-            className="font-semibold text-espresso underline"
+            className="inline-flex min-h-12 items-center font-semibold text-espresso underline"
           >
             {mode === 'signin' ? t('auth.toSignUp') : t('auth.toSignIn')}
           </Link>

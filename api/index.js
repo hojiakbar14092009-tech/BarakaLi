@@ -74244,13 +74244,14 @@ var ServiceOrderService = class {
           price_type: "retail"
         }).execute();
         if (input.imageUrls.length > 0) {
-          await trx.insertInto("order_images").values(
-            input.imageUrls.map((url, position) => ({ order_id: order.id, url, position }))
-          ).execute();
+          await trx.insertInto("order_images").values(input.imageUrls.map((url, position) => ({ order_id: order.id, url, position }))).execute();
         }
         return order.id;
       });
-      const [dto] = await this.repo.findDtos([orderId3], { userId: customerId, workerId: void 0 });
+      const [dto] = await this.repo.findDtos([orderId3], {
+        userId: customerId,
+        workerId: void 0
+      });
       if (!dto) throw AppError.notFound();
       return dto;
     } catch (error) {

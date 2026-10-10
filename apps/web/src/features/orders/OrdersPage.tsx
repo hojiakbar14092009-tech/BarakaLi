@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import type { OrderDto } from '@barakali/shared';
 import { EmptyState, ErrorState, LoadingState } from '../../components/StateViews';
 import { errorMessage } from '../../lib/errors';
+import { dayOf, formatDay, formatTimeRange } from '../../lib/dates';
 import { formatPrice } from '../../lib/format';
 import { useAuthStore } from '../../stores/auth';
 import { useOrders, type OrderSide } from './api';
@@ -32,6 +33,14 @@ function OrderRow({ order }: { order: OrderDto }) {
           <span className="font-semibold">{t('orders.orderNo', { id: shortId(order.id) })}</span>
           <StatusBadge status={order.status} />
         </div>
+        {order.type === 'service' && order.startTime && order.endTime ? (
+          <p className="font-medium">
+            {t('orders.service.slotLine', {
+              day: formatDay(dayOf(order.startTime), i18n.language),
+              time: formatTimeRange(order.startTime, order.endTime),
+            })}
+          </p>
+        ) : null}
         <p className="line-clamp-2 text-mocha">
           {order.items.map((item) => `${item.title} × ${item.quantity}`).join(', ')}
         </p>

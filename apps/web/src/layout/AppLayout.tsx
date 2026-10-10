@@ -42,7 +42,7 @@ function Header() {
           <LanguageSwitch />
           <CartLink />
           {status === 'ready' && !user && (
-            <Link to="/kirish" className={buttonClasses('primary', 'md', 'px-4')}>
+            <Link to="/kirish" className={buttonClasses('primary', 'md', 'px-3!')}>
               {t('header.signIn')}
             </Link>
           )}

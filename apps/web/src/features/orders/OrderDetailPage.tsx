@@ -1,7 +1,13 @@
 import { Check } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link, useParams } from 'react-router-dom';
-import type { OrderAction, OrderDto, OrderStatus } from '@barakali/shared';
+import {
+  UNPAID_ORDER_TTL_MINUTES,
+  WORKER_ACCEPT_TTL_HOURS,
+  type OrderAction,
+  type OrderDto,
+  type OrderStatus,
+} from '@barakali/shared';
 import { Button, buttonClasses } from '../../components/Button';
 import { ErrorState, LoadingState } from '../../components/StateViews';
 import { errorMessage } from '../../lib/errors';
@@ -10,6 +16,7 @@ import { useOrder, useOrderAction } from './api';
 import { ComplaintSection } from './ComplaintSection';
 import { shortId } from './OrdersPage';
 import { ReviewSection } from './ReviewSection';
+import { ServiceDetails } from './ServiceDetails';
 import { StatusBadge } from './StatusBadge';
 
 const STEPS: OrderStatus[] = ['new', 'accepted', 'in_progress', 'ready', 'delivered'];
@@ -118,14 +125,31 @@ export default function OrderDetailPage() {
       <Progress status={order.status} />
 
       {order.status === 'awaiting_payment' && !isWorker && (
-        <Link to={`/tolov/${order.id}`} className={buttonClasses('primary', 'lg', 'w-full')}>
-          {t('orders.payNow')}
-        </Link>
+        <div className="space-y-2">
+          <Link to={`/tolov/${order.id}`} className={buttonClasses('primary', 'lg', 'w-full')}>
+            {t('orders.payNow')}
+          </Link>
+          <p className="text-sm text-mocha">
+            {t('orders.payWithin', { minutes: UNPAID_ORDER_TTL_MINUTES })}
+          </p>
+        </div>
+      )}
+      {order.status === 'cancelled' && (
+        <p className="rounded-field bg-bisque px-4 py-3">
+          {t('orders.cancelledNote', { minutes: UNPAID_ORDER_TTL_MINUTES })}
+        </p>
+      )}
+      {order.status === 'refunded' && (
+        <p className="rounded-field bg-bisque px-4 py-3">
+          {t('orders.refundedNote', { hours: WORKER_ACCEPT_TTL_HOURS })}
+        </p>
       )}
       {order.status === 'new' && !isWorker && (
         <p className="rounded-field bg-bisque px-4 py-3">{t('orders.waitingWorker')}</p>
       )}
       {isWorker && <WorkerActions order={order} />}
+
+      <ServiceDetails order={order} />
 
       <section
         aria-labelledby="order-items"

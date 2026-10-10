@@ -71,5 +71,17 @@
       "resolved": "Hal qilingan",
       "dismissed": "Rad etilgan"
     }
+  },
+  "payWithin": "Buyurtma {{minutes}} daqiqa ichida toʻlanmasa, tanlangan vaqt boʻshatiladi.",
+  "cancelledNote": "Buyurtma {{minutes}} daqiqa ichida toʻlanmagani uchun bekor qilindi. Kerak boʻlsa, qaytadan buyurtma bering.",
+  "refundedNote": "Buyurtma bajarilmadi, toʻlov qaytarildi. Hunarmand {{hours}} soat ichida qabul qilmagan yoki rad etgan boʻlishi mumkin.",
+  "service": {
+    "title": "Xizmat tafsilotlari",
+    "description": "Buyurtma tavsifi",
+    "deadline": "Qachongacha kerak",
+    "photos": "Namuna rasmlar",
+    "openPhoto": "{{index}}-rasmni ochish",
+    "photoAlt": "Namuna rasm {{index}}",
+    "slotLine": "{{day}}, {{time}}"
   }
 }
