@@ -73360,6 +73360,32 @@ var AuthService = class {
   }
   repo;
   async requestCode(phone) {
+    const code = await this.issueCode(phone);
+    await this.ctx.sms.send(phone, code);
+    const response = { expiresInSeconds: SMS_CODE_TTL_MINUTES * 60 };
+    if (this.ctx.config.exposeSmsCode && !this.isWithheldAdmin(phone)) response.code = code;
+    return response;
+  }
+  /**
+   * /admin-kirish: only ADMIN_PHONES numbers get a code. While EXPOSE_SMS_CODE is on the code is
+   * shown on that page and no SMS goes out; with it off the code goes through the SMS provider.
+   */
+  async requestAdminCode(phone) {
+    const { adminPhones, exposeSmsCode } = this.ctx.config;
+    if (adminPhones.length === 0) throw new AppError("ADMIN_LOGIN_NOT_CONFIGURED", 503);
+    if (!adminPhones.includes(phone)) throw new AppError("NOT_ADMIN_PHONE", 403);
+    const code = await this.issueCode(phone);
+    const response = { expiresInSeconds: SMS_CODE_TTL_MINUTES * 60 };
+    if (exposeSmsCode) response.code = code;
+    else await this.ctx.sms.send(phone, code);
+    return response;
+  }
+  /** The general sign-in page never shows an administrator's code; /admin-kirish does that. */
+  isWithheldAdmin(phone) {
+    const { adminPhones, nodeEnv } = this.ctx.config;
+    return adminPhones.includes(phone) && nodeEnv !== "test";
+  }
+  async issueCode(phone) {
     const windowStart = new Date(this.now().getTime() - CODE_WINDOW_MINUTES * MINUTE_MS);
     if (await this.repo.countRecentCodes(phone, windowStart) >= MAX_CODES_PER_WINDOW) {
       throw new AppError("RATE_LIMITED", 429);
@@ -73371,23 +73397,7 @@ var AuthService = class {
       hashCode(phone, code, this.ctx.config.jwtRefreshSecret),
       expiresAt
     );
-    await this.ctx.sms.send(phone, code);
-    const response = { expiresInSeconds: SMS_CODE_TTL_MINUTES * 60 };
-    if (this.ctx.config.exposeSmsCode && !this.withholdFromResponse(phone, code)) {
-      response.code = code;
-    }
-    return response;
-  }
-  /**
-   * The exposed-code preview mode would let anyone sign in as an administrator, so codes for
-   * ADMIN_PHONES numbers are never put in a response (only NODE_ENV=test may). Without an SMS
-   * gateway the administrator reads the one-time code from the server log instead.
-   */
-  withholdFromResponse(phone, code) {
-    const { adminPhones, nodeEnv } = this.ctx.config;
-    if (!adminPhones.includes(phone) || nodeEnv === "test") return false;
-    logger.info("Administrator sign-in code issued", { code });
-    return true;
+    return code;
   }
   async verifyCode(input) {
     await this.checkCode(input.phone, input.code);
@@ -73494,6 +73504,10 @@ function createAuthRouter(ctx) {
   router.post("/auth/request-code", smsLimiter(limited), async (req, res) => {
     const { phone } = requestCodeSchema.parse(req.body);
     res.json(await auth.requestCode(phone));
+  });
+  router.post("/auth/admin/request-code", smsLimiter(limited), async (req, res) => {
+    const { phone } = requestCodeSchema.parse(req.body);
+    res.json(await auth.requestAdminCode(phone));
   });
   router.post("/auth/verify", authLimiter(limited), async (req, res) => {
     const session = await auth.verifyCode(verifyCodeSchema.parse(req.body));

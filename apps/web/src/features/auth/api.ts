@@ -11,6 +11,12 @@ import { apiRequest } from '../../lib/api';
 export const requestCode = (phone: string) =>
   apiRequest<RequestCodeResponse>('/auth/request-code', { method: 'POST', body: { phone } });
 
+/** /admin-kirish: answers only for ADMIN_PHONES numbers. */
+export const requestAdminCode = (phone: string) =>
+  apiRequest<RequestCodeResponse>('/auth/admin/request-code', { method: 'POST', body: { phone } });
+
+export type CodeSender = (phone: string) => Promise<RequestCodeResponse>;
+
 export const verifyCode = (input: Omit<VerifyCodeInput, 'phone'> & { phone: string }) =>
   apiRequest<AuthResponse>('/auth/verify', { method: 'POST', body: input });
 

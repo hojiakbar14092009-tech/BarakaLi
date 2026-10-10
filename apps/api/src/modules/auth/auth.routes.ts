@@ -37,6 +37,11 @@ export function createAuthRouter(ctx: AppContext): Router {
     res.json(await auth.requestCode(phone));
   });
 
+  router.post('/auth/admin/request-code', smsLimiter(limited), async (req, res) => {
+    const { phone } = requestCodeSchema.parse(req.body);
+    res.json(await auth.requestAdminCode(phone));
+  });
+
   router.post('/auth/verify', authLimiter(limited), async (req, res) => {
     const session = await auth.verifyCode(verifyCodeSchema.parse(req.body));
     setRefreshCookie(res, session, ctx.config.isProduction);

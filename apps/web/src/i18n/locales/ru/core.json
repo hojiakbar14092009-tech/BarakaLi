@@ -34,7 +34,8 @@
   },
   "header": {
     "signIn": "Войти",
-    "cart": "Корзина"
+    "cart": "Корзина",
+    "admin": "Админ"
   },
   "categories": {
     "tikuvchilik": "Шитьё",

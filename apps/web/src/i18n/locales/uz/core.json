@@ -34,7 +34,8 @@
   },
   "header": {
     "signIn": "Kirish",
-    "cart": "Savat"
+    "cart": "Savat",
+    "admin": "Admin"
   },
   "categories": {
     "tikuvchilik": "Tikuvchilik",

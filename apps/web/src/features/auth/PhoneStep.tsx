@@ -8,7 +8,7 @@ import { Button } from '../../components/Button';
 import { PhoneInput } from '../../components/ui/PhoneInput';
 import { errorMessage, validationMessage } from '../../lib/errors';
 import { PHONE_LOCAL_DIGITS } from '../../lib/phone';
-import { requestCode } from './api';
+import { requestCode, type CodeSender } from './api';
 
 const schema = z.object({
   phone: z.string().regex(new RegExp(`^\\d{${PHONE_LOCAL_DIGITS}}$`), 'INVALID_PHONE'),
@@ -18,9 +18,10 @@ type FormValues = z.infer<typeof schema>;
 interface PhoneStepProps {
   initialPhone: string;
   onSent: (digits: string, exposedCode: string | undefined) => void;
+  send?: CodeSender;
 }
 
-export function PhoneStep({ initialPhone, onSent }: PhoneStepProps) {
+export function PhoneStep({ initialPhone, onSent, send = requestCode }: PhoneStepProps) {
   const { t } = useTranslation();
   const { control, handleSubmit } = useForm<FormValues>({
     resolver: zodResolver(schema),
@@ -29,7 +30,7 @@ export function PhoneStep({ initialPhone, onSent }: PhoneStepProps) {
     defaultValues: { phone: initialPhone },
   });
   const mutation = useMutation({
-    mutationFn: (digits: string) => requestCode(`${PHONE_COUNTRY_PREFIX}${digits}`),
+    mutationFn: (digits: string) => send(`${PHONE_COUNTRY_PREFIX}${digits}`),
     onSuccess: (response, digits) => onSent(digits, response.code),
   });
 

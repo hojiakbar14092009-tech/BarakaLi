@@ -39,6 +39,7 @@ const AdminMaterialsPage = adminSection('AdminMaterialsPage');
 const AdminSettingsPage = lazy(() => import('./features/admin/AdminSettingsPage'));
 const ProfilePage = lazy(() => import('./features/profile/ProfilePage'));
 const AuthPage = lazy(() => import('./features/auth/AuthPage'));
+const AdminLoginPage = lazy(() => import('./features/auth/AdminLoginPage'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 
 const queryClient = new QueryClient({
@@ -57,6 +58,7 @@ const router = createBrowserRouter([
       { path: '/darslar', element: <LessonsPage /> },
       { path: '/kirish', element: <AuthPage mode="signin" /> },
       { path: '/royxatdan-otish', element: <AuthPage mode="signup" /> },
+      { path: '/admin-kirish', element: <AdminLoginPage /> },
       {
         element: <RequireAuth role="worker" />,
         children: [

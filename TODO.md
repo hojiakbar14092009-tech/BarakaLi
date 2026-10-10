@@ -142,3 +142,19 @@ pnpm db:audit-orders
 - [ ] Vercel funksiyasi soʻrov tanasini ~4.5 MB bilan cheklaydi: brauzer rasmni yuklashdan oldin siqadi (odatda < 1 MB),
       lekin 4.5–8 MB oraligʻidagi fayl va katta `.glb` Vercel'da oʻtmasligi mumkin. Toʻliq 8/10 MB uchun fayllarni
       toʻgʻridan-toʻgʻri obyekt xotirasiga (S3-mos, imzolangan URL) yuklash kerak; hozir ulanmagan
+
+## Admin kirish (2026-10-10)
+
+- [x] Navbarda "Kirish" yonida "Admin" (ikkalasi 48 px). Telefonda joy yetmagani uchun Admin 48 px ikonka
+      (`aria-label="Admin"`), til almashtirgich bitta tugma; 640 px dan matnli koʻrinish
+- [x] `/admin-kirish`: raqamlar faqat `ADMIN_PHONES` env'dan (kodda raqam yoʻq). Roʻyxatdagi raqamga kod shu sahifada
+      chiqadi va SMS yuborilmaydi; roʻyxatda boʻlmasa kod berilmaydi ("Bu raqam admin emas"); roʻyxat boʻsh boʻlsa
+      "Admin kirish sozlanmagan". Raqam faqat POST tanasida, URL'da emas; kod va raqam loglanmaydi
+      (avvalgi "Administrator sign-in code issued" log qatori olib tashlandi)
+- Qaror: admin kodi sahifada faqat `EXPOSE_SMS_CODE=true` boʻlganda koʻrsatiladi (`/kirish` bilan bir xil qoida).
+  `false` boʻlsa kod SMS provayderiga beriladi, u hozir ulanmagan (konsol), demak admin kira olmaydi
+- [ ] **XAVFSIZLIK. Sinov rejimi. Ommaviy ishga tushirishdan oldin EXPOSE_SMS_CODE=false va real SMS provayder
+      ulanishi shart.** Hozir admin raqamini bilgan har kim `/admin-kirish` orqali admin boʻlib kira oladi;
+      "Bu raqam admin emas" javobi qaysi raqam admin ekanini ham bildiradi
+- [ ] `/kirish`: `EXPOSE_SMS_CODE=false` boʻlganda kod SMS orqali kelishi kerak, lekin `SmsProvider` hozir faqat
+      konsol (Eskiz / Play Mobile adapteri yozilmagan)

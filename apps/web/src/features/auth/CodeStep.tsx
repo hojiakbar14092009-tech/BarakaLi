@@ -8,7 +8,7 @@ import { Button } from '../../components/Button';
 import { Field } from '../../components/Field';
 import { errorMessage, validationMessage } from '../../lib/errors';
 import { useAuthStore } from '../../stores/auth';
-import { requestCode, verifyCode } from './api';
+import { requestCode, verifyCode, type CodeSender } from './api';
 
 const schema = z.object({
   code: z.string().regex(new RegExp(`^\\d{${SMS_CODE_LENGTH}}$`), 'INVALID_CODE'),
@@ -23,6 +23,7 @@ interface CodeStepProps {
   onChangePhone: () => void;
   onResent: (code: string | undefined) => void;
   onVerified: (name: string, hasWorker: boolean) => void;
+  send?: CodeSender;
 }
 
 export function CodeStep({
@@ -32,6 +33,7 @@ export function CodeStep({
   onChangePhone,
   onResent,
   onVerified,
+  send = requestCode,
 }: CodeStepProps) {
   const { t } = useTranslation();
   const setSession = useAuthStore((s) => s.setSession);
@@ -56,7 +58,7 @@ export function CodeStep({
     },
   });
   const resend = useMutation({
-    mutationFn: () => requestCode(fullPhone),
+    mutationFn: () => send(fullPhone),
     onSuccess: (response) => onResent(response.code),
   });
   const failure = verify.error ?? resend.error;

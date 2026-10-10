@@ -49,5 +49,7 @@
   "USER_BLOCKED": "Bu hisob bloklangan. Savol boʻlsa, platforma maʼmuriyatiga murojaat qiling.",
   "PRODUCT_HAS_ORDERS": "Bu mahsulot buyurtmalarda bor: uni oʻchirib boʻlmaydi, faqat yashirish mumkin.",
   "APPLICATIONS_CLOSED": "Hozircha yangi hunarmand arizalari qabul qilinmayapti. Keyinroq qayta urinib koʻring.",
-  "IMAGE_LAST_REQUIRED": "Chop etilgan mahsulotda kamida 1 ta rasm boʻlishi kerak. Avval yangi rasm qoʻshing yoki mahsulotni yashiring."
+  "IMAGE_LAST_REQUIRED": "Chop etilgan mahsulotda kamida 1 ta rasm boʻlishi kerak. Avval yangi rasm qoʻshing yoki mahsulotni yashiring.",
+  "ADMIN_LOGIN_NOT_CONFIGURED": "Admin kirish sozlanmagan.",
+  "NOT_ADMIN_PHONE": "Bu raqam admin emas."
 }
