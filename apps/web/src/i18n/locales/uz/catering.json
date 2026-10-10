@@ -50,5 +50,44 @@
     "lead": "Yoʻnalishni tanlang va soʻrov yuboring. Tafsilotlar va narx jamoa siz bilan bogʻlangach kelishiladi.",
     "cta": "Soʻrov yuborish",
     "ctaLabel": "{{service}}: soʻrov yuborish"
+  },
+  "capabilities": {
+    "eyebrow": "Platforma imkoniyatlari",
+    "title": "Hunarmand va xaridor uchun kerakli hamma narsa",
+    "lead": "Bular bugun ishlayotgan imkoniyatlar: har biri saytning oʻzida bor.",
+    "items": {
+      "search": {
+        "title": "Katalog va qidiruv",
+        "text": "Toifa, nom va narx boʻyicha; oʻzbekcha apostrof variantlari ham topiladi."
+      },
+      "pricing": {
+        "title": "Dona va ulgurji narx",
+        "text": "Miqdor yetarli boʻlsa, ulgurji narx oʻzi qoʻllanadi."
+      },
+      "view3d": {
+        "title": "3D koʻrinish",
+        "text": "Mahsulotni barmoq yoki sichqoncha bilan aylantirib koʻrish."
+      },
+      "calendar": {
+        "title": "Ish kalendari",
+        "text": "Hunarmand boʻsh vaqtini belgilaydi, xizmat soʻrovi shu vaqtga tushadi."
+      },
+      "tracking": {
+        "title": "Buyurtma holati",
+        "text": "Har bosqich koʻrinadi, yangi buyurtma haqida hunarmandga xabar keladi."
+      },
+      "materials": {
+        "title": "Materiallar doʻkoni",
+        "text": "Ip, mato va un hunarmandlar uchun chegirma bilan."
+      },
+      "earnings": {
+        "title": "Daromad va jamgʻarma",
+        "text": "Oylik daromad tarixi va oʻz maqsadingizga qarab progress."
+      },
+      "lessons": {
+        "title": "Darslar",
+        "text": "Moliyaviy savodxonlik va tadbirkorlik boʻyicha qisqa darslar."
+      }
+    }
   }
 }

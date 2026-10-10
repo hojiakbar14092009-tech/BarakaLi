@@ -1,5 +1,6 @@
 import { CateringHero } from './CateringHero';
 import { MotionRoot } from './motion';
+import { PlatformCapabilities } from './PlatformCapabilities';
 import { useHashScroll } from './sectionScroll';
 import { ServiceTypesGrid } from './ServiceTypesGrid';
 import { WhyBarakaLi } from './WhyBarakaLi';
@@ -14,6 +15,7 @@ export default function CateringLanding() {
         <CateringHero />
         <WhyBarakaLi />
         <ServiceTypesGrid />
+        <PlatformCapabilities />
       </div>
     </MotionRoot>
   );
