@@ -85,3 +85,29 @@ async function refundOne(ctx: AppContext, id: string, cutoff: Date, now: Date): 
     return 1;
   });
 }
+
+/** Unpaid material orders follow the same 15 minute rule; nothing is reserved before payment. */
+export async function expireUnpaidMaterialOrders(db: Db, now: Date): Promise<number> {
+  const cutoff = new Date(now.getTime() - UNPAID_ORDER_TTL_MINUTES * MINUTE_MS);
+  return db.transaction().execute(async (trx) => {
+    const expired = await trx
+      .updateTable('material_orders')
+      .set({ status: 'cancelled', updated_at: now })
+      .where('status', '=', 'awaiting_payment')
+      .where('created_at', '<', cutoff)
+      .returning('id')
+      .execute();
+    if (expired.length === 0) return 0;
+    await trx
+      .updateTable('material_payments')
+      .set({ status: 'failed' })
+      .where('status', '=', 'pending')
+      .where(
+        'material_order_id',
+        'in',
+        expired.map((row) => row.id),
+      )
+      .execute();
+    return expired.length;
+  });
+}

@@ -6,6 +6,9 @@ export const VIEWPORTS = [
   { name: 'desktop', width: 1280, height: 800 },
 ] as const;
 
+/** Listed in ADMIN_PHONES of the browser-test API server (see playwright.config.ts). */
+export const ADMIN_PHONE = '+998909990000';
+
 export const CARD = { number: '4242 4242 4242 4242', expiry: '12/40', cvc: '123' };
 
 let counter = Math.floor(Math.random() * 1_000_000);

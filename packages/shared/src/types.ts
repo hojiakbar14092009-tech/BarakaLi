@@ -1,6 +1,7 @@
 import type {
   ComplaintStatus,
   FulfillmentType,
+  MaterialOrderStatus,
   OrderType,
   PaymentStatus,
   PriceType,
@@ -167,4 +168,109 @@ export interface EarningsDto {
   monthTotal: number;
   allTimeTotal: number;
   history: { orderId: string; amount: number; commission: number; createdAt: string }[];
+}
+
+export interface MaterialDto {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  discountPercent: number;
+  /** Price a worker pays: `price` after the discount. */
+  unitPrice: number;
+  stock: number;
+  isActive: boolean;
+}
+
+export interface MaterialOrderItemDto {
+  id: string;
+  materialId: string | null;
+  name: string;
+  unitPrice: number;
+  quantity: number;
+}
+
+export interface MaterialOrderDto {
+  id: string;
+  status: MaterialOrderStatus;
+  total: number;
+  items: MaterialOrderItemDto[];
+  createdAt: string;
+}
+
+export interface SavingsGoalDto {
+  targetAmount: number;
+  /** Earnings (after commission) received since the goal was set. */
+  saved: number;
+  createdAt: string;
+}
+
+export interface PublicReviewDto {
+  id: string;
+  rating: number;
+  comment: string | null;
+  authorName: string | null;
+  createdAt: string;
+}
+
+export interface AdminStatsDto {
+  users: number;
+  workers: number;
+  verifiedWorkers: number;
+  pendingWorkers: number;
+  ordersByStatus: Record<string, number>;
+  turnover: number;
+  commission: number;
+  openComplaints: number;
+  hiddenReviews: number;
+}
+
+export interface AdminWorkerDto {
+  id: string;
+  displayName: string;
+  phone: string;
+  categorySlug: string;
+  isVerified: boolean;
+  rating: number;
+  reviewsCount: number;
+  createdAt: string;
+}
+
+export interface AdminOrderDto {
+  id: string;
+  type: OrderType;
+  status: OrderStatus;
+  total: number;
+  commission: number;
+  customerName: string | null;
+  workerName: string;
+  paymentStatus: PaymentStatus | null;
+  createdAt: string;
+}
+
+export interface AdminReviewDto {
+  id: string;
+  orderId: string;
+  workerName: string;
+  authorName: string | null;
+  rating: number;
+  comment: string | null;
+  status: ReviewStatus;
+  createdAt: string;
+}
+
+export interface AdminComplaintDto {
+  id: string;
+  orderId: string;
+  authorName: string | null;
+  authorRole: 'customer' | 'worker';
+  reason: string;
+  status: ComplaintStatus;
+  orderStatus: OrderStatus;
+  paymentStatus: PaymentStatus | null;
+  createdAt: string;
+}
+
+export interface AdminMaterialOrderDto extends MaterialOrderDto {
+  workerName: string;
 }

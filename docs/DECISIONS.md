@@ -95,3 +95,31 @@ Brifdagi noaniqliklar bo'yicha qabul qilingan qarorlar. Yangi qaror oxiriga qo's
 - **Moslashuv tekshiruvi:** `e2e/responsive.spec.ts` 360 / 768 / 1280 px da ommaviy va kirilgan
   sahifalarda gorizontal scroll yoʻqligini va tugma/havolalar kamida 48 px ekanini tekshiradi.
   Tekshiruv sarlavhadagi 1 px chiqib ketishni va kirish sahifasidagi kichik havolani topdi (tuzatildi).
+
+## Admin, materiallar, jamgʻarma, darslar
+
+- **Admin:** `ADMIN_PHONES` dagi raqam har kirishda `admin` rolini oladi; `/api/admin/*` har bir
+  endpointda token rolini tekshiradi (`requireAdmin`), `/admin` sahifasi faqat qulaylik uchun.
+- **Hunarmand tasdigʻi:** admin `is_verified` ni belgilaydi/olib tashlaydi ("Tasdiqlangan" belgisi).
+  Tasdiq buyurtma qabul qilishni **cheklamaydi**: toʻlangan buyurtma tasdiqsiz hunarmandda qolib,
+  24 soatdan keyin avtomatik qaytarilib ketishi mumkin edi. Brifdagi "tasdiqlagach buyurtma qabul
+  qiladi" talabi keyinroq, tasdiqlash jarayoni ishga tushgach yoqiladi.
+- **Sharh moderatsiyasi:** sharh yashirilganda hunarmand reytingi shu sharh baholi olib tashlangandek
+  qayta hisoblanadi (`ratingWithout`, `nextRating` ning teskarisi), `reviews_count` kamayadi; qayta
+  koʻrsatilganda qaytadi. Holat oʻzgarmasa hech narsa oʻzgarmaydi. Hunarmandning dastlabki (seed)
+  reytingi saqlanishi uchun reyting yigʻindidan emas, oʻsish/kamayish usulida yuritiladi.
+- **Shikoyat va qaytarish:** admin shikoyatni `resolved`/`dismissed` qiladi (faqat ochiq bolsa).
+  Qoʻlda qaytarish faqat toʻlangan va `new/accepted/in_progress/ready` holatdagi buyurtmaga:
+  provayder orqali qaytarish, zaxirani tiklash va holat `refunded` bitta tranzaksiyada. Shu bois
+  oʻtishlar jadvalida `accepted/in_progress/ready → refunded` bor, lekin hunarmandning `reject`
+  amali faqat `new` holatda ishlaydi (serverda tekshiriladi).
+- **Materiallar:** katalogni admin boshqaradi; faqat hunarmandlar koʻradi va sotib oladi
+  (`material_orders`, `material_order_items`, alohida `material_payments`: mahsulot toʻlovlari
+  kodiga tegmaslik uchun). Narx va chegirma serverda hisoblanadi, komissiya olinmaydi, zaxira
+  toʻlovda `UPDATE … WHERE stock >= qty` bilan kamayadi, toʻlanmagani 15 daqiqada bekor qilinadi.
+  Topshirishni admin belgilaydi.
+- **Jamgʻarma:** haqiqiy bank emas. Maqsad (`savings_goals`, har hunarmandga bitta); progress =
+  maqsad qoʻyilgandan beri tushgan daromad (komissiya ayirilgan). Maqsad summasini oʻzgartirish
+  boshlangʻich sanani saqlaydi; olib tashlab qayta qoʻyish progressni nolga tushiradi.
+- **Darslar:** `/darslar` kontenti `lessons.json` (uz/ru) dan, 4 dars; keyin CMS bilan almashtiriladi.
+- **Hunarmand sharhlari:** profilda faqat `visible` sharhlar, muallifning ismining birinchi soʻzi bilan.

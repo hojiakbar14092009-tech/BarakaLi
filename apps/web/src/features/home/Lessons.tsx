@@ -1,5 +1,7 @@
 import { BookOpen } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
+import { buttonClasses } from '../../components/Button';
 
 const LESSONS = ['income', 'pricing', 'clients'] as const;
 
@@ -19,6 +21,9 @@ export function Lessons() {
           </li>
         ))}
       </ul>
+      <Link to="/darslar" className={buttonClasses('secondary', 'md')}>
+        {t('home.lessonsAll')}
+      </Link>
     </section>
   );
 }

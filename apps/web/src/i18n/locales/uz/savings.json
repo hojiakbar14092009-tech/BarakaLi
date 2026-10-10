@@ -1,0 +1,10 @@
+{
+  "title": "Jamgʻarma maqsadi",
+  "intro": "Oʻzingizga maqsad belgilang: masalan, tikuv mashinasi uchun. Daromadingiz maqsad sari qanchaga yaqinlashganini shu yerda koʻrasiz.",
+  "targetLabel": "Maqsad summasi (soʻm)",
+  "progress": "{{saved}} / {{target}}",
+  "percent": "Maqsadning {{percent}}% ga yetdingiz",
+  "reached": "Maqsadga erishdingiz!",
+  "change": "Maqsadni oʻzgartirish",
+  "remove": "Maqsadni olib tashlash"
+}

@@ -75,8 +75,8 @@ export default function CabinetPage() {
         >
           {t('cabinet.calendarText')}
         </Card>
-        <Card title={t('cabinet.materials')} icon={<Wheat className="size-6" />}>
-          {t('cabinet.materialsText')} {t('cabinet.soon')}
+        <Card title={t('cabinet.materials')} icon={<Wheat className="size-6" />} to="/materiallar">
+          {t('cabinet.materialsText')}
         </Card>
       </div>
     </div>

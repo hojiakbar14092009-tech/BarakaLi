@@ -1,0 +1,85 @@
+{
+  "title": "Boshqaruv paneli",
+  "sections": "Boʻlimlar",
+  "filter": "Filtr",
+  "tabs": {
+    "stats": "Statistika",
+    "workers": "Hunarmandlar",
+    "orders": "Buyurtmalar",
+    "reviews": "Sharhlar",
+    "complaints": "Shikoyatlar",
+    "materials": "Materiallar"
+  },
+  "stats": {
+    "users": "Foydalanuvchilar",
+    "workers": "Hunarmandlar",
+    "verified": "Tasdiqlangan",
+    "pending": "Tasdiq kutmoqda",
+    "turnover": "Aylanma",
+    "commission": "Komissiya (5%)",
+    "complaints": "Ochiq shikoyatlar",
+    "hidden": "Yashirilgan sharhlar",
+    "byStatus": "Buyurtmalar holati boʻyicha"
+  },
+  "workers": {
+    "filter": {
+      "pending": "Tasdiq kutayotgan",
+      "verified": "Tasdiqlangan",
+      "all": "Barchasi"
+    },
+    "empty": "Bu boʻlimda hunarmand yoʻq.",
+    "verify": "Tasdiqlash",
+    "unverify": "Tasdiqni olish"
+  },
+  "orders": {
+    "status": "Holat",
+    "empty": "Buyurtmalar topilmadi.",
+    "type": {
+      "service": "Xizmat",
+      "product": "Mahsulot"
+    }
+  },
+  "reviews": {
+    "empty": "Sharhlar hozircha yoʻq.",
+    "status": {
+      "visible": "Koʻrinadi",
+      "hidden": "Yashirilgan"
+    },
+    "hide": "Yashirish",
+    "show": "Qayta koʻrsatish"
+  },
+  "complaints": {
+    "filter": {
+      "open": "Ochiq",
+      "all": "Barchasi"
+    },
+    "empty": "Shikoyatlar yoʻq.",
+    "role": {
+      "customer": "Buyurtmachi",
+      "worker": "Hunarmand"
+    },
+    "status": {
+      "open": "Ochiq",
+      "resolved": "Hal qilingan",
+      "dismissed": "Rad etilgan"
+    },
+    "resolve": "Hal qilindi",
+    "dismiss": "Rad etish",
+    "refund": "Pulni qaytarish"
+  },
+  "materials": {
+    "catalog": "Materiallar katalogi",
+    "add": "Material qoʻshish",
+    "name": "Nomi",
+    "description": "Tavsif",
+    "price": "Narx (soʻm)",
+    "discount": "Chegirma, % (0–{{max}})",
+    "stock": "Zaxira",
+    "active": "Hunarmandlarga koʻrsatilsin",
+    "hidden": "yashirin",
+    "stockLine": "zaxira: {{count}}",
+    "orders": "Hunarmandlarning buyurtmalari",
+    "noOrders": "Hozircha buyurtma yoʻq.",
+    "deliver": "Topshirildi"
+  }
+}

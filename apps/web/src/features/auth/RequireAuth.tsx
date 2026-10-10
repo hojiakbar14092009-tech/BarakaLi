@@ -3,7 +3,7 @@ import { LoadingState } from '../../components/StateViews';
 import { useAuthStore } from '../../stores/auth';
 
 interface RequireAuthProps {
-  role?: 'worker';
+  role?: 'worker' | 'admin';
 }
 
 /** Convenience guard only: every endpoint enforces access on the server as well. */
@@ -20,5 +20,6 @@ export function RequireAuth({ role }: RequireAuthProps) {
   if (role === 'worker' && !user.workerId) {
     return <Navigate to="/royxatdan-otish?rol=hunarmand" replace />;
   }
+  if (role === 'admin' && user.role !== 'admin') return <Navigate to="/" replace />;
   return <Outlet />;
 }

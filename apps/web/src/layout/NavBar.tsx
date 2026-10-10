@@ -2,6 +2,7 @@ import {
   CalendarDays,
   Home,
   Receipt,
+  ShieldCheck,
   Store,
   UserRound,
   Wallet,
@@ -23,6 +24,9 @@ function useNavItems(): NavItem[] {
   if (!user) return [];
   const orders: NavItem = { to: '/buyurtmalar', labelKey: 'nav.orders', icon: Receipt };
   const profile: NavItem = { to: '/profil', labelKey: 'nav.profile', icon: UserRound };
+  if (user.role === 'admin') {
+    return [{ to: '/admin', labelKey: 'nav.admin', icon: ShieldCheck }, profile];
+  }
   if (user.workerId) {
     return [
       { to: '/hunarmand/panel', labelKey: 'nav.cabinet', icon: Store },

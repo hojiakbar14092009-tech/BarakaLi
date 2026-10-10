@@ -176,6 +176,54 @@ export interface OrderImagesTable {
   position: Generated<number>;
 }
 
+export interface MaterialsTable {
+  id: Generated<string>;
+  name: string;
+  description: Generated<string>;
+  price: number;
+  discount_percent: Generated<number>;
+  stock: Generated<number>;
+  is_active: Generated<boolean>;
+  created_at: CreatedAt;
+}
+
+export interface MaterialOrdersTable {
+  id: Generated<string>;
+  worker_id: string;
+  status: Generated<'awaiting_payment' | 'paid' | 'delivered' | 'cancelled'>;
+  total: number;
+  created_at: CreatedAt;
+  updated_at: Timestamp;
+}
+
+export interface MaterialOrderItemsTable {
+  id: Generated<string>;
+  material_order_id: string;
+  material_id: string | null;
+  name_snapshot: string;
+  unit_price: number;
+  quantity: number;
+}
+
+export interface MaterialPaymentsTable {
+  id: Generated<string>;
+  material_order_id: string;
+  amount: number;
+  status: Generated<'pending' | 'paid' | 'refunded' | 'failed'>;
+  provider: string;
+  provider_ref: string | null;
+  idempotency_key: string;
+  created_at: CreatedAt;
+}
+
+export interface SavingsGoalsTable {
+  id: Generated<string>;
+  worker_id: string;
+  target_amount: number;
+  created_at: CreatedAt;
+  updated_at: Timestamp;
+}
+
 export interface Database {
   categories: CategoriesTable;
   users: UsersTable;
@@ -194,4 +242,9 @@ export interface Database {
   files: FilesTable;
   availability: AvailabilityTable;
   order_images: OrderImagesTable;
+  materials: MaterialsTable;
+  material_orders: MaterialOrdersTable;
+  material_order_items: MaterialOrderItemsTable;
+  material_payments: MaterialPaymentsTable;
+  savings_goals: SavingsGoalsTable;
 }

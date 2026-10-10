@@ -257,6 +257,54 @@ async function seedProduct(
   }
 }
 
+const MATERIALS = [
+  {
+    name: 'Paxta ip (10 g oʻrama)',
+    description: 'Kashta va toʻqish uchun, 40 xil rang.',
+    price: 6_000,
+    discountPercent: 15,
+    stock: 400,
+  },
+  {
+    name: 'Atlas mato (1 metr)',
+    description: 'Milliy libos uchun, kengligi 140 sm.',
+    price: 45_000,
+    discountPercent: 10,
+    stock: 120,
+  },
+  {
+    name: 'Yuqori navli un (5 kg)',
+    description: 'Pishiriq va non uchun.',
+    price: 38_000,
+    discountPercent: 12,
+    stock: 200,
+  },
+  {
+    name: 'Tikuv ignalari toʻplami',
+    description: 'Turli oʻlchamdagi 30 ta igna.',
+    price: 9_000,
+    discountPercent: 0,
+    stock: 300,
+  },
+] as const;
+
+async function seedMaterials(db: Db): Promise<void> {
+  const existing = await db.selectFrom('materials').select('id').limit(1).executeTakeFirst();
+  if (existing) return;
+  await db
+    .insertInto('materials')
+    .values(
+      MATERIALS.map((m) => ({
+        name: m.name,
+        description: m.description,
+        price: m.price,
+        discount_percent: m.discountPercent,
+        stock: m.stock,
+      })),
+    )
+    .execute();
+}
+
 /** Adds sample marketplace content once; returns how many workers were created. */
 export async function seedSampleData(db: Db): Promise<number> {
   const storage = new DbStorageProvider(db);
@@ -272,5 +320,6 @@ export async function seedSampleData(db: Db): Promise<number> {
     await seedWorker(db, storage, seed, categories);
     created += 1;
   }
+  await seedMaterials(db);
   return created;
 }

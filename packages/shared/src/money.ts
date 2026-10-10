@@ -44,3 +44,8 @@ export function resolveLinePrice(product: PricedProduct, quantity: number): Line
 export function formatSom(amount: number): string {
   return String(Math.round(amount)).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
 }
+
+/** Price after a percentage discount, rounded to a whole som and never below 1 som. */
+export function discountedPrice(price: number, discountPercent: number): number {
+  return Math.max(1, Math.round((price * (100 - discountPercent)) / 100));
+}

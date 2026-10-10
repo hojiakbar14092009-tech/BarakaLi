@@ -91,3 +91,15 @@ export const QUICK_SLOTS = {
   evening: { start: 17, end: 21 },
 } as const;
 export type QuickSlot = keyof typeof QUICK_SLOTS;
+
+export const MATERIAL_ORDER_STATUSES = [
+  'awaiting_payment',
+  'paid',
+  'delivered',
+  'cancelled',
+] as const;
+export type MaterialOrderStatus = (typeof MATERIAL_ORDER_STATUSES)[number];
+export const MAX_DISCOUNT_PERCENT = 90;
+export const MAX_MATERIAL_NAME_LENGTH = 120;
+export const ADMIN_PAGE_SIZE = 20;
+export const REVIEWS_PAGE_SIZE = 10;

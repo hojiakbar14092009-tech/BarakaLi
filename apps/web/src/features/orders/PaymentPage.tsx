@@ -1,33 +1,15 @@
-import { zodResolver } from '@hookform/resolvers/zod';
 import { CheckCircle2 } from 'lucide-react';
 import { useEffect, useRef } from 'react';
-import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { Link, useParams } from 'react-router-dom';
-import type { z } from 'zod';
-import { cardPaymentSchema } from '@barakali/shared';
-import { Button, buttonClasses } from '../../components/Button';
-import { Field } from '../../components/Field';
+import { buttonClasses } from '../../components/Button';
+import { CardForm } from '../../components/CardForm';
 import { ErrorState, LoadingState } from '../../components/StateViews';
 import { ApiError } from '../../lib/api';
-import { errorMessage, validationMessage } from '../../lib/errors';
+import { errorMessage } from '../../lib/errors';
 import { formatPrice } from '../../lib/format';
 import { useConfirmPayment, useOrder, useOrders, useStartPayment } from './api';
 import { shortId } from './OrdersPage';
-
-type CardForm = z.input<typeof cardPaymentSchema>;
-
-function formatCardNumber(value: string): string {
-  return value
-    .replace(/\D/g, '')
-    .slice(0, 16)
-    .replace(/(\d{4})(?=\d)/g, '$1 ');
-}
-
-function formatExpiry(value: string): string {
-  const digits = value.replace(/\D/g, '').slice(0, 4);
-  return digits.length > 2 ? `${digits.slice(0, 2)}/${digits.slice(2)}` : digits;
-}
 
 export default function PaymentPage() {
   const { t } = useTranslation();
@@ -37,13 +19,6 @@ export default function PaymentPage() {
   const confirm = useConfirmPayment(orderId);
   const unpaid = useOrders('customer');
   const started = useRef(false);
-
-  const {
-    register,
-    handleSubmit,
-    setValue,
-    formState: { errors },
-  } = useForm<CardForm>({ resolver: zodResolver(cardPaymentSchema) });
 
   const awaiting = order.data?.status === 'awaiting_payment';
   useEffect(() => {
@@ -114,60 +89,13 @@ export default function PaymentPage() {
         </ul>
       </div>
 
-      <form
-        onSubmit={handleSubmit((values) => confirm.mutate(cardPaymentSchema.parse(values)))}
-        className="space-y-4"
-        noValidate
-      >
-        <Field
-          label={t('payment.cardNumber')}
-          inputMode="numeric"
-          autoComplete="cc-number"
-          placeholder="0000 0000 0000 0000"
-          error={validationMessage(errors.cardNumber?.message, t)}
-          {...register('cardNumber', {
-            onChange: (event) => setValue('cardNumber', formatCardNumber(event.target.value)),
-          })}
-        />
-        <div className="grid grid-cols-2 gap-3">
-          <Field
-            label={t('payment.expiry')}
-            inputMode="numeric"
-            autoComplete="cc-exp"
-            placeholder={t('payment.expiryPlaceholder')}
-            error={validationMessage(errors.expiry?.message, t)}
-            {...register('expiry', {
-              onChange: (event) => setValue('expiry', formatExpiry(event.target.value)),
-            })}
-          />
-          <Field
-            label={t('payment.cvc')}
-            inputMode="numeric"
-            autoComplete="cc-csc"
-            maxLength={3}
-            type="password"
-            error={validationMessage(errors.cvc?.message, t)}
-            {...register('cvc')}
-          />
-        </div>
-        {failure && (
-          <p role="alert" className="font-medium">
-            {errorMessage(failure, t)}
-          </p>
-        )}
-        <Button
-          type="submit"
-          size="lg"
-          className="w-full"
-          disabled={confirm.isPending || start.isPending || !start.data}
-        >
-          {confirm.isPending
-            ? t('payment.paying')
-            : t('payment.pay', { amount: formatPrice(data.total, currency) })}
-        </Button>
-        <p className="text-sm text-mocha">{t('payment.secure')}</p>
-        <p className="text-sm text-mocha">{t('payment.ledgerNote')}</p>
-      </form>
+      <CardForm
+        submitLabel={t('payment.pay', { amount: formatPrice(data.total, currency) })}
+        pending={confirm.isPending}
+        disabled={start.isPending || !start.data}
+        error={failure ? errorMessage(failure, t) : null}
+        onSubmit={(card) => confirm.mutate(card)}
+      />
     </section>
   );
 }

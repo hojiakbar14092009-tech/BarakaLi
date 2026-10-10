@@ -37,5 +37,9 @@
   "AVAILABILITY_OVERLAP": "Bu vaqt oraligʻi allaqachon belgilangan.",
   "AVAILABILITY_INVALID": "Vaqt oraligʻi notoʻgʻri: kelajakdagi vaqtni va 16 soatgacha boʻlgan oraliqni tanlang.",
   "OWN_SERVICE": "Oʻzingizning xizmatingizga buyurtma bera olmaysiz.",
-  "ORDER_IMAGE_INVALID": "Rasmlardan biri topilmadi. Rasmni qayta yuklang."
+  "ORDER_IMAGE_INVALID": "Rasmlardan biri topilmadi. Rasmni qayta yuklang.",
+  "MATERIAL_UNAVAILABLE": "Bu material hozir mavjud emas.",
+  "MATERIAL_ORDER_NOT_PAYABLE": "Bu buyurtmani toʻlab boʻlmaydi.",
+  "ORDER_NOT_REFUNDABLE": "Bu buyurtma uchun pulni qaytarib boʻlmaydi.",
+  "COMPLAINT_NOT_OPEN": "Bu shikoyat allaqachon koʻrib chiqilgan."
 }

@@ -2,7 +2,11 @@ import type { RequestHandler } from 'express';
 import type { AppContext } from '../../context.js';
 import { InProcessJobQueue, type JobQueue } from '../../infra/queue.js';
 import { logger } from '../../logger.js';
-import { expireUnpaidOrders, refundUnacceptedOrders } from './order-expiry.js';
+import {
+  expireUnpaidMaterialOrders,
+  expireUnpaidOrders,
+  refundUnacceptedOrders,
+} from './order-expiry.js';
 
 const SWEEP_INTERVAL_MS = 60 * 1000;
 
@@ -15,7 +19,8 @@ export async function runMaintenance(
   ctx: AppContext,
   now = new Date(),
 ): Promise<MaintenanceResult> {
-  const cancelled = await expireUnpaidOrders(ctx.db, now);
+  const cancelled =
+    (await expireUnpaidOrders(ctx.db, now)) + (await expireUnpaidMaterialOrders(ctx.db, now));
   const refunded = await refundUnacceptedOrders(ctx, now);
   if (cancelled > 0 || refunded > 0) logger.info('Maintenance finished', { cancelled, refunded });
   return { cancelled, refunded };

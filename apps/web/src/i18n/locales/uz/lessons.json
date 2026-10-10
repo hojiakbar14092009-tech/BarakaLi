@@ -1,0 +1,38 @@
+{
+  "title": "Darslar",
+  "intro": "Daromadni hisoblash va ish yuritish boʻyicha qisqa, amaliy darslar.",
+  "items": {
+    "income": {
+      "title": "Daromadni hisoblash",
+      "summary": "Qancha ishlab topganingizni bilish ish haqini toʻgʻri belgilashning birinchi qadami.",
+      "p1": "Har bir buyurtma uchun material, vaqt va yoʻl xarajatini yozib boring.",
+      "p2": "Oy oxirida jami tushum va jami xarajatni solishtiring, farqi sizning foydangiz.",
+      "p3": "Platforma komissiyasi (5%) tushumdan ayirilgan holda koʻrinadi: foydani shu summadan hisoblang.",
+      "p4": "Foydaning bir qismini keyingi oyning materiallariga ajrating."
+    },
+    "pricing": {
+      "title": "Narxni toʻgʻri belgilash",
+      "summary": "Narx ishingizning haqiqiy qiymatini va vaqtingizni qoplashi kerak.",
+      "p1": "Material xarajatini hisoblang va ish soatini qoʻshing.",
+      "p2": "Soatlik narxni ishonch bilan belgilang: u kalendar orqali keladigan buyurtmalarni ham belgilaydi.",
+      "p3": "Koʻp olinadigan mahsulotlarga ulgurji narx qoʻying: haridor koʻproq oladi, siz esa bir martalik mehnat bilan koʻproq sotasiz.",
+      "p4": "Narxni har chorakda qayta koʻrib chiqing."
+    },
+    "clients": {
+      "title": "Birinchi mijozlar",
+      "summary": "Ishonch birinchi buyurtmadan boshlanadi.",
+      "p1": "Profilingizga aniq, yorugʻ rasmlar qoʻying.",
+      "p2": "Buyurtmani tez qabul qiling: 24 soat ichida javob bermasangiz, pul qaytariladi.",
+      "p3": "Ishni vaqtida topshiring va haridordan baho soʻrang: sharhlar reytingni oshiradi.",
+      "p4": "Savol tugʻilsa, telefon orqali aniqlashtiring: raqam buyurtma qabul qilingach ochiladi."
+    },
+    "saving": {
+      "title": "Jamgʻarma qilish",
+      "summary": "Kichik doimiy jamgʻarma katta maqsadga olib boradi.",
+      "p1": "Daromad sahifasida maqsad summasini belgilang.",
+      "p2": "Har oy daromadning bir qismini (masalan, 10%) alohida qoldiring.",
+      "p3": "Maqsadga yaqinlashishni jamgʻarma chizigʻidan kuzating.",
+      "p4": "Maqsadga erishgach yangisini belgilang: uskuna, kurs yoki zaxira."
+    }
+  }
+}

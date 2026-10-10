@@ -34,6 +34,7 @@ export default defineConfig({
         PORT: String(API_PORT),
         ALLOWED_ORIGINS: baseURL,
         EXPOSE_SMS_CODE: 'true',
+        ADMIN_PHONES: '+998909990000',
         SEED_SAMPLE_DATA: 'true',
         PGLITE_DATA_DIR: 'memory',
       },

@@ -9,6 +9,7 @@ import { errorMessage } from '../../lib/errors';
 import { Pagination } from '../catalog/Pagination';
 import { ProductCard } from '../catalog/ProductCard';
 import { useProducts, useWorker } from '../catalog/api';
+import { WorkerReviews } from './WorkerReviews';
 
 export default function WorkerPage() {
   const { t } = useTranslation();
@@ -94,6 +95,8 @@ export default function WorkerPage() {
           </>
         )}
       </section>
+
+      <WorkerReviews workerId={data.id} />
     </div>
   );
 }

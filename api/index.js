@@ -21472,11 +21472,11 @@ var require_router = __commonJS({
     var slice = Array.prototype.slice;
     var flatten = Array.prototype.flat;
     var methods = METHODS.map((method) => method.toLowerCase());
-    module2.exports = Router8;
+    module2.exports = Router11;
     module2.exports.Route = Route;
-    function Router8(options) {
-      if (!(this instanceof Router8)) {
-        return new Router8(options);
+    function Router11(options) {
+      if (!(this instanceof Router11)) {
+        return new Router11(options);
       }
       const opts = options || {};
       function router(req, res, next) {
@@ -21490,9 +21490,9 @@ var require_router = __commonJS({
       router.stack = [];
       return router;
     }
-    Router8.prototype = function() {
+    Router11.prototype = function() {
     };
-    Router8.prototype.param = function param(name, fn) {
+    Router11.prototype.param = function param(name, fn) {
       if (!name) {
         throw new TypeError("argument name is required");
       }
@@ -21512,7 +21512,7 @@ var require_router = __commonJS({
       params.push(fn);
       return this;
     };
-    Router8.prototype.handle = function handle(req, res, callback) {
+    Router11.prototype.handle = function handle(req, res, callback) {
       if (!callback) {
         throw new TypeError("argument callback is required");
       }
@@ -21639,7 +21639,7 @@ var require_router = __commonJS({
         }
       }
     };
-    Router8.prototype.use = function use(handler) {
+    Router11.prototype.use = function use(handler) {
       let offset = 0;
       let path = "/";
       if (typeof handler !== "function") {
@@ -21672,7 +21672,7 @@ var require_router = __commonJS({
       }
       return this;
     };
-    Router8.prototype.route = function route(path) {
+    Router11.prototype.route = function route(path) {
       const route2 = new Route(path);
       const layer = new Layer(path, {
         sensitive: this.caseSensitive,
@@ -21687,7 +21687,7 @@ var require_router = __commonJS({
       return route2;
     };
     methods.concat("all").forEach(function(method) {
-      Router8.prototype[method] = function(path) {
+      Router11.prototype[method] = function(path) {
         const route = this.route(path);
         route[method].apply(route, slice.call(arguments, 1));
         return this;
@@ -21870,7 +21870,7 @@ var require_application = __commonJS({
     var compileTrust = require_utils3().compileTrust;
     var resolve = require("node:path").resolve;
     var once = require_once();
-    var Router8 = require_router();
+    var Router11 = require_router();
     var slice = Array.prototype.slice;
     var flatten = Array.prototype.flat;
     var app = exports2 = module2.exports = {};
@@ -21886,7 +21886,7 @@ var require_application = __commonJS({
         enumerable: true,
         get: function getrouter() {
           if (router === null) {
-            router = new Router8({
+            router = new Router11({
               caseSensitive: this.enabled("case sensitive routing"),
               strict: this.enabled("strict routing")
             });
@@ -24240,7 +24240,7 @@ var require_express = __commonJS({
     var EventEmitter = require("node:events").EventEmitter;
     var mixin = require_merge_descriptors();
     var proto = require_application();
-    var Router8 = require_router();
+    var Router11 = require_router();
     var req = require_request();
     var res = require_response();
     exports2 = module2.exports = createApplication;
@@ -24262,8 +24262,8 @@ var require_express = __commonJS({
     exports2.application = proto;
     exports2.request = req;
     exports2.response = res;
-    exports2.Route = Router8.Route;
-    exports2.Router = Router8;
+    exports2.Route = Router11.Route;
+    exports2.Router = Router11;
     exports2.json = bodyParser.json;
     exports2.raw = bodyParser.raw;
     exports2.static = require_serve_static();
@@ -66683,12 +66683,12 @@ __export(vercel_exports, {
 module.exports = __toCommonJS(vercel_exports);
 
 // embedded-migrations:migrations
-var migrations_default = [{ "name": "1760000000000_core.sql", "up": "CREATE EXTENSION IF NOT EXISTS pg_trgm;\n\nCREATE TABLE categories (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  slug text NOT NULL UNIQUE,\n  name_uz text NOT NULL,\n  name_ru text NOT NULL,\n  position integer NOT NULL DEFAULT 0\n);\n\nINSERT INTO categories (slug, name_uz, name_ru, position) VALUES\n  ('tikuvchilik', 'Tikuvchilik', '\u0428\u0438\u0442\u044C\u0451', 1),\n  ('pishiriq', 'Pishiriq', '\u0412\u044B\u043F\u0435\u0447\u043A\u0430', 2),\n  ('qol-mehnati', 'Qo''l mehnati', '\u0420\u0443\u043A\u043E\u0434\u0435\u043B\u0438\u0435', 3),\n  ('dizayn', 'Dizayn', '\u0414\u0438\u0437\u0430\u0439\u043D', 4),\n  ('masofaviy-ishlar', 'Masofaviy ishlar', '\u0423\u0434\u0430\u043B\u0451\u043D\u043D\u0430\u044F \u0440\u0430\u0431\u043E\u0442\u0430', 5);\n\nCREATE TABLE users (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  phone text NOT NULL UNIQUE,\n  name text,\n  role text NOT NULL DEFAULT 'customer' CHECK (role IN ('customer', 'worker', 'admin')),\n  language text NOT NULL DEFAULT 'uz' CHECK (language IN ('uz', 'ru')),\n  created_at timestamptz NOT NULL DEFAULT now()\n);\n\nCREATE TABLE workers (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  user_id uuid NOT NULL UNIQUE REFERENCES users (id) ON DELETE CASCADE,\n  category_id uuid NOT NULL REFERENCES categories (id),\n  display_name text NOT NULL,\n  bio text,\n  avatar_url text,\n  rating numeric(3, 2) NOT NULL DEFAULT 0,\n  reviews_count integer NOT NULL DEFAULT 0,\n  is_verified boolean NOT NULL DEFAULT false,\n  created_at timestamptz NOT NULL DEFAULT now()\n);\nCREATE INDEX workers_category_idx ON workers (category_id);\n\nCREATE TABLE products (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  worker_id uuid NOT NULL REFERENCES workers (id) ON DELETE CASCADE,\n  category_id uuid NOT NULL REFERENCES categories (id),\n  title text NOT NULL,\n  description text NOT NULL DEFAULT '',\n  retail_price bigint NOT NULL CHECK (retail_price > 0),\n  wholesale_price bigint CHECK (wholesale_price IS NULL OR wholesale_price > 0),\n  wholesale_min_qty integer CHECK (wholesale_min_qty IS NULL OR wholesale_min_qty >= 2),\n  stock integer NOT NULL DEFAULT 0 CHECK (stock >= 0),\n  status text NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'published', 'hidden')),\n  created_at timestamptz NOT NULL DEFAULT now(),\n  updated_at timestamptz NOT NULL DEFAULT now(),\n  CONSTRAINT products_wholesale_pair CHECK (\n    (wholesale_price IS NULL) = (wholesale_min_qty IS NULL)\n  ),\n  CONSTRAINT products_wholesale_lower CHECK (\n    wholesale_price IS NULL OR wholesale_price < retail_price\n  )\n);\nCREATE INDEX products_worker_status_idx ON products (worker_id, status);\nCREATE INDEX products_category_status_idx ON products (category_id, status);\n-- Uzbek apostrophe variants (' \u02BB \u02BC \u2019 \u2018 `) collapse to one form for search.\nCREATE FUNCTION uz_normalize(value text) RETURNS text\n  LANGUAGE sql IMMUTABLE PARALLEL SAFE\n  AS $$ SELECT lower(translate(value, '''\u02BB\u02BC\u2019\u2018`', '')) $$;\nCREATE INDEX products_title_trgm_idx ON products USING gin (uz_normalize(title) gin_trgm_ops);\n\nCREATE TABLE product_images (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  product_id uuid NOT NULL REFERENCES products (id) ON DELETE CASCADE,\n  url text NOT NULL,\n  position integer NOT NULL DEFAULT 0\n);\nCREATE INDEX product_images_product_idx ON product_images (product_id, position);\n\nCREATE TABLE product_models (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  product_id uuid NOT NULL UNIQUE REFERENCES products (id) ON DELETE CASCADE,\n  file_url text NOT NULL,\n  file_size integer NOT NULL,\n  poster_url text,\n  created_at timestamptz NOT NULL DEFAULT now()\n);\n\nCREATE TABLE orders (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  type text NOT NULL CHECK (type IN ('service', 'product')),\n  customer_id uuid NOT NULL REFERENCES users (id),\n  worker_id uuid NOT NULL REFERENCES workers (id),\n  status text NOT NULL DEFAULT 'awaiting_payment' CHECK (\n    status IN ('awaiting_payment', 'new', 'accepted', 'in_progress', 'ready', 'delivered', 'cancelled', 'refunded')\n  ),\n  total bigint NOT NULL CHECK (total >= 0),\n  commission bigint NOT NULL CHECK (commission >= 0),\n  worker_amount bigint NOT NULL CHECK (worker_amount >= 0),\n  fulfillment text NOT NULL DEFAULT 'pickup' CHECK (fulfillment IN ('pickup', 'delivery')),\n  delivery_address text,\n  start_time timestamptz,\n  end_time timestamptz,\n  created_at timestamptz NOT NULL DEFAULT now(),\n  updated_at timestamptz NOT NULL DEFAULT now()\n);\nCREATE INDEX orders_type_idx ON orders (type);\nCREATE INDEX orders_customer_idx ON orders (customer_id, created_at DESC);\nCREATE INDEX orders_worker_status_idx ON orders (worker_id, status);\n\nCREATE TABLE order_items (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  order_id uuid NOT NULL REFERENCES orders (id) ON DELETE CASCADE,\n  product_id uuid REFERENCES products (id) ON DELETE SET NULL,\n  title_snapshot text NOT NULL,\n  unit_price bigint NOT NULL CHECK (unit_price > 0),\n  quantity integer NOT NULL CHECK (quantity > 0),\n  price_type text NOT NULL CHECK (price_type IN ('retail', 'wholesale'))\n);\nCREATE INDEX order_items_order_idx ON order_items (order_id);\n\nCREATE TABLE payments (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  order_id uuid NOT NULL REFERENCES orders (id) ON DELETE CASCADE,\n  amount bigint NOT NULL CHECK (amount >= 0),\n  status text NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'paid', 'refunded', 'failed')),\n  provider text NOT NULL,\n  provider_ref text,\n  idempotency_key text NOT NULL UNIQUE,\n  created_at timestamptz NOT NULL DEFAULT now()\n);\nCREATE INDEX payments_order_idx ON payments (order_id);\n\nCREATE TABLE earnings (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  order_id uuid NOT NULL UNIQUE REFERENCES orders (id) ON DELETE CASCADE,\n  worker_id uuid NOT NULL REFERENCES workers (id),\n  amount bigint NOT NULL CHECK (amount >= 0),\n  commission bigint NOT NULL CHECK (commission >= 0),\n  created_at timestamptz NOT NULL DEFAULT now()\n);\nCREATE INDEX earnings_worker_idx ON earnings (worker_id, created_at DESC);\n\nCREATE TABLE sms_codes (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  phone text NOT NULL,\n  code_hash text NOT NULL,\n  expires_at timestamptz NOT NULL,\n  attempts integer NOT NULL DEFAULT 0,\n  consumed_at timestamptz,\n  created_at timestamptz NOT NULL DEFAULT now()\n);\nCREATE INDEX sms_codes_phone_idx ON sms_codes (phone, created_at DESC);\n\nCREATE TABLE refresh_tokens (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  user_id uuid NOT NULL REFERENCES users (id) ON DELETE CASCADE,\n  token_hash text NOT NULL UNIQUE,\n  expires_at timestamptz NOT NULL,\n  revoked_at timestamptz,\n  created_at timestamptz NOT NULL DEFAULT now()\n);\nCREATE INDEX refresh_tokens_user_idx ON refresh_tokens (user_id);\n\nCREATE TABLE files (\n  name text PRIMARY KEY,\n  content_type text NOT NULL,\n  size integer NOT NULL,\n  data bytea NOT NULL,\n  created_at timestamptz NOT NULL DEFAULT now()\n);" }, { "name": "1760000100000_reviews_complaints.sql", "up": "CREATE TABLE reviews (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  -- One review per order: the unique key is what stops a second review at the database level.\n  order_id uuid NOT NULL UNIQUE REFERENCES orders (id) ON DELETE CASCADE,\n  customer_id uuid NOT NULL REFERENCES users (id),\n  worker_id uuid NOT NULL REFERENCES workers (id),\n  rating smallint NOT NULL CHECK (rating BETWEEN 1 AND 5),\n  comment text CHECK (comment IS NULL OR char_length(comment) <= 1000),\n  status text NOT NULL DEFAULT 'visible' CHECK (status IN ('visible', 'hidden')),\n  created_at timestamptz NOT NULL DEFAULT now()\n);\nCREATE INDEX reviews_worker_idx ON reviews (worker_id, created_at DESC);\n\nCREATE TABLE complaints (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  order_id uuid NOT NULL REFERENCES orders (id) ON DELETE CASCADE,\n  user_id uuid NOT NULL REFERENCES users (id),\n  reason text NOT NULL CHECK (char_length(reason) BETWEEN 5 AND 1000),\n  status text NOT NULL DEFAULT 'open' CHECK (status IN ('open', 'resolved', 'dismissed')),\n  created_at timestamptz NOT NULL DEFAULT now()\n);\nCREATE INDEX complaints_order_idx ON complaints (order_id);\n-- A user can have only one open complaint per order; they can file again after it is closed.\nCREATE UNIQUE INDEX complaints_one_open_per_user_idx\n  ON complaints (order_id, user_id) WHERE status = 'open';" }, { "name": "1760000200000_calendar.sql", "up": "CREATE EXTENSION IF NOT EXISTS btree_gist;\n\nALTER TABLE workers\n  ADD COLUMN hourly_rate bigint CHECK (hourly_rate IS NULL OR hourly_rate > 0);\n\n-- Free windows a worker publishes. The exclusion constraint keeps one worker's windows from overlapping.\nCREATE TABLE availability (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  worker_id uuid NOT NULL REFERENCES workers (id) ON DELETE CASCADE,\n  start_time timestamptz NOT NULL,\n  end_time timestamptz NOT NULL,\n  created_at timestamptz NOT NULL DEFAULT now(),\n  CONSTRAINT availability_range_valid CHECK (end_time > start_time),\n  CONSTRAINT availability_no_overlap\n    EXCLUDE USING gist (worker_id WITH =, tstzrange(start_time, end_time) WITH &&)\n);\nCREATE INDEX availability_worker_idx ON availability (worker_id, start_time);\n\nALTER TABLE orders\n  ADD COLUMN description text,\n  ADD COLUMN deadline date,\n  ADD CONSTRAINT orders_service_has_slot CHECK (\n    type = 'product' OR (start_time IS NOT NULL AND end_time IS NOT NULL AND end_time > start_time)\n  ),\n  -- Slot clash is decided by the database, not by a check-then-insert in application code.\n  -- A slot is held from the moment the order is created (even unpaid) until it leaves these states.\n  ADD CONSTRAINT orders_slot_no_overlap\n    EXCLUDE USING gist (worker_id WITH =, tstzrange(start_time, end_time) WITH &&)\n    WHERE (start_time IS NOT NULL AND status IN ('awaiting_payment', 'new', 'accepted', 'in_progress'));\nCREATE INDEX orders_status_created_idx ON orders (status, created_at);\n\nCREATE TABLE order_images (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  order_id uuid NOT NULL REFERENCES orders (id) ON DELETE CASCADE,\n  url text NOT NULL,\n  position integer NOT NULL DEFAULT 0\n);\nCREATE INDEX order_images_order_idx ON order_images (order_id, position);" }];
+var migrations_default = [{ "name": "1760000000000_core.sql", "up": "CREATE EXTENSION IF NOT EXISTS pg_trgm;\n\nCREATE TABLE categories (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  slug text NOT NULL UNIQUE,\n  name_uz text NOT NULL,\n  name_ru text NOT NULL,\n  position integer NOT NULL DEFAULT 0\n);\n\nINSERT INTO categories (slug, name_uz, name_ru, position) VALUES\n  ('tikuvchilik', 'Tikuvchilik', '\u0428\u0438\u0442\u044C\u0451', 1),\n  ('pishiriq', 'Pishiriq', '\u0412\u044B\u043F\u0435\u0447\u043A\u0430', 2),\n  ('qol-mehnati', 'Qo''l mehnati', '\u0420\u0443\u043A\u043E\u0434\u0435\u043B\u0438\u0435', 3),\n  ('dizayn', 'Dizayn', '\u0414\u0438\u0437\u0430\u0439\u043D', 4),\n  ('masofaviy-ishlar', 'Masofaviy ishlar', '\u0423\u0434\u0430\u043B\u0451\u043D\u043D\u0430\u044F \u0440\u0430\u0431\u043E\u0442\u0430', 5);\n\nCREATE TABLE users (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  phone text NOT NULL UNIQUE,\n  name text,\n  role text NOT NULL DEFAULT 'customer' CHECK (role IN ('customer', 'worker', 'admin')),\n  language text NOT NULL DEFAULT 'uz' CHECK (language IN ('uz', 'ru')),\n  created_at timestamptz NOT NULL DEFAULT now()\n);\n\nCREATE TABLE workers (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  user_id uuid NOT NULL UNIQUE REFERENCES users (id) ON DELETE CASCADE,\n  category_id uuid NOT NULL REFERENCES categories (id),\n  display_name text NOT NULL,\n  bio text,\n  avatar_url text,\n  rating numeric(3, 2) NOT NULL DEFAULT 0,\n  reviews_count integer NOT NULL DEFAULT 0,\n  is_verified boolean NOT NULL DEFAULT false,\n  created_at timestamptz NOT NULL DEFAULT now()\n);\nCREATE INDEX workers_category_idx ON workers (category_id);\n\nCREATE TABLE products (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  worker_id uuid NOT NULL REFERENCES workers (id) ON DELETE CASCADE,\n  category_id uuid NOT NULL REFERENCES categories (id),\n  title text NOT NULL,\n  description text NOT NULL DEFAULT '',\n  retail_price bigint NOT NULL CHECK (retail_price > 0),\n  wholesale_price bigint CHECK (wholesale_price IS NULL OR wholesale_price > 0),\n  wholesale_min_qty integer CHECK (wholesale_min_qty IS NULL OR wholesale_min_qty >= 2),\n  stock integer NOT NULL DEFAULT 0 CHECK (stock >= 0),\n  status text NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'published', 'hidden')),\n  created_at timestamptz NOT NULL DEFAULT now(),\n  updated_at timestamptz NOT NULL DEFAULT now(),\n  CONSTRAINT products_wholesale_pair CHECK (\n    (wholesale_price IS NULL) = (wholesale_min_qty IS NULL)\n  ),\n  CONSTRAINT products_wholesale_lower CHECK (\n    wholesale_price IS NULL OR wholesale_price < retail_price\n  )\n);\nCREATE INDEX products_worker_status_idx ON products (worker_id, status);\nCREATE INDEX products_category_status_idx ON products (category_id, status);\n-- Uzbek apostrophe variants (' \u02BB \u02BC \u2019 \u2018 `) collapse to one form for search.\nCREATE FUNCTION uz_normalize(value text) RETURNS text\n  LANGUAGE sql IMMUTABLE PARALLEL SAFE\n  AS $$ SELECT lower(translate(value, '''\u02BB\u02BC\u2019\u2018`', '')) $$;\nCREATE INDEX products_title_trgm_idx ON products USING gin (uz_normalize(title) gin_trgm_ops);\n\nCREATE TABLE product_images (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  product_id uuid NOT NULL REFERENCES products (id) ON DELETE CASCADE,\n  url text NOT NULL,\n  position integer NOT NULL DEFAULT 0\n);\nCREATE INDEX product_images_product_idx ON product_images (product_id, position);\n\nCREATE TABLE product_models (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  product_id uuid NOT NULL UNIQUE REFERENCES products (id) ON DELETE CASCADE,\n  file_url text NOT NULL,\n  file_size integer NOT NULL,\n  poster_url text,\n  created_at timestamptz NOT NULL DEFAULT now()\n);\n\nCREATE TABLE orders (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  type text NOT NULL CHECK (type IN ('service', 'product')),\n  customer_id uuid NOT NULL REFERENCES users (id),\n  worker_id uuid NOT NULL REFERENCES workers (id),\n  status text NOT NULL DEFAULT 'awaiting_payment' CHECK (\n    status IN ('awaiting_payment', 'new', 'accepted', 'in_progress', 'ready', 'delivered', 'cancelled', 'refunded')\n  ),\n  total bigint NOT NULL CHECK (total >= 0),\n  commission bigint NOT NULL CHECK (commission >= 0),\n  worker_amount bigint NOT NULL CHECK (worker_amount >= 0),\n  fulfillment text NOT NULL DEFAULT 'pickup' CHECK (fulfillment IN ('pickup', 'delivery')),\n  delivery_address text,\n  start_time timestamptz,\n  end_time timestamptz,\n  created_at timestamptz NOT NULL DEFAULT now(),\n  updated_at timestamptz NOT NULL DEFAULT now()\n);\nCREATE INDEX orders_type_idx ON orders (type);\nCREATE INDEX orders_customer_idx ON orders (customer_id, created_at DESC);\nCREATE INDEX orders_worker_status_idx ON orders (worker_id, status);\n\nCREATE TABLE order_items (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  order_id uuid NOT NULL REFERENCES orders (id) ON DELETE CASCADE,\n  product_id uuid REFERENCES products (id) ON DELETE SET NULL,\n  title_snapshot text NOT NULL,\n  unit_price bigint NOT NULL CHECK (unit_price > 0),\n  quantity integer NOT NULL CHECK (quantity > 0),\n  price_type text NOT NULL CHECK (price_type IN ('retail', 'wholesale'))\n);\nCREATE INDEX order_items_order_idx ON order_items (order_id);\n\nCREATE TABLE payments (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  order_id uuid NOT NULL REFERENCES orders (id) ON DELETE CASCADE,\n  amount bigint NOT NULL CHECK (amount >= 0),\n  status text NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'paid', 'refunded', 'failed')),\n  provider text NOT NULL,\n  provider_ref text,\n  idempotency_key text NOT NULL UNIQUE,\n  created_at timestamptz NOT NULL DEFAULT now()\n);\nCREATE INDEX payments_order_idx ON payments (order_id);\n\nCREATE TABLE earnings (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  order_id uuid NOT NULL UNIQUE REFERENCES orders (id) ON DELETE CASCADE,\n  worker_id uuid NOT NULL REFERENCES workers (id),\n  amount bigint NOT NULL CHECK (amount >= 0),\n  commission bigint NOT NULL CHECK (commission >= 0),\n  created_at timestamptz NOT NULL DEFAULT now()\n);\nCREATE INDEX earnings_worker_idx ON earnings (worker_id, created_at DESC);\n\nCREATE TABLE sms_codes (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  phone text NOT NULL,\n  code_hash text NOT NULL,\n  expires_at timestamptz NOT NULL,\n  attempts integer NOT NULL DEFAULT 0,\n  consumed_at timestamptz,\n  created_at timestamptz NOT NULL DEFAULT now()\n);\nCREATE INDEX sms_codes_phone_idx ON sms_codes (phone, created_at DESC);\n\nCREATE TABLE refresh_tokens (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  user_id uuid NOT NULL REFERENCES users (id) ON DELETE CASCADE,\n  token_hash text NOT NULL UNIQUE,\n  expires_at timestamptz NOT NULL,\n  revoked_at timestamptz,\n  created_at timestamptz NOT NULL DEFAULT now()\n);\nCREATE INDEX refresh_tokens_user_idx ON refresh_tokens (user_id);\n\nCREATE TABLE files (\n  name text PRIMARY KEY,\n  content_type text NOT NULL,\n  size integer NOT NULL,\n  data bytea NOT NULL,\n  created_at timestamptz NOT NULL DEFAULT now()\n);" }, { "name": "1760000100000_reviews_complaints.sql", "up": "CREATE TABLE reviews (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  -- One review per order: the unique key is what stops a second review at the database level.\n  order_id uuid NOT NULL UNIQUE REFERENCES orders (id) ON DELETE CASCADE,\n  customer_id uuid NOT NULL REFERENCES users (id),\n  worker_id uuid NOT NULL REFERENCES workers (id),\n  rating smallint NOT NULL CHECK (rating BETWEEN 1 AND 5),\n  comment text CHECK (comment IS NULL OR char_length(comment) <= 1000),\n  status text NOT NULL DEFAULT 'visible' CHECK (status IN ('visible', 'hidden')),\n  created_at timestamptz NOT NULL DEFAULT now()\n);\nCREATE INDEX reviews_worker_idx ON reviews (worker_id, created_at DESC);\n\nCREATE TABLE complaints (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  order_id uuid NOT NULL REFERENCES orders (id) ON DELETE CASCADE,\n  user_id uuid NOT NULL REFERENCES users (id),\n  reason text NOT NULL CHECK (char_length(reason) BETWEEN 5 AND 1000),\n  status text NOT NULL DEFAULT 'open' CHECK (status IN ('open', 'resolved', 'dismissed')),\n  created_at timestamptz NOT NULL DEFAULT now()\n);\nCREATE INDEX complaints_order_idx ON complaints (order_id);\n-- A user can have only one open complaint per order; they can file again after it is closed.\nCREATE UNIQUE INDEX complaints_one_open_per_user_idx\n  ON complaints (order_id, user_id) WHERE status = 'open';" }, { "name": "1760000200000_calendar.sql", "up": "CREATE EXTENSION IF NOT EXISTS btree_gist;\n\nALTER TABLE workers\n  ADD COLUMN hourly_rate bigint CHECK (hourly_rate IS NULL OR hourly_rate > 0);\n\n-- Free windows a worker publishes. The exclusion constraint keeps one worker's windows from overlapping.\nCREATE TABLE availability (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  worker_id uuid NOT NULL REFERENCES workers (id) ON DELETE CASCADE,\n  start_time timestamptz NOT NULL,\n  end_time timestamptz NOT NULL,\n  created_at timestamptz NOT NULL DEFAULT now(),\n  CONSTRAINT availability_range_valid CHECK (end_time > start_time),\n  CONSTRAINT availability_no_overlap\n    EXCLUDE USING gist (worker_id WITH =, tstzrange(start_time, end_time) WITH &&)\n);\nCREATE INDEX availability_worker_idx ON availability (worker_id, start_time);\n\nALTER TABLE orders\n  ADD COLUMN description text,\n  ADD COLUMN deadline date,\n  ADD CONSTRAINT orders_service_has_slot CHECK (\n    type = 'product' OR (start_time IS NOT NULL AND end_time IS NOT NULL AND end_time > start_time)\n  ),\n  -- Slot clash is decided by the database, not by a check-then-insert in application code.\n  -- A slot is held from the moment the order is created (even unpaid) until it leaves these states.\n  ADD CONSTRAINT orders_slot_no_overlap\n    EXCLUDE USING gist (worker_id WITH =, tstzrange(start_time, end_time) WITH &&)\n    WHERE (start_time IS NOT NULL AND status IN ('awaiting_payment', 'new', 'accepted', 'in_progress'));\nCREATE INDEX orders_status_created_idx ON orders (status, created_at);\n\nCREATE TABLE order_images (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  order_id uuid NOT NULL REFERENCES orders (id) ON DELETE CASCADE,\n  url text NOT NULL,\n  position integer NOT NULL DEFAULT 0\n);\nCREATE INDEX order_images_order_idx ON order_images (order_id, position);" }, { "name": "1760000300000_materials_savings.sql", "up": "CREATE TABLE materials (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  name text NOT NULL,\n  description text NOT NULL DEFAULT '',\n  price bigint NOT NULL CHECK (price > 0),\n  discount_percent smallint NOT NULL DEFAULT 0 CHECK (discount_percent BETWEEN 0 AND 90),\n  stock integer NOT NULL DEFAULT 0 CHECK (stock >= 0),\n  is_active boolean NOT NULL DEFAULT true,\n  created_at timestamptz NOT NULL DEFAULT now()\n);\n\nCREATE TABLE material_orders (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  worker_id uuid NOT NULL REFERENCES workers (id),\n  status text NOT NULL DEFAULT 'awaiting_payment'\n    CHECK (status IN ('awaiting_payment', 'paid', 'delivered', 'cancelled')),\n  total bigint NOT NULL CHECK (total > 0),\n  created_at timestamptz NOT NULL DEFAULT now(),\n  updated_at timestamptz NOT NULL DEFAULT now()\n);\nCREATE INDEX material_orders_worker_idx ON material_orders (worker_id, created_at DESC);\nCREATE INDEX material_orders_status_idx ON material_orders (status, created_at);\n\nCREATE TABLE material_order_items (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  material_order_id uuid NOT NULL REFERENCES material_orders (id) ON DELETE CASCADE,\n  material_id uuid REFERENCES materials (id) ON DELETE SET NULL,\n  name_snapshot text NOT NULL,\n  unit_price bigint NOT NULL CHECK (unit_price > 0),\n  quantity integer NOT NULL CHECK (quantity > 0)\n);\nCREATE INDEX material_order_items_order_idx ON material_order_items (material_order_id);\n\n-- Same shape as `payments`, kept apart so product/service payment code stays untouched.\nCREATE TABLE material_payments (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  material_order_id uuid NOT NULL REFERENCES material_orders (id) ON DELETE CASCADE,\n  amount bigint NOT NULL CHECK (amount > 0),\n  status text NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'paid', 'refunded', 'failed')),\n  provider text NOT NULL,\n  provider_ref text,\n  idempotency_key text NOT NULL UNIQUE,\n  created_at timestamptz NOT NULL DEFAULT now()\n);\nCREATE INDEX material_payments_order_idx ON material_payments (material_order_id);\n\nCREATE TABLE savings_goals (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  worker_id uuid NOT NULL UNIQUE REFERENCES workers (id) ON DELETE CASCADE,\n  target_amount bigint NOT NULL CHECK (target_amount > 0),\n  created_at timestamptz NOT NULL DEFAULT now(),\n  updated_at timestamptz NOT NULL DEFAULT now()\n);\n\nCREATE INDEX reviews_status_idx ON reviews (status, created_at DESC);\nCREATE INDEX complaints_status_idx ON complaints (status, created_at DESC);\nCREATE INDEX workers_verified_idx ON workers (is_verified, created_at DESC);" }];
 
 // src/app.ts
 var import_cookie_parser = __toESM(require_cookie_parser(), 1);
 var import_cors = __toESM(require_lib(), 1);
-var import_express8 = __toESM(require_express2(), 1);
+var import_express11 = __toESM(require_express2(), 1);
 
 // ../../node_modules/.pnpm/helmet@8.3.0/node_modules/helmet/index.mjs
 var dashify = (str) => str.replace(/[A-Z]/g, (capitalLetter) => "-" + capitalLetter.toLowerCase());
@@ -72565,6 +72565,7 @@ var ACCESS_TOKEN_TTL_SECONDS = 15 * 60;
 var REFRESH_TOKEN_TTL_DAYS = 30;
 var UNPAID_ORDER_TTL_MINUTES = 15;
 var WORKER_ACCEPT_TTL_HOURS = 24;
+var REVIEW_STATUSES = ["visible", "hidden"];
 var MIN_REVIEW_RATING = 1;
 var MAX_REVIEW_RATING = 5;
 var MAX_REVIEW_COMMENT_LENGTH = 1e3;
@@ -72583,6 +72584,10 @@ var MAX_SERVICE_HOURS = 8;
 var MAX_AVAILABILITY_HOURS = 16;
 var AVAILABILITY_HORIZON_DAYS = 60;
 var MAX_ORDER_DESCRIPTION_LENGTH = 1e3;
+var MAX_DISCOUNT_PERCENT = 90;
+var MAX_MATERIAL_NAME_LENGTH = 120;
+var ADMIN_PAGE_SIZE = 20;
+var REVIEWS_PAGE_SIZE = 10;
 
 // ../../packages/shared/src/money.ts
 function calculateCommission(total) {
@@ -72601,14 +72606,18 @@ function resolveLinePrice(product, quantity) {
     lineTotal: unitPrice * quantity
   };
 }
+function discountedPrice(price, discountPercent) {
+  return Math.max(1, Math.round(price * (100 - discountPercent) / 100));
+}
 
 // ../../packages/shared/src/order-status.ts
 var ORDER_STATUS_TRANSITIONS = {
   awaiting_payment: ["new", "cancelled"],
+  // `refunded` from a started order is reachable only through the admin refund (complaints).
   new: ["accepted", "refunded"],
-  accepted: ["in_progress"],
-  in_progress: ["ready"],
-  ready: ["delivered"],
+  accepted: ["in_progress", "refunded"],
+  in_progress: ["ready", "refunded"],
+  ready: ["delivered", "refunded"],
   delivered: [],
   cancelled: [],
   refunded: []
@@ -72767,6 +72776,30 @@ function isValidCardNumber(cardNumber) {
   }
   return sum % 10 === 0;
 }
+var materialInputSchema = external_exports.object({
+  name: external_exports.string().trim().min(MIN_NAME_LENGTH).max(MAX_MATERIAL_NAME_LENGTH),
+  description: external_exports.string().trim().max(MAX_DESCRIPTION_LENGTH).default(""),
+  price: moneySchema,
+  discountPercent: external_exports.number().int().min(0).max(MAX_DISCOUNT_PERCENT).default(0),
+  stock: external_exports.number().int().min(0).max(MAX_ITEM_QUANTITY),
+  isActive: external_exports.boolean().default(true)
+});
+var materialOrderSchema = external_exports.object({
+  items: external_exports.array(
+    external_exports.object({
+      materialId: external_exports.string().uuid(),
+      quantity: external_exports.number().int().min(1).max(MAX_ITEM_QUANTITY)
+    })
+  ).min(1).max(MAX_CART_ITEMS)
+});
+var savingsGoalSchema = external_exports.object({ targetAmount: moneySchema });
+var workerVerificationSchema = external_exports.object({ verified: external_exports.boolean() });
+var reviewModerationSchema = external_exports.object({ status: external_exports.enum(REVIEW_STATUSES) });
+var complaintResolutionSchema = external_exports.object({ status: external_exports.enum(["resolved", "dismissed"]) });
+var adminListQuerySchema = external_exports.object({
+  page: external_exports.coerce.number().int().min(1).default(1),
+  status: external_exports.string().trim().max(30).optional()
+});
 
 // ../../packages/shared/src/slots.ts
 var HOUR_MS = 60 * 60 * 1e3;
@@ -73174,15 +73207,201 @@ function createAuthRouter(ctx) {
   return router;
 }
 
-// src/modules/calendar/calendar.routes.ts
+// src/modules/admin/admin.routes.ts
 var import_express2 = __toESM(require_express2(), 1);
 
-// src/db/errors.ts
-var EXCLUSION_VIOLATION = "23P01";
-function hasCode(error, code) {
-  return typeof error === "object" && error !== null && error.code === code;
+// src/modules/materials/material.service.ts
+function toMaterialDto(row) {
+  return {
+    id: row.id,
+    name: row.name,
+    description: row.description,
+    price: row.price,
+    discountPercent: row.discount_percent,
+    unitPrice: discountedPrice(row.price, row.discount_percent),
+    stock: row.stock,
+    isActive: row.is_active
+  };
 }
-var isExclusionViolation = (error) => hasCode(error, EXCLUSION_VIOLATION);
+async function reserveMaterialStock(trx, orderId3) {
+  const items = await trx.selectFrom("material_order_items").select(["material_id", "quantity"]).where("material_order_id", "=", orderId3).execute();
+  for (const item of items) {
+    if (!item.material_id) throw AppError.conflict("MATERIAL_UNAVAILABLE");
+    const result = await trx.updateTable("materials").set((eb) => ({ stock: eb("stock", "-", item.quantity) })).where("id", "=", item.material_id).where("is_active", "=", true).where("stock", ">=", item.quantity).executeTakeFirst();
+    if (Number(result.numUpdatedRows) !== 1) throw AppError.conflict("INSUFFICIENT_STOCK");
+  }
+}
+var MaterialService = class {
+  constructor(ctx, now = () => /* @__PURE__ */ new Date()) {
+    this.ctx = ctx;
+    this.now = now;
+  }
+  async listActive() {
+    const rows = await this.ctx.db.selectFrom("materials").selectAll().where("is_active", "=", true).orderBy("name").execute();
+    return rows.map(toMaterialDto);
+  }
+  async listAll() {
+    const rows = await this.ctx.db.selectFrom("materials").selectAll().orderBy("name").execute();
+    return rows.map(toMaterialDto);
+  }
+  async create(input) {
+    const row = await this.ctx.db.insertInto("materials").values({
+      name: input.name,
+      description: input.description,
+      price: input.price,
+      discount_percent: input.discountPercent,
+      stock: input.stock,
+      is_active: input.isActive
+    }).returningAll().executeTakeFirstOrThrow();
+    return toMaterialDto(row);
+  }
+  async update(id, input) {
+    const row = await this.ctx.db.updateTable("materials").set({
+      name: input.name,
+      description: input.description,
+      price: input.price,
+      discount_percent: input.discountPercent,
+      stock: input.stock,
+      is_active: input.isActive
+    }).where("id", "=", id).returningAll().executeTakeFirst();
+    if (!row) throw AppError.notFound();
+    return toMaterialDto(row);
+  }
+  /** Prices come from the catalog on the server; the client only names materials and amounts. */
+  async createOrder(workerId, input) {
+    const merged = /* @__PURE__ */ new Map();
+    for (const item of input.items) {
+      merged.set(item.materialId, (merged.get(item.materialId) ?? 0) + item.quantity);
+    }
+    const rows = await this.ctx.db.selectFrom("materials").selectAll().where("id", "in", [...merged.keys()]).execute();
+    const byId = new Map(rows.map((row) => [row.id, row]));
+    const lines = [...merged].map(([materialId, quantity]) => {
+      const material = byId.get(materialId);
+      if (!material || !material.is_active) throw AppError.notFound("MATERIAL_UNAVAILABLE");
+      if (material.stock < quantity) throw AppError.conflict("INSUFFICIENT_STOCK");
+      return {
+        materialId,
+        name: material.name,
+        unitPrice: discountedPrice(material.price, material.discount_percent),
+        quantity
+      };
+    });
+    const total = lines.reduce((sum, line) => sum + line.unitPrice * line.quantity, 0);
+    const orderId3 = await this.ctx.db.transaction().execute(async (trx) => {
+      const order = await trx.insertInto("material_orders").values({ worker_id: workerId, total, updated_at: this.now() }).returning("id").executeTakeFirstOrThrow();
+      await trx.insertInto("material_order_items").values(
+        lines.map((line) => ({
+          material_order_id: order.id,
+          material_id: line.materialId,
+          name_snapshot: line.name,
+          unit_price: line.unitPrice,
+          quantity: line.quantity
+        }))
+      ).execute();
+      return order.id;
+    });
+    return this.getOwned(workerId, orderId3);
+  }
+  async startPayment(workerId, orderId3) {
+    const order = await this.findOwnedRow(workerId, orderId3);
+    const existing = await this.ctx.db.selectFrom("material_payments").selectAll().where("material_order_id", "=", orderId3).executeTakeFirst();
+    if (existing?.status === "paid") throw AppError.conflict("PAYMENT_ALREADY_PAID");
+    if (order.status !== "awaiting_payment") throw AppError.conflict("MATERIAL_ORDER_NOT_PAYABLE");
+    let payment = existing;
+    if (!payment) {
+      const created = await this.ctx.payments.createPayment({ orderId: orderId3, amount: order.total });
+      await this.ctx.db.insertInto("material_payments").values({
+        material_order_id: orderId3,
+        amount: order.total,
+        provider: this.ctx.payments.name,
+        provider_ref: created.providerRef,
+        idempotency_key: `material:${orderId3}`
+      }).onConflict((oc) => oc.column("idempotency_key").doNothing()).execute();
+      payment = await this.ctx.db.selectFrom("material_payments").selectAll().where("material_order_id", "=", orderId3).executeTakeFirstOrThrow();
+    }
+    return {
+      paymentId: payment.id,
+      orderId: orderId3,
+      amount: payment.amount,
+      status: payment.status,
+      redirectUrl: `/materiallar/tolov/${orderId3}`
+    };
+  }
+  /** Idempotent: a repeated confirmation of a paid order returns it without touching stock again. */
+  async confirmPayment(workerId, orderId3, card) {
+    const outcome = await this.ctx.db.transaction().execute(async (trx) => {
+      const order = await trx.selectFrom("material_orders").selectAll().where("id", "=", orderId3).forUpdate().executeTakeFirst();
+      if (!order || order.worker_id !== workerId) throw AppError.notFound();
+      const payment = await trx.selectFrom("material_payments").selectAll().where("material_order_id", "=", orderId3).forUpdate().executeTakeFirst();
+      if (!payment) throw AppError.conflict("MATERIAL_ORDER_NOT_PAYABLE");
+      if (payment.status === "paid") return "paid";
+      if (order.status !== "awaiting_payment") {
+        throw AppError.conflict("MATERIAL_ORDER_NOT_PAYABLE");
+      }
+      const result = await this.ctx.payments.verifyCallback(card, {
+        orderId: orderId3,
+        amount: order.total
+      });
+      if (result.status === "failed") return "declined";
+      await reserveMaterialStock(trx, orderId3);
+      await trx.updateTable("material_payments").set({ status: "paid", provider_ref: result.providerRef }).where("id", "=", payment.id).execute();
+      await trx.updateTable("material_orders").set({ status: "paid", updated_at: this.now() }).where("id", "=", orderId3).execute();
+      return "paid";
+    });
+    if (outcome === "declined") throw new AppError("PAYMENT_DECLINED", 402);
+    return this.getOwned(workerId, orderId3);
+  }
+  async listForWorker(workerId) {
+    const rows = await this.ctx.db.selectFrom("material_orders").selectAll().where("worker_id", "=", workerId).orderBy("created_at", "desc").limit(30).execute();
+    return this.withItems(rows);
+  }
+  async getOwned(workerId, orderId3) {
+    const row = await this.findOwnedRow(workerId, orderId3);
+    const [dto] = await this.withItems([row]);
+    if (!dto) throw AppError.notFound();
+    return dto;
+  }
+  async adminList() {
+    const rows = await this.ctx.db.selectFrom("material_orders as m").innerJoin("workers as w", "w.id", "m.worker_id").selectAll("m").select("w.display_name as worker_name").where("m.status", "!=", "awaiting_payment").orderBy("m.created_at", "desc").limit(50).execute();
+    const dtos = await this.withItems(rows);
+    const names = new Map(rows.map((row) => [row.id, row.worker_name]));
+    return dtos.map((dto) => ({ ...dto, workerName: names.get(dto.id) ?? "" }));
+  }
+  async markDelivered(orderId3) {
+    const result = await this.ctx.db.updateTable("material_orders").set({ status: "delivered", updated_at: this.now() }).where("id", "=", orderId3).where("status", "=", "paid").executeTakeFirst();
+    if (Number(result.numUpdatedRows) !== 1) throw AppError.conflict("ORDER_INVALID_TRANSITION");
+  }
+  async findOwnedRow(workerId, orderId3) {
+    const row = await this.ctx.db.selectFrom("material_orders").selectAll().where("id", "=", orderId3).executeTakeFirst();
+    if (!row || row.worker_id !== workerId) throw AppError.notFound();
+    return row;
+  }
+  /** One IN query for the items of any number of orders (no N+1). */
+  async withItems(rows) {
+    if (rows.length === 0) return [];
+    const items = await this.ctx.db.selectFrom("material_order_items").selectAll().where(
+      "material_order_id",
+      "in",
+      rows.map((row) => row.id)
+    ).execute();
+    return rows.map((row) => ({
+      id: row.id,
+      status: row.status,
+      total: row.total,
+      createdAt: row.created_at.toISOString(),
+      items: items.filter((item) => item.material_order_id === row.id).map((item) => ({
+        id: item.id,
+        materialId: item.material_id,
+        name: item.name_snapshot,
+        unitPrice: item.unit_price,
+        quantity: item.quantity
+      }))
+    }));
+  }
+};
+
+// src/modules/admin/admin.service.ts
+init_esm();
 
 // src/modules/orders/order.repository.ts
 init_esm();
@@ -73411,6 +73630,415 @@ var PaymentService = class {
   }
 };
 
+// src/modules/feedback/feedback.service.ts
+var UNIQUE_VIOLATION = "23505";
+var RATING_DECIMALS = 100;
+function isUniqueViolation(error) {
+  return typeof error === "object" && error !== null && error.code === UNIQUE_VIOLATION;
+}
+function nextRating(current, count, added) {
+  return Math.round((current * count + added) / (count + 1) * RATING_DECIMALS) / RATING_DECIMALS;
+}
+var FeedbackService = class {
+  db;
+  cache;
+  constructor(ctx) {
+    this.db = ctx.db;
+    this.cache = ctx.cache;
+  }
+  /**
+   * Saves the review and moves the worker's rating in one transaction. The order row is locked
+   * first, so two simultaneous submissions cannot both pass the "no review yet" check.
+   */
+  async createReview(userId, orderId3, input) {
+    try {
+      const review = await this.db.transaction().execute(async (trx) => {
+        const order = await this.lockOrder(trx, orderId3);
+        if (!order) throw AppError.notFound();
+        if (order.customerId !== userId) {
+          throw order.workerUserId === userId ? AppError.forbidden() : AppError.notFound();
+        }
+        if (order.status !== "delivered") throw AppError.conflict("ORDER_NOT_REVIEWABLE");
+        const existing = await trx.selectFrom("reviews").select("id").where("order_id", "=", orderId3).executeTakeFirst();
+        if (existing) throw AppError.conflict("REVIEW_ALREADY_EXISTS");
+        const worker = await trx.selectFrom("workers").select(["rating", "reviews_count"]).where("id", "=", order.workerId).forUpdate().executeTakeFirstOrThrow();
+        const row = await trx.insertInto("reviews").values({
+          order_id: orderId3,
+          customer_id: userId,
+          worker_id: order.workerId,
+          rating: input.rating,
+          comment: input.comment ? input.comment : null
+        }).returningAll().executeTakeFirstOrThrow();
+        await trx.updateTable("workers").set({
+          rating: nextRating(worker.rating, worker.reviews_count, input.rating),
+          reviews_count: worker.reviews_count + 1
+        }).where("id", "=", order.workerId).execute();
+        return {
+          id: row.id,
+          orderId: row.order_id,
+          rating: row.rating,
+          comment: row.comment,
+          status: row.status,
+          createdAt: row.created_at.toISOString()
+        };
+      });
+      this.cache.delete("workers:featured");
+      return review;
+    } catch (error) {
+      if (isUniqueViolation(error)) throw AppError.conflict("REVIEW_ALREADY_EXISTS");
+      throw error;
+    }
+  }
+  /** Either side of an order may complain; strangers get a 404 so order ids are not probeable. */
+  async createComplaint(userId, orderId3, input) {
+    const order = await this.findOrder(orderId3);
+    if (!order || order.customerId !== userId && order.workerUserId !== userId) {
+      throw AppError.notFound();
+    }
+    try {
+      const row = await this.db.insertInto("complaints").values({ order_id: orderId3, user_id: userId, reason: input.reason }).returningAll().executeTakeFirstOrThrow();
+      return {
+        id: row.id,
+        orderId: row.order_id,
+        reason: row.reason,
+        status: row.status,
+        createdAt: row.created_at.toISOString()
+      };
+    } catch (error) {
+      if (isUniqueViolation(error)) throw AppError.conflict("COMPLAINT_ALREADY_OPEN");
+      throw error;
+    }
+  }
+  findOrder(orderId3) {
+    return this.selectOrder(this.db, orderId3, false);
+  }
+  lockOrder(trx, orderId3) {
+    return this.selectOrder(trx, orderId3, true);
+  }
+  async selectOrder(db2, orderId3, lock) {
+    let query = db2.selectFrom("orders as o").innerJoin("workers as w", "w.id", "o.worker_id").select(["o.id", "o.customer_id", "o.worker_id", "o.status", "w.user_id as worker_user_id"]).where("o.id", "=", orderId3);
+    if (lock) query = query.forUpdate("o");
+    const row = await query.executeTakeFirst();
+    if (!row) return void 0;
+    return {
+      id: row.id,
+      customerId: row.customer_id,
+      workerId: row.worker_id,
+      workerUserId: row.worker_user_id,
+      status: row.status
+    };
+  }
+};
+
+// src/modules/admin/admin.service.ts
+var RATING_DECIMALS2 = 100;
+var FEATURED_CACHE_KEY2 = "workers:featured";
+function ratingWithout(current, count, removed) {
+  if (count <= 1) return 0;
+  const next = (current * count - removed) / (count - 1);
+  return Math.round(Math.max(0, next) * RATING_DECIMALS2) / RATING_DECIMALS2;
+}
+function paged(items, total, page) {
+  return { items, page, pageSize: ADMIN_PAGE_SIZE, total };
+}
+var AdminService = class {
+  constructor(ctx, now = () => /* @__PURE__ */ new Date()) {
+    this.ctx = ctx;
+    this.now = now;
+  }
+  async stats() {
+    const db2 = this.ctx.db;
+    const count = async (query) => Number((await query.executeTakeFirstOrThrow()).n);
+    const [users, workers, verified, statuses, money, complaints, hidden] = await Promise.all([
+      count(db2.selectFrom("users").select((eb) => eb.fn.countAll().as("n"))),
+      count(db2.selectFrom("workers").select((eb) => eb.fn.countAll().as("n"))),
+      count(
+        db2.selectFrom("workers").select((eb) => eb.fn.countAll().as("n")).where("is_verified", "=", true)
+      ),
+      db2.selectFrom("orders").select(["status", (eb) => eb.fn.countAll().as("n")]).groupBy("status").execute(),
+      db2.selectFrom("earnings").select([
+        (eb) => eb.fn.coalesce(eb.fn.sum("amount"), eb.lit(0)).as("worker"),
+        (eb) => eb.fn.coalesce(eb.fn.sum("commission"), eb.lit(0)).as("commission")
+      ]).executeTakeFirstOrThrow(),
+      count(
+        db2.selectFrom("complaints").select((eb) => eb.fn.countAll().as("n")).where("status", "=", "open")
+      ),
+      count(
+        db2.selectFrom("reviews").select((eb) => eb.fn.countAll().as("n")).where("status", "=", "hidden")
+      )
+    ]);
+    const commission = Number(money.commission);
+    return {
+      users,
+      workers,
+      verifiedWorkers: verified,
+      pendingWorkers: workers - verified,
+      ordersByStatus: Object.fromEntries(statuses.map((row) => [row.status, Number(row.n)])),
+      turnover: Number(money.worker) + commission,
+      commission,
+      openComplaints: complaints,
+      hiddenReviews: hidden
+    };
+  }
+  async listWorkers(query) {
+    const offset = (query.page - 1) * ADMIN_PAGE_SIZE;
+    const base = this.ctx.db.selectFrom("workers as w").innerJoin("users as u", "u.id", "w.user_id").innerJoin("categories as c", "c.id", "w.category_id");
+    const filtered = query.status === "pending" ? base.where("w.is_verified", "=", false) : query.status === "verified" ? base.where("w.is_verified", "=", true) : base;
+    const [rows, total] = await Promise.all([
+      filtered.select([
+        "w.id",
+        "w.display_name",
+        "u.phone",
+        "c.slug as category_slug",
+        "w.is_verified",
+        "w.rating",
+        "w.reviews_count",
+        "w.created_at"
+      ]).orderBy("w.is_verified").orderBy("w.created_at", "desc").limit(ADMIN_PAGE_SIZE).offset(offset).execute(),
+      filtered.select((eb) => eb.fn.countAll().as("n")).executeTakeFirstOrThrow()
+    ]);
+    return paged(
+      rows.map((row) => ({
+        id: row.id,
+        displayName: row.display_name,
+        phone: row.phone,
+        categorySlug: row.category_slug,
+        isVerified: row.is_verified,
+        rating: row.rating,
+        reviewsCount: row.reviews_count,
+        createdAt: row.created_at.toISOString()
+      })),
+      Number(total.n),
+      query.page
+    );
+  }
+  async setVerified(workerId, verified) {
+    const result = await this.ctx.db.updateTable("workers").set({ is_verified: verified }).where("id", "=", workerId).executeTakeFirst();
+    if (Number(result.numUpdatedRows) !== 1) throw AppError.notFound();
+    this.ctx.cache.delete(FEATURED_CACHE_KEY2);
+  }
+  async listOrders(query) {
+    const offset = (query.page - 1) * ADMIN_PAGE_SIZE;
+    const base = this.ctx.db.selectFrom("orders as o").innerJoin("workers as w", "w.id", "o.worker_id").innerJoin("users as cu", "cu.id", "o.customer_id");
+    const filtered = query.status ? base.where("o.status", "=", query.status) : base;
+    const [rows, total] = await Promise.all([
+      filtered.select([
+        "o.id",
+        "o.type",
+        "o.status",
+        "o.total",
+        "o.commission",
+        "o.created_at",
+        "cu.name as customer_name",
+        "w.display_name as worker_name",
+        sql`(select p.status from payments p where p.order_id = o.id order by p.created_at desc limit 1)`.as(
+          "payment_status"
+        )
+      ]).orderBy("o.created_at", "desc").limit(ADMIN_PAGE_SIZE).offset(offset).execute(),
+      filtered.select((eb) => eb.fn.countAll().as("n")).executeTakeFirstOrThrow()
+    ]);
+    return paged(
+      rows.map((row) => ({
+        id: row.id,
+        type: row.type,
+        status: row.status,
+        total: row.total,
+        commission: row.commission,
+        customerName: row.customer_name,
+        workerName: row.worker_name,
+        paymentStatus: row.payment_status,
+        createdAt: row.created_at.toISOString()
+      })),
+      Number(total.n),
+      query.page
+    );
+  }
+  async listReviews(query) {
+    const offset = (query.page - 1) * ADMIN_PAGE_SIZE;
+    const base = this.ctx.db.selectFrom("reviews as r").innerJoin("workers as w", "w.id", "r.worker_id").innerJoin("users as u", "u.id", "r.customer_id");
+    const filtered = query.status === "visible" || query.status === "hidden" ? base.where("r.status", "=", query.status) : base;
+    const [rows, total] = await Promise.all([
+      filtered.select([
+        "r.id",
+        "r.order_id",
+        "r.rating",
+        "r.comment",
+        "r.status",
+        "r.created_at",
+        "w.display_name as worker_name",
+        "u.name as author_name"
+      ]).orderBy("r.created_at", "desc").limit(ADMIN_PAGE_SIZE).offset(offset).execute(),
+      filtered.select((eb) => eb.fn.countAll().as("n")).executeTakeFirstOrThrow()
+    ]);
+    return paged(
+      rows.map((row) => ({
+        id: row.id,
+        orderId: row.order_id,
+        workerName: row.worker_name,
+        authorName: row.author_name,
+        rating: row.rating,
+        comment: row.comment,
+        status: row.status,
+        createdAt: row.created_at.toISOString()
+      })),
+      Number(total.n),
+      query.page
+    );
+  }
+  /**
+   * Hides or restores a review and moves the worker's rating in the same transaction. A review that
+   * is already in the requested state changes nothing, so a repeated click cannot drift the rating.
+   */
+  async setReviewStatus(reviewId, status) {
+    await this.ctx.db.transaction().execute(async (trx) => {
+      const review = await trx.selectFrom("reviews").select(["id", "worker_id", "rating", "status"]).where("id", "=", reviewId).forUpdate().executeTakeFirst();
+      if (!review) throw AppError.notFound();
+      if (review.status === status) return;
+      const worker = await trx.selectFrom("workers").select(["rating", "reviews_count"]).where("id", "=", review.worker_id).forUpdate().executeTakeFirstOrThrow();
+      const hiding = status === "hidden";
+      await trx.updateTable("workers").set({
+        rating: hiding ? ratingWithout(worker.rating, worker.reviews_count, review.rating) : nextRating(worker.rating, worker.reviews_count, review.rating),
+        reviews_count: Math.max(0, worker.reviews_count + (hiding ? -1 : 1))
+      }).where("id", "=", review.worker_id).execute();
+      await trx.updateTable("reviews").set({ status }).where("id", "=", reviewId).execute();
+    });
+    this.ctx.cache.delete(FEATURED_CACHE_KEY2);
+  }
+  async listComplaints(query) {
+    const offset = (query.page - 1) * ADMIN_PAGE_SIZE;
+    const base = this.ctx.db.selectFrom("complaints as c").innerJoin("orders as o", "o.id", "c.order_id").innerJoin("users as u", "u.id", "c.user_id");
+    const filtered = query.status ? base.where("c.status", "=", query.status) : base;
+    const [rows, total] = await Promise.all([
+      filtered.select([
+        "c.id",
+        "c.order_id",
+        "c.reason",
+        "c.status",
+        "c.created_at",
+        "c.user_id",
+        "o.customer_id",
+        "o.status as order_status",
+        "u.name as author_name",
+        sql`(select p.status from payments p where p.order_id = o.id order by p.created_at desc limit 1)`.as(
+          "payment_status"
+        )
+      ]).orderBy("c.created_at", "desc").limit(ADMIN_PAGE_SIZE).offset(offset).execute(),
+      filtered.select((eb) => eb.fn.countAll().as("n")).executeTakeFirstOrThrow()
+    ]);
+    return paged(
+      rows.map((row) => ({
+        id: row.id,
+        orderId: row.order_id,
+        authorName: row.author_name,
+        authorRole: row.user_id === row.customer_id ? "customer" : "worker",
+        reason: row.reason,
+        status: row.status,
+        orderStatus: row.order_status,
+        paymentStatus: row.payment_status,
+        createdAt: row.created_at.toISOString()
+      })),
+      Number(total.n),
+      query.page
+    );
+  }
+  async resolveComplaint(id, status) {
+    const result = await this.ctx.db.updateTable("complaints").set({ status }).where("id", "=", id).where("status", "=", "open").executeTakeFirst();
+    if (Number(result.numUpdatedRows) === 1) return;
+    const exists = await this.ctx.db.selectFrom("complaints").select("id").where("id", "=", id).executeTakeFirst();
+    throw exists ? AppError.conflict("COMPLAINT_NOT_OPEN") : AppError.notFound();
+  }
+  /** Manual refund after a complaint: money back through the provider, stock restored, order closed. */
+  async refundOrder(orderId3) {
+    await this.ctx.db.transaction().execute(async (trx) => {
+      const order = await trx.selectFrom("orders").select(["id", "status"]).where("id", "=", orderId3).forUpdate().executeTakeFirst();
+      if (!order) throw AppError.notFound();
+      if (!canTransition(order.status, "refunded")) {
+        throw AppError.conflict("ORDER_NOT_REFUNDABLE");
+      }
+      const paid = await trx.selectFrom("payments").select("id").where("order_id", "=", orderId3).where("status", "=", "paid").executeTakeFirst();
+      if (!paid) throw AppError.conflict("ORDER_NOT_REFUNDABLE");
+      await refundPaidOrder(trx, this.ctx.payments, orderId3);
+      await trx.updateTable("orders").set({ status: "refunded", updated_at: this.now() }).where("id", "=", orderId3).execute();
+    });
+  }
+};
+
+// src/modules/admin/admin.routes.ts
+var UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+function idParam(req) {
+  const value = req.params.id;
+  if (typeof value !== "string" || !UUID_PATTERN.test(value)) throw AppError.notFound();
+  return value;
+}
+function createAdminRouter(ctx) {
+  const router = (0, import_express2.Router)();
+  const admin = new AdminService(ctx);
+  const materials = new MaterialService(ctx);
+  const { requireAdmin } = createAuthMiddleware(ctx);
+  router.use("/admin", requireAdmin);
+  router.get("/admin/stats", async (_req, res) => {
+    res.json(await admin.stats());
+  });
+  router.get("/admin/workers", async (req, res) => {
+    res.json(await admin.listWorkers(adminListQuerySchema.parse(req.query)));
+  });
+  router.patch("/admin/workers/:id/verification", async (req, res) => {
+    const { verified } = workerVerificationSchema.parse(req.body);
+    await admin.setVerified(idParam(req), verified);
+    res.status(204).end();
+  });
+  router.get("/admin/orders", async (req, res) => {
+    res.json(await admin.listOrders(adminListQuerySchema.parse(req.query)));
+  });
+  router.post("/admin/orders/:id/refund", async (req, res) => {
+    await admin.refundOrder(idParam(req));
+    res.status(204).end();
+  });
+  router.get("/admin/reviews", async (req, res) => {
+    res.json(await admin.listReviews(adminListQuerySchema.parse(req.query)));
+  });
+  router.patch("/admin/reviews/:id", async (req, res) => {
+    const { status } = reviewModerationSchema.parse(req.body);
+    await admin.setReviewStatus(idParam(req), status);
+    res.status(204).end();
+  });
+  router.get("/admin/complaints", async (req, res) => {
+    res.json(await admin.listComplaints(adminListQuerySchema.parse(req.query)));
+  });
+  router.patch("/admin/complaints/:id", async (req, res) => {
+    const { status } = complaintResolutionSchema.parse(req.body);
+    await admin.resolveComplaint(idParam(req), status);
+    res.status(204).end();
+  });
+  router.get("/admin/materials", async (_req, res) => {
+    res.json(await materials.listAll());
+  });
+  router.post("/admin/materials", async (req, res) => {
+    res.status(201).json(await materials.create(materialInputSchema.parse(req.body)));
+  });
+  router.put("/admin/materials/:id", async (req, res) => {
+    res.json(await materials.update(idParam(req), materialInputSchema.parse(req.body)));
+  });
+  router.get("/admin/material-orders", async (_req, res) => {
+    res.json(await materials.adminList());
+  });
+  router.post("/admin/material-orders/:id/deliver", async (req, res) => {
+    await materials.markDelivered(idParam(req));
+    res.status(204).end();
+  });
+  return router;
+}
+
+// src/modules/calendar/calendar.routes.ts
+var import_express3 = __toESM(require_express2(), 1);
+
+// src/db/errors.ts
+var EXCLUSION_VIOLATION = "23P01";
+function hasCode(error, code) {
+  return typeof error === "object" && error !== null && error.code === code;
+}
+var isExclusionViolation = (error) => hasCode(error, EXCLUSION_VIOLATION);
+
 // src/modules/jobs/order-expiry.ts
 var MINUTE_MS2 = 60 * 1e3;
 var HOUR_MS2 = 60 * MINUTE_MS2;
@@ -73451,6 +74079,19 @@ async function refundOne(ctx, id, cutoff, now) {
     await refundPaidOrder(trx, ctx.payments, id);
     await trx.updateTable("orders").set({ status: "refunded", updated_at: now }).where("id", "=", id).execute();
     return 1;
+  });
+}
+async function expireUnpaidMaterialOrders(db2, now) {
+  const cutoff = new Date(now.getTime() - UNPAID_ORDER_TTL_MINUTES * MINUTE_MS2);
+  return db2.transaction().execute(async (trx) => {
+    const expired = await trx.updateTable("material_orders").set({ status: "cancelled", updated_at: now }).where("status", "=", "awaiting_payment").where("created_at", "<", cutoff).returning("id").execute();
+    if (expired.length === 0) return 0;
+    await trx.updateTable("material_payments").set({ status: "failed" }).where("status", "=", "pending").where(
+      "material_order_id",
+      "in",
+      expired.map((row) => row.id)
+    ).execute();
+    return expired.length;
   });
 }
 
@@ -73524,19 +74165,19 @@ var AvailabilityService = class {
 };
 
 // src/modules/calendar/calendar.routes.ts
-var UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-function idParam(req) {
+var UUID_PATTERN2 = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+function idParam2(req) {
   const value = req.params.id;
-  if (typeof value !== "string" || !UUID_PATTERN.test(value)) throw AppError.notFound();
+  if (typeof value !== "string" || !UUID_PATTERN2.test(value)) throw AppError.notFound();
   return value;
 }
 function createCalendarRouter(ctx) {
-  const router = (0, import_express2.Router)();
+  const router = (0, import_express3.Router)();
   const service = new AvailabilityService(ctx);
   const { requireWorker } = createAuthMiddleware(ctx);
   const workerId = (req) => req.workerId ?? "";
   router.get("/workers/:id/availability", async (req, res) => {
-    const id = idParam(req);
+    const id = idParam2(req);
     if (!await service.workerExists(id)) throw AppError.notFound();
     res.json(await service.read(id));
   });
@@ -73551,7 +74192,7 @@ function createCalendarRouter(ctx) {
     res.status(201).json(await service.add(workerId(req), input));
   });
   router.delete("/my/availability/:id", requireWorker, async (req, res) => {
-    await service.remove(workerId(req), idParam(req));
+    await service.remove(workerId(req), idParam2(req));
     res.status(204).end();
   });
   router.put("/my/hourly-rate", requireWorker, async (req, res) => {
@@ -73562,7 +74203,37 @@ function createCalendarRouter(ctx) {
 }
 
 // src/modules/catalog/catalog.routes.ts
-var import_express3 = __toESM(require_express2(), 1);
+var import_express4 = __toESM(require_express2(), 1);
+
+// src/modules/workers/reviews.service.ts
+function firstName(name) {
+  const word = name?.trim().split(/\s+/)[0];
+  return word ? word : null;
+}
+var ReviewsReader = class {
+  constructor(db2) {
+    this.db = db2;
+  }
+  async listVisible(workerId, page) {
+    const base = this.db.selectFrom("reviews as r").innerJoin("users as u", "u.id", "r.customer_id").where("r.worker_id", "=", workerId).where("r.status", "=", "visible");
+    const [rows, total] = await Promise.all([
+      base.select(["r.id", "r.rating", "r.comment", "r.created_at", "u.name as author_name"]).orderBy("r.created_at", "desc").limit(REVIEWS_PAGE_SIZE).offset((page - 1) * REVIEWS_PAGE_SIZE).execute(),
+      base.select((eb) => eb.fn.countAll().as("n")).executeTakeFirstOrThrow()
+    ]);
+    return {
+      items: rows.map((row) => ({
+        id: row.id,
+        rating: row.rating,
+        comment: row.comment,
+        authorName: firstName(row.author_name),
+        createdAt: row.created_at.toISOString()
+      })),
+      page,
+      pageSize: REVIEWS_PAGE_SIZE,
+      total: Number(total.n)
+    };
+  }
+};
 
 // src/modules/products/product.repository.ts
 init_esm();
@@ -73791,16 +74462,18 @@ var CatalogService = class {
 };
 
 // src/modules/catalog/catalog.routes.ts
-var UUID_PATTERN2 = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+var pageQuery = external_exports.object({ page: external_exports.coerce.number().int().min(1).default(1) });
+var UUID_PATTERN3 = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 function requireUuid(value, code) {
-  if (typeof value !== "string" || !UUID_PATTERN2.test(value)) throw AppError.notFound(code);
+  if (typeof value !== "string" || !UUID_PATTERN3.test(value)) throw AppError.notFound(code);
   return value;
 }
 function createCatalogRouter(ctx) {
-  const router = (0, import_express3.Router)();
+  const router = (0, import_express4.Router)();
   const catalog = new CatalogService(ctx);
   const workers = new WorkersService(ctx);
   const workersRepo = new WorkersRepository(ctx.db);
+  const reviews = new ReviewsReader(ctx.db);
   const { optionalAuth } = createAuthMiddleware(ctx);
   router.get("/categories", async (_req, res) => {
     res.json(await catalog.categories());
@@ -73810,6 +74483,11 @@ function createCatalogRouter(ctx) {
   });
   router.get("/workers/:id", async (req, res) => {
     res.json(await workers.getById(requireUuid(req.params.id, "NOT_FOUND")));
+  });
+  router.get("/workers/:id/reviews", async (req, res) => {
+    const id = requireUuid(req.params.id, "NOT_FOUND");
+    const { page } = pageQuery.parse(req.query);
+    res.json(await reviews.listVisible(id, page));
   });
   router.get("/products", async (req, res) => {
     res.json(await catalog.listProducts(listQuerySchema.parse(req.query)));
@@ -73823,109 +74501,7 @@ function createCatalogRouter(ctx) {
 }
 
 // src/modules/feedback/feedback.routes.ts
-var import_express4 = __toESM(require_express2(), 1);
-
-// src/modules/feedback/feedback.service.ts
-var UNIQUE_VIOLATION = "23505";
-var RATING_DECIMALS = 100;
-function isUniqueViolation(error) {
-  return typeof error === "object" && error !== null && error.code === UNIQUE_VIOLATION;
-}
-function nextRating(current, count, added) {
-  return Math.round((current * count + added) / (count + 1) * RATING_DECIMALS) / RATING_DECIMALS;
-}
-var FeedbackService = class {
-  db;
-  cache;
-  constructor(ctx) {
-    this.db = ctx.db;
-    this.cache = ctx.cache;
-  }
-  /**
-   * Saves the review and moves the worker's rating in one transaction. The order row is locked
-   * first, so two simultaneous submissions cannot both pass the "no review yet" check.
-   */
-  async createReview(userId, orderId3, input) {
-    try {
-      const review = await this.db.transaction().execute(async (trx) => {
-        const order = await this.lockOrder(trx, orderId3);
-        if (!order) throw AppError.notFound();
-        if (order.customerId !== userId) {
-          throw order.workerUserId === userId ? AppError.forbidden() : AppError.notFound();
-        }
-        if (order.status !== "delivered") throw AppError.conflict("ORDER_NOT_REVIEWABLE");
-        const existing = await trx.selectFrom("reviews").select("id").where("order_id", "=", orderId3).executeTakeFirst();
-        if (existing) throw AppError.conflict("REVIEW_ALREADY_EXISTS");
-        const worker = await trx.selectFrom("workers").select(["rating", "reviews_count"]).where("id", "=", order.workerId).forUpdate().executeTakeFirstOrThrow();
-        const row = await trx.insertInto("reviews").values({
-          order_id: orderId3,
-          customer_id: userId,
-          worker_id: order.workerId,
-          rating: input.rating,
-          comment: input.comment ? input.comment : null
-        }).returningAll().executeTakeFirstOrThrow();
-        await trx.updateTable("workers").set({
-          rating: nextRating(worker.rating, worker.reviews_count, input.rating),
-          reviews_count: worker.reviews_count + 1
-        }).where("id", "=", order.workerId).execute();
-        return {
-          id: row.id,
-          orderId: row.order_id,
-          rating: row.rating,
-          comment: row.comment,
-          status: row.status,
-          createdAt: row.created_at.toISOString()
-        };
-      });
-      this.cache.delete("workers:featured");
-      return review;
-    } catch (error) {
-      if (isUniqueViolation(error)) throw AppError.conflict("REVIEW_ALREADY_EXISTS");
-      throw error;
-    }
-  }
-  /** Either side of an order may complain; strangers get a 404 so order ids are not probeable. */
-  async createComplaint(userId, orderId3, input) {
-    const order = await this.findOrder(orderId3);
-    if (!order || order.customerId !== userId && order.workerUserId !== userId) {
-      throw AppError.notFound();
-    }
-    try {
-      const row = await this.db.insertInto("complaints").values({ order_id: orderId3, user_id: userId, reason: input.reason }).returningAll().executeTakeFirstOrThrow();
-      return {
-        id: row.id,
-        orderId: row.order_id,
-        reason: row.reason,
-        status: row.status,
-        createdAt: row.created_at.toISOString()
-      };
-    } catch (error) {
-      if (isUniqueViolation(error)) throw AppError.conflict("COMPLAINT_ALREADY_OPEN");
-      throw error;
-    }
-  }
-  findOrder(orderId3) {
-    return this.selectOrder(this.db, orderId3, false);
-  }
-  lockOrder(trx, orderId3) {
-    return this.selectOrder(trx, orderId3, true);
-  }
-  async selectOrder(db2, orderId3, lock) {
-    let query = db2.selectFrom("orders as o").innerJoin("workers as w", "w.id", "o.worker_id").select(["o.id", "o.customer_id", "o.worker_id", "o.status", "w.user_id as worker_user_id"]).where("o.id", "=", orderId3);
-    if (lock) query = query.forUpdate("o");
-    const row = await query.executeTakeFirst();
-    if (!row) return void 0;
-    return {
-      id: row.id,
-      customerId: row.customer_id,
-      workerId: row.worker_id,
-      workerUserId: row.worker_user_id,
-      status: row.status
-    };
-  }
-};
-
-// src/modules/feedback/feedback.routes.ts
+var import_express5 = __toESM(require_express2(), 1);
 var idSchema = external_exports.string().uuid();
 function orderId(req) {
   const parsed = idSchema.safeParse(req.params.id);
@@ -73933,7 +74509,7 @@ function orderId(req) {
   return parsed.data;
 }
 function createFeedbackRouter(ctx) {
-  const router = (0, import_express4.Router)();
+  const router = (0, import_express5.Router)();
   const feedback = new FeedbackService(ctx);
   const { requireAuth } = createAuthMiddleware(ctx);
   router.post("/orders/:id/review", requireAuth, async (req, res) => {
@@ -73948,11 +74524,11 @@ function createFeedbackRouter(ctx) {
 }
 
 // src/modules/files/files.routes.ts
-var import_express5 = __toESM(require_express2(), 1);
+var import_express6 = __toESM(require_express2(), 1);
 var FILE_NAME_PATTERN = /^[a-f0-9-]{36}\.(webp|glb)$/;
 var ONE_YEAR_SECONDS = 31536e3;
 function createFilesRouter(ctx) {
-  const router = (0, import_express5.Router)();
+  const router = (0, import_express6.Router)();
   router.get("/files/:name", async (req, res) => {
     const name = req.params.name ?? "";
     if (!FILE_NAME_PATTERN.test(name)) throw AppError.notFound();
@@ -73967,9 +74543,95 @@ function createFilesRouter(ctx) {
   return router;
 }
 
+// src/modules/materials/material.routes.ts
+var import_express7 = __toESM(require_express2(), 1);
+var UUID_PATTERN4 = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+function idParam3(req) {
+  const value = req.params.id;
+  if (typeof value !== "string" || !UUID_PATTERN4.test(value)) throw AppError.notFound();
+  return value;
+}
+function createMaterialRouter(ctx) {
+  const router = (0, import_express7.Router)();
+  const service = new MaterialService(ctx);
+  const { requireWorker } = createAuthMiddleware(ctx);
+  const workerId = (req) => req.workerId ?? "";
+  router.get("/materials", requireWorker, async (_req, res) => {
+    res.json(await service.listActive());
+  });
+  router.get("/material-orders", requireWorker, async (req, res) => {
+    res.json(await service.listForWorker(workerId(req)));
+  });
+  router.post("/material-orders", requireWorker, async (req, res) => {
+    const input = materialOrderSchema.parse(req.body);
+    res.status(201).json(await service.createOrder(workerId(req), input));
+  });
+  router.get("/material-orders/:id", requireWorker, async (req, res) => {
+    res.json(await service.getOwned(workerId(req), idParam3(req)));
+  });
+  router.post("/material-orders/:id/payment", requireWorker, async (req, res) => {
+    res.json(await service.startPayment(workerId(req), idParam3(req)));
+  });
+  router.post("/material-orders/:id/payment/confirm", requireWorker, async (req, res) => {
+    const card = cardPaymentSchema.parse(req.body);
+    res.json(await service.confirmPayment(workerId(req), idParam3(req), card));
+  });
+  return router;
+}
+
+// src/modules/savings/savings.routes.ts
+var import_express8 = __toESM(require_express2(), 1);
+
+// src/modules/savings/savings.service.ts
+var SavingsService = class {
+  constructor(ctx, now = () => /* @__PURE__ */ new Date()) {
+    this.ctx = ctx;
+    this.now = now;
+  }
+  async get(workerId) {
+    const goal = await this.ctx.db.selectFrom("savings_goals").select(["target_amount", "created_at"]).where("worker_id", "=", workerId).executeTakeFirst();
+    if (!goal) return null;
+    return this.toDto(workerId, goal.target_amount, goal.created_at);
+  }
+  /** Changing the target keeps the start date, so progress is not wiped by an edit. */
+  async set(workerId, targetAmount) {
+    const row = await this.ctx.db.insertInto("savings_goals").values({ worker_id: workerId, target_amount: targetAmount, updated_at: this.now() }).onConflict(
+      (oc) => oc.column("worker_id").doUpdateSet({ target_amount: targetAmount, updated_at: this.now() })
+    ).returning(["target_amount", "created_at"]).executeTakeFirstOrThrow();
+    return this.toDto(workerId, row.target_amount, row.created_at);
+  }
+  async clear(workerId) {
+    await this.ctx.db.deleteFrom("savings_goals").where("worker_id", "=", workerId).execute();
+  }
+  async toDto(workerId, targetAmount, createdAt) {
+    const row = await this.ctx.db.selectFrom("earnings").select((eb) => eb.fn.coalesce(eb.fn.sum("amount"), eb.lit(0)).as("total")).where("worker_id", "=", workerId).where("created_at", ">=", createdAt).executeTakeFirstOrThrow();
+    return { targetAmount, saved: Number(row.total), createdAt: createdAt.toISOString() };
+  }
+};
+
+// src/modules/savings/savings.routes.ts
+function createSavingsRouter(ctx) {
+  const router = (0, import_express8.Router)();
+  const service = new SavingsService(ctx);
+  const { requireWorker } = createAuthMiddleware(ctx);
+  const workerId = (req) => req.workerId ?? "";
+  router.get("/my/savings-goal", requireWorker, async (req, res) => {
+    res.json({ goal: await service.get(workerId(req)) });
+  });
+  router.put("/my/savings-goal", requireWorker, async (req, res) => {
+    const { targetAmount } = savingsGoalSchema.parse(req.body);
+    res.json({ goal: await service.set(workerId(req), targetAmount) });
+  });
+  router.delete("/my/savings-goal", requireWorker, async (req, res) => {
+    await service.clear(workerId(req));
+    res.status(204).end();
+  });
+  return router;
+}
+
 // src/modules/orders/order.routes.ts
 var import_node_crypto4 = require("node:crypto");
-var import_express6 = __toESM(require_express2(), 1);
+var import_express9 = __toESM(require_express2(), 1);
 
 // src/middleware/upload.ts
 var import_multer = __toESM(require_multer(), 1);
@@ -74085,7 +74747,8 @@ var OrderService = class {
       if (!order) throw AppError.notFound();
       if (order.worker_id !== viewer.workerId) throw AppError.forbidden();
       const target = ACTION_TARGET[action];
-      if (!canTransition(order.status, target))
+      const rejectsStarted = action === "reject" && order.status !== "new";
+      if (rejectsStarted || !canTransition(order.status, target))
         throw AppError.conflict("ORDER_INVALID_TRANSITION");
       if (action === "reject") await refundPaidOrder(trx, this.ctx.payments, id);
       if (action === "deliver") {
@@ -74294,7 +74957,7 @@ function orderId2(req) {
   return parsed.data;
 }
 function createOrderRouter(ctx) {
-  const router = (0, import_express6.Router)();
+  const router = (0, import_express9.Router)();
   const orders = new OrderService(ctx);
   const serviceOrders = new ServiceOrderService(ctx);
   const payments = new PaymentService(ctx);
@@ -74349,7 +75012,7 @@ function createOrderRouter(ctx) {
 // src/modules/jobs/maintenance.ts
 var SWEEP_INTERVAL_MS = 60 * 1e3;
 async function runMaintenance(ctx, now = /* @__PURE__ */ new Date()) {
-  const cancelled = await expireUnpaidOrders(ctx.db, now);
+  const cancelled = await expireUnpaidOrders(ctx.db, now) + await expireUnpaidMaterialOrders(ctx.db, now);
   const refunded = await refundUnacceptedOrders(ctx, now);
   if (cancelled > 0 || refunded > 0) logger.info("Maintenance finished", { cancelled, refunded });
   return { cancelled, refunded };
@@ -74465,7 +75128,7 @@ function createPaymentProvider(config2) {
 }
 
 // src/modules/products/product.routes.ts
-var import_express7 = __toESM(require_express2(), 1);
+var import_express10 = __toESM(require_express2(), 1);
 
 // src/modules/products/product.service.ts
 var import_node_crypto6 = require("node:crypto");
@@ -79618,14 +80281,14 @@ var ProductService = class {
 };
 
 // src/modules/products/product.routes.ts
-var UUID_PATTERN3 = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-function idParam2(req, name = "id") {
+var UUID_PATTERN5 = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+function idParam4(req, name = "id") {
   const value = req.params[name];
-  if (typeof value !== "string" || !UUID_PATTERN3.test(value)) throw AppError.notFound();
+  if (typeof value !== "string" || !UUID_PATTERN5.test(value)) throw AppError.notFound();
   return value;
 }
 function createProductRouter(ctx) {
-  const router = (0, import_express7.Router)();
+  const router = (0, import_express10.Router)();
   const service = new ProductService(ctx);
   const { requireWorker } = createAuthMiddleware(ctx);
   const workerId = (req) => req.workerId ?? "";
@@ -79639,39 +80302,39 @@ function createProductRouter(ctx) {
   });
   router.put("/my/products/:id", async (req, res) => {
     const input = productInputSchema.parse(req.body);
-    res.json(await service.update(workerId(req), idParam2(req), input));
+    res.json(await service.update(workerId(req), idParam4(req), input));
   });
   router.patch("/my/products/:id/stock", async (req, res) => {
     const { stock } = stockUpdateSchema.parse(req.body);
-    res.json(await service.setStock(workerId(req), idParam2(req), stock));
+    res.json(await service.setStock(workerId(req), idParam4(req), stock));
   });
   router.patch("/my/products/:id/status", async (req, res) => {
     const { status } = productStatusSchema.parse(req.body);
-    res.json(await service.setStatus(workerId(req), idParam2(req), status));
+    res.json(await service.setStatus(workerId(req), idParam4(req), status));
   });
   router.delete("/my/products/:id", async (req, res) => {
-    await service.remove(workerId(req), idParam2(req));
+    await service.remove(workerId(req), idParam4(req));
     res.status(204).end();
   });
   router.post(
     "/my/products/:id/images",
     singleFile("image", MAX_IMAGE_BYTES, "IMAGE_TOO_LARGE"),
     async (req, res) => {
-      res.status(201).json(await service.addImage(workerId(req), idParam2(req), fileOf(req)));
+      res.status(201).json(await service.addImage(workerId(req), idParam4(req), fileOf(req)));
     }
   );
   router.delete("/my/products/:id/images/:imageId", async (req, res) => {
-    res.json(await service.removeImage(workerId(req), idParam2(req), idParam2(req, "imageId")));
+    res.json(await service.removeImage(workerId(req), idParam4(req), idParam4(req, "imageId")));
   });
   router.put(
     "/my/products/:id/model",
     singleFile("model", MAX_MODEL_BYTES, "MODEL_TOO_LARGE"),
     async (req, res) => {
-      res.json(await service.setModel(workerId(req), idParam2(req), fileOf(req)));
+      res.json(await service.setModel(workerId(req), idParam4(req), fileOf(req)));
     }
   );
   router.delete("/my/products/:id/model", async (req, res) => {
-    res.json(await service.removeModel(workerId(req), idParam2(req)));
+    res.json(await service.removeModel(workerId(req), idParam4(req)));
   });
   return router;
 }
@@ -79700,15 +80363,15 @@ function createApp(options) {
   if (config2.isProduction && ctx.payments.name === "internal") {
     logger.warn("Real payment provider is not connected: PAYMENT_PROVIDER=internal");
   }
-  const app = (0, import_express8.default)();
+  const app = (0, import_express11.default)();
   app.set("trust proxy", 1);
   app.disable("x-powered-by");
   app.use(helmet({ crossOriginResourcePolicy: { policy: "same-site" } }));
   app.use((0, import_cors.default)({ origin: config2.allowedOrigins, credentials: true }));
   app.use(originGuard(config2.allowedOrigins));
-  app.use(import_express8.default.json({ limit: "100kb" }));
+  app.use(import_express11.default.json({ limit: "100kb" }));
   app.use((0, import_cookie_parser.default)());
-  const api = import_express8.default.Router();
+  const api = import_express11.default.Router();
   api.get("/health", (_req, res) => {
     res.json({ status: "ok" });
   });
@@ -79721,6 +80384,9 @@ function createApp(options) {
   api.use(createProductRouter(ctx));
   api.use(createOrderRouter(ctx));
   api.use(createFeedbackRouter(ctx));
+  api.use(createMaterialRouter(ctx));
+  api.use(createSavingsRouter(ctx));
+  api.use(createAdminRouter(ctx));
   api.use(createFilesRouter(ctx));
   app.use("/api", api);
   app.use(notFoundHandler);
@@ -80050,6 +80716,49 @@ async function seedProduct(db2, storage, workerId, categoryId, product) {
     }).execute();
   }
 }
+var MATERIALS = [
+  {
+    name: "Paxta ip (10 g o\u02BBrama)",
+    description: "Kashta va to\u02BBqish uchun, 40 xil rang.",
+    price: 6e3,
+    discountPercent: 15,
+    stock: 400
+  },
+  {
+    name: "Atlas mato (1 metr)",
+    description: "Milliy libos uchun, kengligi 140 sm.",
+    price: 45e3,
+    discountPercent: 10,
+    stock: 120
+  },
+  {
+    name: "Yuqori navli un (5 kg)",
+    description: "Pishiriq va non uchun.",
+    price: 38e3,
+    discountPercent: 12,
+    stock: 200
+  },
+  {
+    name: "Tikuv ignalari to\u02BBplami",
+    description: "Turli o\u02BBlchamdagi 30 ta igna.",
+    price: 9e3,
+    discountPercent: 0,
+    stock: 300
+  }
+];
+async function seedMaterials(db2) {
+  const existing = await db2.selectFrom("materials").select("id").limit(1).executeTakeFirst();
+  if (existing) return;
+  await db2.insertInto("materials").values(
+    MATERIALS.map((m) => ({
+      name: m.name,
+      description: m.description,
+      price: m.price,
+      discount_percent: m.discountPercent,
+      stock: m.stock
+    }))
+  ).execute();
+}
 async function seedSampleData(db2) {
   const storage = new DbStorageProvider(db2);
   const categories = await categoryIds(db2);
@@ -80060,6 +80769,7 @@ async function seedSampleData(db2) {
     await seedWorker(db2, storage, seed, categories);
     created += 1;
   }
+  await seedMaterials(db2);
   return created;
 }
 

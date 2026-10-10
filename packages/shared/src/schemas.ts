@@ -18,8 +18,11 @@ import {
   PRODUCT_STATUSES,
   SMS_CODE_LENGTH,
   DEFAULT_PAGE_SIZE,
+  MAX_DISCOUNT_PERCENT,
+  MAX_MATERIAL_NAME_LENGTH,
   MAX_ORDER_DESCRIPTION_LENGTH,
   MAX_ORDER_IMAGES,
+  REVIEW_STATUSES,
   MAX_SERVICE_HOURS,
 } from './constants.js';
 import { normalizePhone } from './phone.js';
@@ -200,3 +203,40 @@ export function isValidCardNumber(cardNumber: string): boolean {
   }
   return sum % 10 === 0;
 }
+
+export const materialInputSchema = z.object({
+  name: z.string().trim().min(MIN_NAME_LENGTH).max(MAX_MATERIAL_NAME_LENGTH),
+  description: z.string().trim().max(MAX_DESCRIPTION_LENGTH).default(''),
+  price: moneySchema,
+  discountPercent: z.number().int().min(0).max(MAX_DISCOUNT_PERCENT).default(0),
+  stock: z.number().int().min(0).max(MAX_ITEM_QUANTITY),
+  isActive: z.boolean().default(true),
+});
+export type MaterialInput = z.infer<typeof materialInputSchema>;
+export type MaterialInputRaw = z.input<typeof materialInputSchema>;
+
+export const materialOrderSchema = z.object({
+  items: z
+    .array(
+      z.object({
+        materialId: z.string().uuid(),
+        quantity: z.number().int().min(1).max(MAX_ITEM_QUANTITY),
+      }),
+    )
+    .min(1)
+    .max(MAX_CART_ITEMS),
+});
+export type MaterialOrderInput = z.infer<typeof materialOrderSchema>;
+
+export const savingsGoalSchema = z.object({ targetAmount: moneySchema });
+export type SavingsGoalInput = z.infer<typeof savingsGoalSchema>;
+
+export const workerVerificationSchema = z.object({ verified: z.boolean() });
+export const reviewModerationSchema = z.object({ status: z.enum(REVIEW_STATUSES) });
+export const complaintResolutionSchema = z.object({ status: z.enum(['resolved', 'dismissed']) });
+
+export const adminListQuerySchema = z.object({
+  page: z.coerce.number().int().min(1).default(1),
+  status: z.string().trim().max(30).optional(),
+});
+export type AdminListQuery = z.infer<typeof adminListQuerySchema>;

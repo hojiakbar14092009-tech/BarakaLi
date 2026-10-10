@@ -5,6 +5,7 @@ import { errorMessage } from '../../lib/errors';
 import { formatPrice } from '../../lib/format';
 import { useEarnings } from '../orders/api';
 import { shortId } from '../orders/OrdersPage';
+import { SavingsGoal } from './SavingsGoal';
 
 export default function EarningsPage() {
   const { t, i18n } = useTranslation();
@@ -37,6 +38,8 @@ export default function EarningsPage() {
           <p className="text-4xl font-bold">{formatPrice(data.allTimeTotal, currency)}</p>
         </section>
       </div>
+
+      <SavingsGoal />
 
       <section aria-labelledby="earnings-history" className="space-y-3">
         <h2 id="earnings-history" className="text-xl font-bold">

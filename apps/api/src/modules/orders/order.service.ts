@@ -105,7 +105,9 @@ export class OrderService {
       if (!order) throw AppError.notFound();
       if (order.worker_id !== viewer.workerId) throw AppError.forbidden();
       const target = ACTION_TARGET[action];
-      if (!canTransition(order.status as OrderStatus, target))
+      // Refund from a started order exists only as the admin's complaint refund, never as a worker action.
+      const rejectsStarted = action === 'reject' && order.status !== 'new';
+      if (rejectsStarted || !canTransition(order.status as OrderStatus, target))
         throw AppError.conflict('ORDER_INVALID_TRANSITION');
       if (action === 'reject') await refundPaidOrder(trx, this.ctx.payments, id);
       if (action === 'deliver') {

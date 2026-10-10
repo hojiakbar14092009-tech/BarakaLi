@@ -1,0 +1,23 @@
+{
+  "title": "Materiallar doʻkoni",
+  "intro": "Ip, mato, un va boshqa materiallarni chegirma bilan oling.",
+  "empty": "Materiallar hozircha yoʻq",
+  "emptyHint": "Tez orada katalog toʻldiriladi.",
+  "inStock": "Zaxirada: {{count}} dona",
+  "soldOut": "Tugagan",
+  "less": "Kamaytirish",
+  "more": "Koʻpaytirish",
+  "total": "Jami",
+  "order": "Buyurtma berish",
+  "myOrders": "Mening buyurtmalarim",
+  "paid": "Toʻlov qabul qilindi",
+  "paidText": "Materiallar tayyorlanadi, topshirilgach buyurtma holati yangilanadi.",
+  "notPayable": "Bu buyurtmani toʻlab boʻlmaydi",
+  "backToStore": "Doʻkonga qaytish",
+  "status": {
+    "awaiting_payment": "Toʻlov kutilmoqda",
+    "paid": "Toʻlangan",
+    "delivered": "Topshirilgan",
+    "cancelled": "Bekor qilingan"
+  }
+}

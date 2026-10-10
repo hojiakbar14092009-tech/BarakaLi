@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import {
+  ADMIN_PHONE,
   VIEWPORTS,
   addWindow,
   becomeWorker,
@@ -25,6 +26,7 @@ for (const viewport of VIEWPORTS) {
         '/xizmatlar/tikuvchilik',
         `/mahsulot/${productId}`,
         `/hunarmand/${workers[0]?.id ?? ''}`,
+        '/darslar',
         '/kirish',
         '/royxatdan-otish',
         '/savat',
@@ -71,6 +73,7 @@ for (const viewport of VIEWPORTS) {
         '/hunarmand/kalendar',
         '/ishlar',
         '/daromad',
+        '/materiallar',
         '/buyurtmalar',
         '/profil',
       ]) {
@@ -87,6 +90,17 @@ for (const viewport of VIEWPORTS) {
       await expect(page.getByRole('heading', { level: 1 }).first()).toBeVisible();
       expect(await hasHorizontalScroll(page)).toBe(false);
       await request.dispose();
+    });
+
+    test('admin panel tabs stay within the screen', async ({ page, context }) => {
+      await signIn(context, 'Admin', ADMIN_PHONE);
+      await page.goto('/admin');
+      await page.waitForLoadState('networkidle');
+      for (const tab of ['Hunarmandlar', 'Buyurtmalar', 'Sharhlar', 'Shikoyatlar', 'Materiallar']) {
+        await page.getByRole('tab', { name: tab }).click();
+        await page.waitForLoadState('networkidle');
+        expect(await hasHorizontalScroll(page)).toBe(false);
+      }
     });
   });
 }

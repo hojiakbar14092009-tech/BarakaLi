@@ -18,6 +18,10 @@ const MyProductsPage = lazy(() => import('./features/cabinet/MyProductsPage'));
 const EarningsPage = lazy(() => import('./features/cabinet/EarningsPage'));
 const CalendarPage = lazy(() => import('./features/calendar/CalendarPage'));
 const NewServiceOrderPage = lazy(() => import('./features/orders/NewServiceOrderPage'));
+const MaterialsPage = lazy(() => import('./features/materials/MaterialsPage'));
+const MaterialPaymentPage = lazy(() => import('./features/materials/MaterialPaymentPage'));
+const LessonsPage = lazy(() => import('./features/lessons/LessonsPage'));
+const AdminPage = lazy(() => import('./features/admin/AdminPage'));
 const ProfilePage = lazy(() => import('./features/profile/ProfilePage'));
 const AuthPage = lazy(() => import('./features/auth/AuthPage'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
@@ -35,6 +39,7 @@ const router = createBrowserRouter([
       { path: '/xizmatlar/:kategoriya', element: <CategoryPage /> },
       { path: '/mahsulot/:id', element: <ProductPage /> },
       { path: '/savat', element: <CartPage /> },
+      { path: '/darslar', element: <LessonsPage /> },
       { path: '/kirish', element: <AuthPage mode="signin" /> },
       { path: '/royxatdan-otish', element: <AuthPage mode="signup" /> },
       {
@@ -44,9 +49,15 @@ const router = createBrowserRouter([
           { path: '/hunarmand/kalendar', element: <CalendarPage /> },
           { path: '/ishlar', element: <MyProductsPage /> },
           { path: '/daromad', element: <EarningsPage /> },
+          { path: '/materiallar', element: <MaterialsPage /> },
+          { path: '/materiallar/tolov/:id', element: <MaterialPaymentPage /> },
         ],
       },
       { path: '/hunarmand/:id', element: <WorkerPage /> },
+      {
+        element: <RequireAuth role="admin" />,
+        children: [{ path: '/admin', element: <AdminPage /> }],
+      },
       {
         element: <RequireAuth />,
         children: [
