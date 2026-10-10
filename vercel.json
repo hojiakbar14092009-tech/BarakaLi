@@ -6,7 +6,7 @@
   "outputDirectory": "apps/web/dist",
   "functions": { "api/index.js": { "maxDuration": 30 } },
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api/index" },
+    { "source": "/api/(.*)", "destination": "/api" },
     { "source": "/((?!assets/|draco/|favicon.svg).*)", "destination": "/index.html" }
   ],
   "headers": [
