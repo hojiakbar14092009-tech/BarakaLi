@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { NavLink } from 'react-router-dom';
+import { useNotifications } from '../features/notifications/api';
 import { useAuthStore } from '../stores/auth';
 
 interface NavItem {
@@ -17,12 +18,19 @@ interface NavItem {
   labelKey: string;
   icon: LucideIcon;
   end?: boolean;
+  /** Unread count shown as a badge; only the orders entry carries one. */
+  badge?: boolean;
 }
 
 function useNavItems(): NavItem[] {
   const user = useAuthStore((s) => s.user);
   if (!user) return [];
-  const orders: NavItem = { to: '/buyurtmalar', labelKey: 'nav.orders', icon: Receipt };
+  const orders: NavItem = {
+    to: '/buyurtmalar',
+    labelKey: 'nav.orders',
+    icon: Receipt,
+    badge: true,
+  };
   const profile: NavItem = { to: '/profil', labelKey: 'nav.profile', icon: UserRound };
   if (user.role === 'admin') {
     return [{ to: '/admin', labelKey: 'nav.admin', icon: ShieldCheck }, profile];
@@ -42,6 +50,7 @@ function useNavItems(): NavItem[] {
 export function NavBar() {
   const { t } = useTranslation();
   const items = useNavItems();
+  const unread = useNotifications().data?.unread ?? 0;
   if (items.length === 0) return null;
   return (
     <nav
@@ -49,7 +58,7 @@ export function NavBar() {
       className="fixed inset-x-0 bottom-0 z-30 border-t border-bisque bg-sugar pb-[env(safe-area-inset-bottom)] sm:sticky sm:inset-x-auto sm:top-16 sm:h-[calc(100dvh-4rem)] sm:w-24 sm:shrink-0 sm:self-start sm:border-r sm:border-t-0 sm:pb-0 lg:w-56"
     >
       <ul className="mx-auto flex max-w-xl justify-around sm:flex-col sm:justify-start sm:gap-1 sm:p-2">
-        {items.map(({ to, labelKey, icon: Icon, end }) => (
+        {items.map(({ to, labelKey, icon: Icon, end, badge }) => (
           <li key={to} className="flex-1 sm:flex-none">
             <NavLink
               to={to}
@@ -62,6 +71,14 @@ export function NavBar() {
             >
               <Icon className="size-6 shrink-0" strokeWidth={1.75} aria-hidden="true" />
               <span className="max-w-full truncate sm:sr-only lg:not-sr-only">{t(labelKey)}</span>
+              {badge && unread > 0 && (
+                <span
+                  aria-label={t('nav.unread', { count: unread })}
+                  className="absolute right-2 top-1 grid min-w-5 place-items-center rounded-full bg-mocha px-1 text-xs font-bold text-sugar sm:static sm:ml-auto"
+                >
+                  {unread}
+                </span>
+              )}
             </NavLink>
           </li>
         ))}

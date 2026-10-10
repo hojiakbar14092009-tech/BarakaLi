@@ -43,6 +43,33 @@ export function startOfTashkentMonth(now: Date): Date {
   return new Date(Date.UTC(local.getUTCFullYear(), local.getUTCMonth(), 1) - TASHKENT_OFFSET_MS);
 }
 
+/**
+ * The order header names one worker; every product line must belong to that worker according to
+ * the products table *inside the transaction*, never to anything the client or an earlier read said.
+ */
+async function assertLinesOwnedBy(
+  trx: Transaction<Database>,
+  workerId: string,
+  lines: PricedLine[],
+): Promise<void> {
+  const owners = await trx
+    .selectFrom('products')
+    .select(['id', 'worker_id'])
+    .where(
+      'id',
+      'in',
+      lines.map((line) => line.productId),
+    )
+    .forShare()
+    .execute();
+  const ownerById = new Map(owners.map((row) => [row.id, row.worker_id]));
+  for (const line of lines) {
+    if (ownerById.get(line.productId) !== workerId) {
+      throw AppError.conflict('ORDER_WORKER_MISMATCH');
+    }
+  }
+}
+
 function mergeDuplicates(items: CartItemInput[]): CartItemInput[] {
   const merged = new Map<string, number>();
   for (const item of items)
@@ -206,6 +233,7 @@ export class OrderService {
     lines: PricedLine[],
     input: CreateOrdersInput,
   ): Promise<string> {
+    await assertLinesOwnedBy(trx, workerId, lines);
     const split = splitOrderAmount(lines.reduce((sum, line) => sum + line.lineTotal, 0));
     const order = await trx
       .insertInto('orders')

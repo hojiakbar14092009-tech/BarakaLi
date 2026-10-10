@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import { COMMISSION_RATE_PERCENT } from '@barakali/shared';
 import { formatPrice } from '../../lib/format';
 import { useAuthStore } from '../../stores/auth';
+import { useNotifications } from '../notifications/api';
 import { useEarnings } from '../orders/api';
 import { useOrders } from '../orders/api';
 
@@ -39,6 +40,7 @@ export default function CabinetPage() {
   const user = useAuthStore((s) => s.user);
   const orders = useOrders('worker');
   const earnings = useEarnings();
+  const unread = useNotifications().data?.unread ?? 0;
   const incoming = orders.data ?? [];
   const newCount = incoming.filter((order) => order.status === 'new').length;
   const acceptedCount = incoming.filter((order) => order.status === 'accepted').length;
@@ -49,6 +51,14 @@ export default function CabinetPage() {
       <header className="space-y-1">
         <h1 className="text-3xl font-bold">{t('cabinet.panelTitle')}</h1>
         {user?.name && <p className="text-mocha">{t('cabinet.greeting', { name: user.name })}</p>}
+        {user?.workerName && (
+          <p className="text-sm text-mocha">{t('cabinet.workerAs', { name: user.workerName })}</p>
+        )}
+        {unread > 0 && (
+          <p role="status" className="rounded-field bg-pistachio px-4 py-2 font-semibold">
+            {t('cabinet.unreadOrders', { count: unread })}
+          </p>
+        )}
       </header>
       <div className="grid gap-3 sm:grid-cols-2">
         <Card

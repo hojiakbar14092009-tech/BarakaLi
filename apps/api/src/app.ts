@@ -18,6 +18,7 @@ import { createCalendarRouter } from './modules/calendar/calendar.routes.js';
 import { createCatalogRouter } from './modules/catalog/catalog.routes.js';
 import { createFeedbackRouter } from './modules/feedback/feedback.routes.js';
 import { createFilesRouter } from './modules/files/files.routes.js';
+import { createNotificationRouter } from './modules/notifications/notification.routes.js';
 import { createMaterialRouter } from './modules/materials/material.routes.js';
 import { createSavingsRouter } from './modules/savings/savings.routes.js';
 import { createOrderRouter } from './modules/orders/order.routes.js';
@@ -89,6 +90,7 @@ export function createApp(options: AppOptions): Express {
   api.use(createProductRouter(ctx));
   api.use(createOrderRouter(ctx));
   api.use(createFeedbackRouter(ctx));
+  api.use(createNotificationRouter(ctx));
   api.use(createMaterialRouter(ctx));
   api.use(createSavingsRouter(ctx));
   api.use(createAdminRouter(ctx));

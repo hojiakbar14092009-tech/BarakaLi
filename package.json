@@ -17,6 +17,7 @@
     "build:api": "pnpm --filter @barakali/api build:vercel",
     "db:migrate": "pnpm --filter @barakali/api db:migrate",
     "db:seed": "pnpm --filter @barakali/api db:seed",
+    "db:audit-orders": "pnpm --filter @barakali/api db:audit-orders",
     "e2e": "playwright test",
     "ci": "pnpm lint && pnpm typecheck && pnpm test && pnpm build",
     "prepare": "husky || true"

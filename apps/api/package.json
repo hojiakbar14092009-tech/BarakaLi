@@ -10,7 +10,8 @@
     "typecheck": "tsc -p tsconfig.json",
     "test": "vitest run",
     "db:migrate": "tsx --env-file-if-exists=../../.env src/db/cli/migrate.ts",
-    "db:seed": "tsx --env-file-if-exists=../../.env src/db/cli/seed.ts"
+    "db:seed": "tsx --env-file-if-exists=../../.env src/db/cli/seed.ts",
+    "db:audit-orders": "tsx --env-file-if-exists=../../.env src/db/cli/audit-orders.ts"
   },
   "dependencies": {
     "@barakali/shared": "workspace:*",

@@ -31,6 +31,21 @@ export interface UserDto {
   role: UserRole;
   language: 'uz' | 'ru';
   workerId: string | null;
+  /** Public name of the worker profile this account owns (what customers see on its products). */
+  workerName: string | null;
+}
+
+export interface NotificationDto {
+  id: string;
+  kind: 'order_new';
+  orderId: string | null;
+  readAt: string | null;
+  createdAt: string;
+}
+
+export interface NotificationsDto {
+  unread: number;
+  items: NotificationDto[];
 }
 
 export interface AuthResponse {

@@ -29,7 +29,8 @@
     "calendar": "Календарь",
     "admin": "Управление",
     "materials": "Материалы",
-    "lessons": "Уроки"
+    "lessons": "Уроки",
+    "unread": "Новых заказов: {{count}}"
   },
   "header": {
     "signIn": "Войти",

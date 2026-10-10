@@ -27,6 +27,21 @@ Bu ro'yxat `CLAUDE.md` dagi bosqichlardan MVP'ga kirmagan qismlarni o'z ichiga o
 - [x] 24 soat ichida qabul qilinmagan toʻlangan buyurtmani avtomatik qaytarish (13.11, 5-bosqichda)
 - [ ] Tasdiqlanmagan hunarmand buyurtma qabul qilishini cheklash (DECISIONS.md: hozircha belgi sifatida)
 
+## Noto'g'ri hunarmandga tushgan buyurtmalar (3-bosqich)
+
+Kod oqimi testda to'g'ri ishlaydi; endi DB triggeri va servis tekshiruvi yangi xatoni bloklaydi.
+Oldin yaratilgan buyurtmalar **o'zgartirilmagan**. Ro'yxatni production bazasida olish:
+
+```bash
+pnpm db:audit-orders
+```
+
+- [ ] Natijani shu yerga yozish (buyurtma id, holat, sana; ism va telefon emas). Bu muhitdan production
+      bazasiga ulanilmagani uchun hozircha bo'sh.
+- [ ] "Hojiakbar" mahsuloti qaysi hunarmand profili ostida yaratilganini tekshirish (`products.worker_id`
+      → `workers.user_id` → kirishda ishlatilgan raqam). Namuna raqam bilan kirilgan bo'lsa, mahsulotni
+      to'g'ri hisobga ko'chirish admin tomonidan qo'lda hal qilinadi.
+
 ## Integratsiyalar
 
 - [ ] Real SMS provayderi (Eskiz yoki Play Mobile) va `EXPOSE_SMS_CODE=false`

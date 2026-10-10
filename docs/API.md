@@ -57,6 +57,7 @@ interface UserDto {
   role: 'customer' | 'worker' | 'admin';
   language: 'uz' | 'ru';
   workerId: string | null;
+  workerName: string | null; // hunarmand profilining ommaviy nomi (PATCH /me nomni unga ham yozadi)
 }
 ```
 
@@ -273,6 +274,10 @@ interface EarningsDto {
 `in_progress → ready | refunded`, `ready → delivered | refunded`. Hunarmand `reject` faqat `new` dan;
 qolgan `→ refunded` o'tishlari faqat admin qaytarishi orqali.
 
+**Egalik kafolati.** Har mahsulot qatori buyurtma hunarmandiga tegishli bo'lishi shart: servis tranzaksiya
+ichida tekshiradi (409 `ORDER_WORKER_MISMATCH`), DB triggeri `order_items_owner_matches` esa boshqa
+yo'ldan yozishni ham rad etadi. Mijoz yuborgan `workerId` e'tiborga olinmaydi.
+
 **Narx va to'lov.** Narx faqat serverda: `quantity ≥ wholesaleMinQty` bo'lsa ulgurji narx. Zaxira
 to'lov tasdiqlanganda `UPDATE … WHERE stock >= qty` bilan kamayadi (409 `INSUFFICIENT_STOCK`).
 `payment/confirm` idempotent: takroriy chaqiruv qayta hisoblamaydi. Karta ma'lumotlari saqlanmaydi va
@@ -281,6 +286,27 @@ qaytarish (`refunded`).
 
 **Xizmat buyurtmasi xatolari.** `ORDER_SLOT_TAKEN` (409, DB constraint), `SLOT_OUTSIDE_AVAILABILITY` (409),
 `SLOT_IN_PAST` (400), `OWN_SERVICE` (400), `ORDER_IMAGE_INVALID` (400).
+
+## Bildirishnomalar
+
+| Yo'l                                          | Kim    | Javob                                               |
+| --------------------------------------------- | ------ | --------------------------------------------------- |
+| `GET /my/notifications`                       | kirgan | `{ unread, items: NotificationDto[] }` (30 tagacha) |
+| `POST /my/notifications/read`                 | kirgan | 204, hammasi o'qilgan                               |
+| `POST /my/notifications/orders/:orderId/read` | kirgan | 204, shu buyurtmaga oidlari o'qilgan                |
+
+```ts
+interface NotificationDto {
+  id: string;
+  kind: 'order_new';
+  orderId: string | null;
+  readAt: string | null;
+  createdAt: string;
+}
+```
+
+`order_new` buyurtma `new` holatiga o'tgan tranzaksiyada hunarmandga yoziladi (to'lov tasdig'i yoki
+xizmat so'rovi). SMS nusxasi `SmsProvider` ga beriladi; shlyuz ulanmaguncha u yetkazilmaydi.
 
 ## Hunarmand: materiallar va jamg'arma
 

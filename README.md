@@ -33,6 +33,7 @@ Talab: Node.js 20+ va pnpm 12 (`npm i -g pnpm`). Docker yoki alohida PostgreSQL 
 pnpm install
 cp .env.example .env        # lokalda EXPOSE_SMS_CODE=true qo'ying: kod kirish formasida ko'rinadi
 pnpm db:seed                # kategoriyalar, 4 hunarmand, 10 mahsulot, 1 ta 3D model
+pnpm db:audit-orders        # faqat o'qiydi: mahsulot egasi va buyurtma hunarmandi mos kelmagan buyurtmalar
 pnpm dev                    # web: http://localhost:5173, api: http://localhost:3001
 ```
 

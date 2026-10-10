@@ -71,5 +71,7 @@
     "commissionLine": "Komissiya: {{amount}}",
     "received": "Hunarmandga tegdi: {{amount}}"
   },
-  "calendarText": "Boʻsh vaqtingiz va xizmat narxini belgilang."
+  "calendarText": "Boʻsh vaqtingiz va xizmat narxini belgilang.",
+  "workerAs": "Hunarmand profili: {{name}}",
+  "unreadOrders": "Sizga {{count}} ta yangi buyurtma keldi"
 }

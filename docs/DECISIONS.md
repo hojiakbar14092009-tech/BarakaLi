@@ -100,6 +100,36 @@ Brifdagi noaniqliklar bo'yicha qabul qilingan qarorlar. Yangi qaror oxiriga qo's
 - **Eski ma'lumotlar:** narx bilan yaratilgan xizmat buyurtmalari oʻz summasi, toʻlovi va daromadi bilan
   oʻzgarmasdan qoladi (toʻlangan eski buyurtma muddati oʻtsa hamon qaytariladi).
 
+## Buyurtma egasi kafolati va bildirishnoma (2026-10-10)
+
+- **Tekshiruv natijasi:** savat → `POST /orders` → `order_items` oqimi hunarmandni har doim
+  `products.worker_id` dan oladi (savat faqat `productId` va miqdor yuboradi, mijoz yuborgan
+  `workerId` e'tiborga olinmaydi). Takrorlash testi (`order-routing.test.ts`: namuna hunarmandlar
+  - yangi "Hojiakbar", aralash savat) **shu kodda xatoni topmadi**. Shuning uchun production'dagi
+    holat ("Hojiakbar mahsuloti → Dilfuza") kodning oddiy yoʻlidan emas; eng ehtimolli sabab —
+    mahsulot aslida namuna raqam (`+998 90 000 00 01`, SMS kodi ekranda koʻringani uchun istalgan
+    kishi kira oladi) bilan kirilgan Dilfuza hisobi ostida yaratilgan, keyin esa boshqa raqam bilan
+    yangi "Hojiakbar" hisobi ochilgan. Buni production bazasida `pnpm db:audit-orders` va
+    mahsulot egasi boʻyicha tekshirish kerak (TODO.md).
+- **Qattiq kafolat (DB):** `order_items_owner_matches` triggeri — mahsulot qatori faqat shu
+  mahsulot egasiga yozilgan buyurtmaga kira oladi, aks holda `check_violation`. Mavjud qatorlar
+  tekshirilmaydi va oʻzgartirilmaydi.
+- **Kafolat (servis):** `insertOrder` tranzaksiya ichida mahsulot egalarini `FOR SHARE` bilan qayta
+  oʻqib, sarlavhadagi hunarmand bilan solishtiradi; mos kelmasa `ORDER_WORKER_MISMATCH` (409) va
+  buyurtma yaratilmaydi.
+- **Audit:** `pnpm db:audit-orders` (`db/audit.ts`) — faqat oʻqiydi, buyurtma id, holat, sana va
+  ikkala hunarmand id'sini chiqaradi (ism/telefon yoʻq). Noto'g'ri buyurtmalar migratsiyada
+  tuzatilmaydi.
+- **Bir kishi — bir ism:** `PATCH /me` hunarmandning ommaviy `display_name` ini ham yangilaydi;
+  `UserDto.workerName` kabinetda "Hunarmand profili: …" sifatida koʻrsatiladi, shunda hisob
+  qaysi hunarmand profiliga bogʻlangani darhol koʻrinadi.
+- **Bildirishnoma:** `notifications` jadvali; buyurtma `new` boʻlgan tranzaksiyada (toʻlov
+  tasdigʻi yoki xizmat soʻrovi) hunarmandga `order_new` yoziladi. Commitdan keyin `SmsProvider`
+  ga qisqa SMS beriladi (shlyuz ulanmagan: faqat interfeys). UI: navigatsiyada oʻqilmaganlar
+  soni, kabinetda eslatma, buyurtma ochilganda oʻqilgan deb belgilanadi.
+- **Loglar:** `ConsoleSmsProvider` telefonni maskalab yozadi (`+998*******67`); telefon URL
+  parametrlarida ishlatilmaydi.
+
 ## Brauzer testlari va moslashuvchanlik
 
 - **Playwright:** `pnpm e2e` (oldin `pnpm --filter @barakali/web build`). Web ilovaning production

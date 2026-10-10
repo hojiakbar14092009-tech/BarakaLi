@@ -12,6 +12,7 @@ interface UserRow {
   role: UserDto['role'];
   language: UserDto['language'];
   worker_id: string | null;
+  worker_name: string | null;
 }
 
 function toUserDto(row: UserRow): UserDto {
@@ -22,6 +23,7 @@ function toUserDto(row: UserRow): UserDto {
     role: row.role,
     language: row.language,
     workerId: row.worker_id,
+    workerName: row.worker_name,
   };
 }
 
@@ -101,12 +103,20 @@ export class AuthRepository {
     await this.db.updateTable('users').set({ role }).where('id', '=', userId).execute();
   }
 
+  /** One name per person: a worker's public display name follows the profile name. */
   async updateProfile(userId: string, name: string, language?: 'uz' | 'ru'): Promise<void> {
-    await this.db
-      .updateTable('users')
-      .set(language ? { name, language } : { name })
-      .where('id', '=', userId)
-      .execute();
+    await this.db.transaction().execute(async (trx) => {
+      await trx
+        .updateTable('users')
+        .set(language ? { name, language } : { name })
+        .where('id', '=', userId)
+        .execute();
+      await trx
+        .updateTable('workers')
+        .set({ display_name: name })
+        .where('user_id', '=', userId)
+        .execute();
+    });
   }
 
   async insertRefreshToken(userId: string, tokenHash: string, expiresAt: Date): Promise<void> {
@@ -148,6 +158,14 @@ export class AuthRepository {
     return this.db
       .selectFrom('users as u')
       .leftJoin('workers as w', 'w.user_id', 'u.id')
-      .select(['u.id', 'u.phone', 'u.name', 'u.role', 'u.language', 'w.id as worker_id']);
+      .select([
+        'u.id',
+        'u.phone',
+        'u.name',
+        'u.role',
+        'u.language',
+        'w.id as worker_id',
+        'w.display_name as worker_name',
+      ]);
   }
 }

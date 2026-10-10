@@ -21472,11 +21472,11 @@ var require_router = __commonJS({
     var slice = Array.prototype.slice;
     var flatten = Array.prototype.flat;
     var methods = METHODS.map((method) => method.toLowerCase());
-    module2.exports = Router11;
+    module2.exports = Router12;
     module2.exports.Route = Route;
-    function Router11(options) {
-      if (!(this instanceof Router11)) {
-        return new Router11(options);
+    function Router12(options) {
+      if (!(this instanceof Router12)) {
+        return new Router12(options);
       }
       const opts = options || {};
       function router(req, res, next) {
@@ -21490,9 +21490,9 @@ var require_router = __commonJS({
       router.stack = [];
       return router;
     }
-    Router11.prototype = function() {
+    Router12.prototype = function() {
     };
-    Router11.prototype.param = function param(name, fn) {
+    Router12.prototype.param = function param(name, fn) {
       if (!name) {
         throw new TypeError("argument name is required");
       }
@@ -21512,7 +21512,7 @@ var require_router = __commonJS({
       params.push(fn);
       return this;
     };
-    Router11.prototype.handle = function handle(req, res, callback) {
+    Router12.prototype.handle = function handle(req, res, callback) {
       if (!callback) {
         throw new TypeError("argument callback is required");
       }
@@ -21639,7 +21639,7 @@ var require_router = __commonJS({
         }
       }
     };
-    Router11.prototype.use = function use(handler) {
+    Router12.prototype.use = function use(handler) {
       let offset = 0;
       let path = "/";
       if (typeof handler !== "function") {
@@ -21672,7 +21672,7 @@ var require_router = __commonJS({
       }
       return this;
     };
-    Router11.prototype.route = function route(path) {
+    Router12.prototype.route = function route(path) {
       const route2 = new Route(path);
       const layer = new Layer(path, {
         sensitive: this.caseSensitive,
@@ -21687,7 +21687,7 @@ var require_router = __commonJS({
       return route2;
     };
     methods.concat("all").forEach(function(method) {
-      Router11.prototype[method] = function(path) {
+      Router12.prototype[method] = function(path) {
         const route = this.route(path);
         route[method].apply(route, slice.call(arguments, 1));
         return this;
@@ -21870,7 +21870,7 @@ var require_application = __commonJS({
     var compileTrust = require_utils3().compileTrust;
     var resolve = require("node:path").resolve;
     var once = require_once();
-    var Router11 = require_router();
+    var Router12 = require_router();
     var slice = Array.prototype.slice;
     var flatten = Array.prototype.flat;
     var app = exports2 = module2.exports = {};
@@ -21886,7 +21886,7 @@ var require_application = __commonJS({
         enumerable: true,
         get: function getrouter() {
           if (router === null) {
-            router = new Router11({
+            router = new Router12({
               caseSensitive: this.enabled("case sensitive routing"),
               strict: this.enabled("strict routing")
             });
@@ -24240,7 +24240,7 @@ var require_express = __commonJS({
     var EventEmitter = require("node:events").EventEmitter;
     var mixin = require_merge_descriptors();
     var proto = require_application();
-    var Router11 = require_router();
+    var Router12 = require_router();
     var req = require_request();
     var res = require_response();
     exports2 = module2.exports = createApplication;
@@ -24262,8 +24262,8 @@ var require_express = __commonJS({
     exports2.application = proto;
     exports2.request = req;
     exports2.response = res;
-    exports2.Route = Router11.Route;
-    exports2.Router = Router11;
+    exports2.Route = Router12.Route;
+    exports2.Router = Router12;
     exports2.json = bodyParser.json;
     exports2.raw = bodyParser.raw;
     exports2.static = require_serve_static();
@@ -66683,12 +66683,12 @@ __export(vercel_exports, {
 module.exports = __toCommonJS(vercel_exports);
 
 // embedded-migrations:migrations
-var migrations_default = [{ "name": "1760000000000_core.sql", "up": "CREATE EXTENSION IF NOT EXISTS pg_trgm;\n\nCREATE TABLE categories (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  slug text NOT NULL UNIQUE,\n  name_uz text NOT NULL,\n  name_ru text NOT NULL,\n  position integer NOT NULL DEFAULT 0\n);\n\nINSERT INTO categories (slug, name_uz, name_ru, position) VALUES\n  ('tikuvchilik', 'Tikuvchilik', '\u0428\u0438\u0442\u044C\u0451', 1),\n  ('pishiriq', 'Pishiriq', '\u0412\u044B\u043F\u0435\u0447\u043A\u0430', 2),\n  ('qol-mehnati', 'Qo''l mehnati', '\u0420\u0443\u043A\u043E\u0434\u0435\u043B\u0438\u0435', 3),\n  ('dizayn', 'Dizayn', '\u0414\u0438\u0437\u0430\u0439\u043D', 4),\n  ('masofaviy-ishlar', 'Masofaviy ishlar', '\u0423\u0434\u0430\u043B\u0451\u043D\u043D\u0430\u044F \u0440\u0430\u0431\u043E\u0442\u0430', 5);\n\nCREATE TABLE users (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  phone text NOT NULL UNIQUE,\n  name text,\n  role text NOT NULL DEFAULT 'customer' CHECK (role IN ('customer', 'worker', 'admin')),\n  language text NOT NULL DEFAULT 'uz' CHECK (language IN ('uz', 'ru')),\n  created_at timestamptz NOT NULL DEFAULT now()\n);\n\nCREATE TABLE workers (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  user_id uuid NOT NULL UNIQUE REFERENCES users (id) ON DELETE CASCADE,\n  category_id uuid NOT NULL REFERENCES categories (id),\n  display_name text NOT NULL,\n  bio text,\n  avatar_url text,\n  rating numeric(3, 2) NOT NULL DEFAULT 0,\n  reviews_count integer NOT NULL DEFAULT 0,\n  is_verified boolean NOT NULL DEFAULT false,\n  created_at timestamptz NOT NULL DEFAULT now()\n);\nCREATE INDEX workers_category_idx ON workers (category_id);\n\nCREATE TABLE products (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  worker_id uuid NOT NULL REFERENCES workers (id) ON DELETE CASCADE,\n  category_id uuid NOT NULL REFERENCES categories (id),\n  title text NOT NULL,\n  description text NOT NULL DEFAULT '',\n  retail_price bigint NOT NULL CHECK (retail_price > 0),\n  wholesale_price bigint CHECK (wholesale_price IS NULL OR wholesale_price > 0),\n  wholesale_min_qty integer CHECK (wholesale_min_qty IS NULL OR wholesale_min_qty >= 2),\n  stock integer NOT NULL DEFAULT 0 CHECK (stock >= 0),\n  status text NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'published', 'hidden')),\n  created_at timestamptz NOT NULL DEFAULT now(),\n  updated_at timestamptz NOT NULL DEFAULT now(),\n  CONSTRAINT products_wholesale_pair CHECK (\n    (wholesale_price IS NULL) = (wholesale_min_qty IS NULL)\n  ),\n  CONSTRAINT products_wholesale_lower CHECK (\n    wholesale_price IS NULL OR wholesale_price < retail_price\n  )\n);\nCREATE INDEX products_worker_status_idx ON products (worker_id, status);\nCREATE INDEX products_category_status_idx ON products (category_id, status);\n-- Uzbek apostrophe variants (' \u02BB \u02BC \u2019 \u2018 `) collapse to one form for search.\nCREATE FUNCTION uz_normalize(value text) RETURNS text\n  LANGUAGE sql IMMUTABLE PARALLEL SAFE\n  AS $$ SELECT lower(translate(value, '''\u02BB\u02BC\u2019\u2018`', '')) $$;\nCREATE INDEX products_title_trgm_idx ON products USING gin (uz_normalize(title) gin_trgm_ops);\n\nCREATE TABLE product_images (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  product_id uuid NOT NULL REFERENCES products (id) ON DELETE CASCADE,\n  url text NOT NULL,\n  position integer NOT NULL DEFAULT 0\n);\nCREATE INDEX product_images_product_idx ON product_images (product_id, position);\n\nCREATE TABLE product_models (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  product_id uuid NOT NULL UNIQUE REFERENCES products (id) ON DELETE CASCADE,\n  file_url text NOT NULL,\n  file_size integer NOT NULL,\n  poster_url text,\n  created_at timestamptz NOT NULL DEFAULT now()\n);\n\nCREATE TABLE orders (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  type text NOT NULL CHECK (type IN ('service', 'product')),\n  customer_id uuid NOT NULL REFERENCES users (id),\n  worker_id uuid NOT NULL REFERENCES workers (id),\n  status text NOT NULL DEFAULT 'awaiting_payment' CHECK (\n    status IN ('awaiting_payment', 'new', 'accepted', 'in_progress', 'ready', 'delivered', 'cancelled', 'refunded')\n  ),\n  total bigint NOT NULL CHECK (total >= 0),\n  commission bigint NOT NULL CHECK (commission >= 0),\n  worker_amount bigint NOT NULL CHECK (worker_amount >= 0),\n  fulfillment text NOT NULL DEFAULT 'pickup' CHECK (fulfillment IN ('pickup', 'delivery')),\n  delivery_address text,\n  start_time timestamptz,\n  end_time timestamptz,\n  created_at timestamptz NOT NULL DEFAULT now(),\n  updated_at timestamptz NOT NULL DEFAULT now()\n);\nCREATE INDEX orders_type_idx ON orders (type);\nCREATE INDEX orders_customer_idx ON orders (customer_id, created_at DESC);\nCREATE INDEX orders_worker_status_idx ON orders (worker_id, status);\n\nCREATE TABLE order_items (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  order_id uuid NOT NULL REFERENCES orders (id) ON DELETE CASCADE,\n  product_id uuid REFERENCES products (id) ON DELETE SET NULL,\n  title_snapshot text NOT NULL,\n  unit_price bigint NOT NULL CHECK (unit_price > 0),\n  quantity integer NOT NULL CHECK (quantity > 0),\n  price_type text NOT NULL CHECK (price_type IN ('retail', 'wholesale'))\n);\nCREATE INDEX order_items_order_idx ON order_items (order_id);\n\nCREATE TABLE payments (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  order_id uuid NOT NULL REFERENCES orders (id) ON DELETE CASCADE,\n  amount bigint NOT NULL CHECK (amount >= 0),\n  status text NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'paid', 'refunded', 'failed')),\n  provider text NOT NULL,\n  provider_ref text,\n  idempotency_key text NOT NULL UNIQUE,\n  created_at timestamptz NOT NULL DEFAULT now()\n);\nCREATE INDEX payments_order_idx ON payments (order_id);\n\nCREATE TABLE earnings (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  order_id uuid NOT NULL UNIQUE REFERENCES orders (id) ON DELETE CASCADE,\n  worker_id uuid NOT NULL REFERENCES workers (id),\n  amount bigint NOT NULL CHECK (amount >= 0),\n  commission bigint NOT NULL CHECK (commission >= 0),\n  created_at timestamptz NOT NULL DEFAULT now()\n);\nCREATE INDEX earnings_worker_idx ON earnings (worker_id, created_at DESC);\n\nCREATE TABLE sms_codes (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  phone text NOT NULL,\n  code_hash text NOT NULL,\n  expires_at timestamptz NOT NULL,\n  attempts integer NOT NULL DEFAULT 0,\n  consumed_at timestamptz,\n  created_at timestamptz NOT NULL DEFAULT now()\n);\nCREATE INDEX sms_codes_phone_idx ON sms_codes (phone, created_at DESC);\n\nCREATE TABLE refresh_tokens (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  user_id uuid NOT NULL REFERENCES users (id) ON DELETE CASCADE,\n  token_hash text NOT NULL UNIQUE,\n  expires_at timestamptz NOT NULL,\n  revoked_at timestamptz,\n  created_at timestamptz NOT NULL DEFAULT now()\n);\nCREATE INDEX refresh_tokens_user_idx ON refresh_tokens (user_id);\n\nCREATE TABLE files (\n  name text PRIMARY KEY,\n  content_type text NOT NULL,\n  size integer NOT NULL,\n  data bytea NOT NULL,\n  created_at timestamptz NOT NULL DEFAULT now()\n);" }, { "name": "1760000100000_reviews_complaints.sql", "up": "CREATE TABLE reviews (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  -- One review per order: the unique key is what stops a second review at the database level.\n  order_id uuid NOT NULL UNIQUE REFERENCES orders (id) ON DELETE CASCADE,\n  customer_id uuid NOT NULL REFERENCES users (id),\n  worker_id uuid NOT NULL REFERENCES workers (id),\n  rating smallint NOT NULL CHECK (rating BETWEEN 1 AND 5),\n  comment text CHECK (comment IS NULL OR char_length(comment) <= 1000),\n  status text NOT NULL DEFAULT 'visible' CHECK (status IN ('visible', 'hidden')),\n  created_at timestamptz NOT NULL DEFAULT now()\n);\nCREATE INDEX reviews_worker_idx ON reviews (worker_id, created_at DESC);\n\nCREATE TABLE complaints (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  order_id uuid NOT NULL REFERENCES orders (id) ON DELETE CASCADE,\n  user_id uuid NOT NULL REFERENCES users (id),\n  reason text NOT NULL CHECK (char_length(reason) BETWEEN 5 AND 1000),\n  status text NOT NULL DEFAULT 'open' CHECK (status IN ('open', 'resolved', 'dismissed')),\n  created_at timestamptz NOT NULL DEFAULT now()\n);\nCREATE INDEX complaints_order_idx ON complaints (order_id);\n-- A user can have only one open complaint per order; they can file again after it is closed.\nCREATE UNIQUE INDEX complaints_one_open_per_user_idx\n  ON complaints (order_id, user_id) WHERE status = 'open';" }, { "name": "1760000200000_calendar.sql", "up": "CREATE EXTENSION IF NOT EXISTS btree_gist;\n\nALTER TABLE workers\n  ADD COLUMN hourly_rate bigint CHECK (hourly_rate IS NULL OR hourly_rate > 0);\n\n-- Free windows a worker publishes. The exclusion constraint keeps one worker's windows from overlapping.\nCREATE TABLE availability (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  worker_id uuid NOT NULL REFERENCES workers (id) ON DELETE CASCADE,\n  start_time timestamptz NOT NULL,\n  end_time timestamptz NOT NULL,\n  created_at timestamptz NOT NULL DEFAULT now(),\n  CONSTRAINT availability_range_valid CHECK (end_time > start_time),\n  CONSTRAINT availability_no_overlap\n    EXCLUDE USING gist (worker_id WITH =, tstzrange(start_time, end_time) WITH &&)\n);\nCREATE INDEX availability_worker_idx ON availability (worker_id, start_time);\n\nALTER TABLE orders\n  ADD COLUMN description text,\n  ADD COLUMN deadline date,\n  ADD CONSTRAINT orders_service_has_slot CHECK (\n    type = 'product' OR (start_time IS NOT NULL AND end_time IS NOT NULL AND end_time > start_time)\n  ),\n  -- Slot clash is decided by the database, not by a check-then-insert in application code.\n  -- A slot is held from the moment the order is created (even unpaid) until it leaves these states.\n  ADD CONSTRAINT orders_slot_no_overlap\n    EXCLUDE USING gist (worker_id WITH =, tstzrange(start_time, end_time) WITH &&)\n    WHERE (start_time IS NOT NULL AND status IN ('awaiting_payment', 'new', 'accepted', 'in_progress'));\nCREATE INDEX orders_status_created_idx ON orders (status, created_at);\n\nCREATE TABLE order_images (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  order_id uuid NOT NULL REFERENCES orders (id) ON DELETE CASCADE,\n  url text NOT NULL,\n  position integer NOT NULL DEFAULT 0\n);\nCREATE INDEX order_images_order_idx ON order_images (order_id, position);" }, { "name": "1760000300000_materials_savings.sql", "up": "CREATE TABLE materials (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  name text NOT NULL,\n  description text NOT NULL DEFAULT '',\n  price bigint NOT NULL CHECK (price > 0),\n  discount_percent smallint NOT NULL DEFAULT 0 CHECK (discount_percent BETWEEN 0 AND 90),\n  stock integer NOT NULL DEFAULT 0 CHECK (stock >= 0),\n  is_active boolean NOT NULL DEFAULT true,\n  created_at timestamptz NOT NULL DEFAULT now()\n);\n\nCREATE TABLE material_orders (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  worker_id uuid NOT NULL REFERENCES workers (id),\n  status text NOT NULL DEFAULT 'awaiting_payment'\n    CHECK (status IN ('awaiting_payment', 'paid', 'delivered', 'cancelled')),\n  total bigint NOT NULL CHECK (total > 0),\n  created_at timestamptz NOT NULL DEFAULT now(),\n  updated_at timestamptz NOT NULL DEFAULT now()\n);\nCREATE INDEX material_orders_worker_idx ON material_orders (worker_id, created_at DESC);\nCREATE INDEX material_orders_status_idx ON material_orders (status, created_at);\n\nCREATE TABLE material_order_items (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  material_order_id uuid NOT NULL REFERENCES material_orders (id) ON DELETE CASCADE,\n  material_id uuid REFERENCES materials (id) ON DELETE SET NULL,\n  name_snapshot text NOT NULL,\n  unit_price bigint NOT NULL CHECK (unit_price > 0),\n  quantity integer NOT NULL CHECK (quantity > 0)\n);\nCREATE INDEX material_order_items_order_idx ON material_order_items (material_order_id);\n\n-- Same shape as `payments`, kept apart so product/service payment code stays untouched.\nCREATE TABLE material_payments (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  material_order_id uuid NOT NULL REFERENCES material_orders (id) ON DELETE CASCADE,\n  amount bigint NOT NULL CHECK (amount > 0),\n  status text NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'paid', 'refunded', 'failed')),\n  provider text NOT NULL,\n  provider_ref text,\n  idempotency_key text NOT NULL UNIQUE,\n  created_at timestamptz NOT NULL DEFAULT now()\n);\nCREATE INDEX material_payments_order_idx ON material_payments (material_order_id);\n\nCREATE TABLE savings_goals (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  worker_id uuid NOT NULL UNIQUE REFERENCES workers (id) ON DELETE CASCADE,\n  target_amount bigint NOT NULL CHECK (target_amount > 0),\n  created_at timestamptz NOT NULL DEFAULT now(),\n  updated_at timestamptz NOT NULL DEFAULT now()\n);\n\nCREATE INDEX reviews_status_idx ON reviews (status, created_at DESC);\nCREATE INDEX complaints_status_idx ON complaints (status, created_at DESC);\nCREATE INDEX workers_verified_idx ON workers (is_verified, created_at DESC);" }, { "name": "1760000400000_commission_rate.sql", "up": "-- Every order keeps the rate it was charged at, so changing the platform rate never rewrites history.\n-- Rows that exist before this migration were all charged at the previous rate of 5%.\nALTER TABLE orders RENAME COLUMN commission TO commission_amount;\nALTER TABLE orders\n  ADD COLUMN commission_rate numeric(5, 4) NOT NULL DEFAULT 0.05\n    CHECK (commission_rate >= 0 AND commission_rate < 1);\nALTER TABLE orders ALTER COLUMN commission_rate DROP DEFAULT;" }, { "name": "1760000500000_drop_hourly_rate.sql", "up": "-- Service orders no longer carry a price: a worker's calendar only publishes free time.\nALTER TABLE workers DROP COLUMN IF EXISTS hourly_rate;" }];
+var migrations_default = [{ "name": "1760000000000_core.sql", "up": "CREATE EXTENSION IF NOT EXISTS pg_trgm;\n\nCREATE TABLE categories (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  slug text NOT NULL UNIQUE,\n  name_uz text NOT NULL,\n  name_ru text NOT NULL,\n  position integer NOT NULL DEFAULT 0\n);\n\nINSERT INTO categories (slug, name_uz, name_ru, position) VALUES\n  ('tikuvchilik', 'Tikuvchilik', '\u0428\u0438\u0442\u044C\u0451', 1),\n  ('pishiriq', 'Pishiriq', '\u0412\u044B\u043F\u0435\u0447\u043A\u0430', 2),\n  ('qol-mehnati', 'Qo''l mehnati', '\u0420\u0443\u043A\u043E\u0434\u0435\u043B\u0438\u0435', 3),\n  ('dizayn', 'Dizayn', '\u0414\u0438\u0437\u0430\u0439\u043D', 4),\n  ('masofaviy-ishlar', 'Masofaviy ishlar', '\u0423\u0434\u0430\u043B\u0451\u043D\u043D\u0430\u044F \u0440\u0430\u0431\u043E\u0442\u0430', 5);\n\nCREATE TABLE users (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  phone text NOT NULL UNIQUE,\n  name text,\n  role text NOT NULL DEFAULT 'customer' CHECK (role IN ('customer', 'worker', 'admin')),\n  language text NOT NULL DEFAULT 'uz' CHECK (language IN ('uz', 'ru')),\n  created_at timestamptz NOT NULL DEFAULT now()\n);\n\nCREATE TABLE workers (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  user_id uuid NOT NULL UNIQUE REFERENCES users (id) ON DELETE CASCADE,\n  category_id uuid NOT NULL REFERENCES categories (id),\n  display_name text NOT NULL,\n  bio text,\n  avatar_url text,\n  rating numeric(3, 2) NOT NULL DEFAULT 0,\n  reviews_count integer NOT NULL DEFAULT 0,\n  is_verified boolean NOT NULL DEFAULT false,\n  created_at timestamptz NOT NULL DEFAULT now()\n);\nCREATE INDEX workers_category_idx ON workers (category_id);\n\nCREATE TABLE products (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  worker_id uuid NOT NULL REFERENCES workers (id) ON DELETE CASCADE,\n  category_id uuid NOT NULL REFERENCES categories (id),\n  title text NOT NULL,\n  description text NOT NULL DEFAULT '',\n  retail_price bigint NOT NULL CHECK (retail_price > 0),\n  wholesale_price bigint CHECK (wholesale_price IS NULL OR wholesale_price > 0),\n  wholesale_min_qty integer CHECK (wholesale_min_qty IS NULL OR wholesale_min_qty >= 2),\n  stock integer NOT NULL DEFAULT 0 CHECK (stock >= 0),\n  status text NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'published', 'hidden')),\n  created_at timestamptz NOT NULL DEFAULT now(),\n  updated_at timestamptz NOT NULL DEFAULT now(),\n  CONSTRAINT products_wholesale_pair CHECK (\n    (wholesale_price IS NULL) = (wholesale_min_qty IS NULL)\n  ),\n  CONSTRAINT products_wholesale_lower CHECK (\n    wholesale_price IS NULL OR wholesale_price < retail_price\n  )\n);\nCREATE INDEX products_worker_status_idx ON products (worker_id, status);\nCREATE INDEX products_category_status_idx ON products (category_id, status);\n-- Uzbek apostrophe variants (' \u02BB \u02BC \u2019 \u2018 `) collapse to one form for search.\nCREATE FUNCTION uz_normalize(value text) RETURNS text\n  LANGUAGE sql IMMUTABLE PARALLEL SAFE\n  AS $$ SELECT lower(translate(value, '''\u02BB\u02BC\u2019\u2018`', '')) $$;\nCREATE INDEX products_title_trgm_idx ON products USING gin (uz_normalize(title) gin_trgm_ops);\n\nCREATE TABLE product_images (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  product_id uuid NOT NULL REFERENCES products (id) ON DELETE CASCADE,\n  url text NOT NULL,\n  position integer NOT NULL DEFAULT 0\n);\nCREATE INDEX product_images_product_idx ON product_images (product_id, position);\n\nCREATE TABLE product_models (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  product_id uuid NOT NULL UNIQUE REFERENCES products (id) ON DELETE CASCADE,\n  file_url text NOT NULL,\n  file_size integer NOT NULL,\n  poster_url text,\n  created_at timestamptz NOT NULL DEFAULT now()\n);\n\nCREATE TABLE orders (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  type text NOT NULL CHECK (type IN ('service', 'product')),\n  customer_id uuid NOT NULL REFERENCES users (id),\n  worker_id uuid NOT NULL REFERENCES workers (id),\n  status text NOT NULL DEFAULT 'awaiting_payment' CHECK (\n    status IN ('awaiting_payment', 'new', 'accepted', 'in_progress', 'ready', 'delivered', 'cancelled', 'refunded')\n  ),\n  total bigint NOT NULL CHECK (total >= 0),\n  commission bigint NOT NULL CHECK (commission >= 0),\n  worker_amount bigint NOT NULL CHECK (worker_amount >= 0),\n  fulfillment text NOT NULL DEFAULT 'pickup' CHECK (fulfillment IN ('pickup', 'delivery')),\n  delivery_address text,\n  start_time timestamptz,\n  end_time timestamptz,\n  created_at timestamptz NOT NULL DEFAULT now(),\n  updated_at timestamptz NOT NULL DEFAULT now()\n);\nCREATE INDEX orders_type_idx ON orders (type);\nCREATE INDEX orders_customer_idx ON orders (customer_id, created_at DESC);\nCREATE INDEX orders_worker_status_idx ON orders (worker_id, status);\n\nCREATE TABLE order_items (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  order_id uuid NOT NULL REFERENCES orders (id) ON DELETE CASCADE,\n  product_id uuid REFERENCES products (id) ON DELETE SET NULL,\n  title_snapshot text NOT NULL,\n  unit_price bigint NOT NULL CHECK (unit_price > 0),\n  quantity integer NOT NULL CHECK (quantity > 0),\n  price_type text NOT NULL CHECK (price_type IN ('retail', 'wholesale'))\n);\nCREATE INDEX order_items_order_idx ON order_items (order_id);\n\nCREATE TABLE payments (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  order_id uuid NOT NULL REFERENCES orders (id) ON DELETE CASCADE,\n  amount bigint NOT NULL CHECK (amount >= 0),\n  status text NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'paid', 'refunded', 'failed')),\n  provider text NOT NULL,\n  provider_ref text,\n  idempotency_key text NOT NULL UNIQUE,\n  created_at timestamptz NOT NULL DEFAULT now()\n);\nCREATE INDEX payments_order_idx ON payments (order_id);\n\nCREATE TABLE earnings (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  order_id uuid NOT NULL UNIQUE REFERENCES orders (id) ON DELETE CASCADE,\n  worker_id uuid NOT NULL REFERENCES workers (id),\n  amount bigint NOT NULL CHECK (amount >= 0),\n  commission bigint NOT NULL CHECK (commission >= 0),\n  created_at timestamptz NOT NULL DEFAULT now()\n);\nCREATE INDEX earnings_worker_idx ON earnings (worker_id, created_at DESC);\n\nCREATE TABLE sms_codes (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  phone text NOT NULL,\n  code_hash text NOT NULL,\n  expires_at timestamptz NOT NULL,\n  attempts integer NOT NULL DEFAULT 0,\n  consumed_at timestamptz,\n  created_at timestamptz NOT NULL DEFAULT now()\n);\nCREATE INDEX sms_codes_phone_idx ON sms_codes (phone, created_at DESC);\n\nCREATE TABLE refresh_tokens (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  user_id uuid NOT NULL REFERENCES users (id) ON DELETE CASCADE,\n  token_hash text NOT NULL UNIQUE,\n  expires_at timestamptz NOT NULL,\n  revoked_at timestamptz,\n  created_at timestamptz NOT NULL DEFAULT now()\n);\nCREATE INDEX refresh_tokens_user_idx ON refresh_tokens (user_id);\n\nCREATE TABLE files (\n  name text PRIMARY KEY,\n  content_type text NOT NULL,\n  size integer NOT NULL,\n  data bytea NOT NULL,\n  created_at timestamptz NOT NULL DEFAULT now()\n);" }, { "name": "1760000100000_reviews_complaints.sql", "up": "CREATE TABLE reviews (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  -- One review per order: the unique key is what stops a second review at the database level.\n  order_id uuid NOT NULL UNIQUE REFERENCES orders (id) ON DELETE CASCADE,\n  customer_id uuid NOT NULL REFERENCES users (id),\n  worker_id uuid NOT NULL REFERENCES workers (id),\n  rating smallint NOT NULL CHECK (rating BETWEEN 1 AND 5),\n  comment text CHECK (comment IS NULL OR char_length(comment) <= 1000),\n  status text NOT NULL DEFAULT 'visible' CHECK (status IN ('visible', 'hidden')),\n  created_at timestamptz NOT NULL DEFAULT now()\n);\nCREATE INDEX reviews_worker_idx ON reviews (worker_id, created_at DESC);\n\nCREATE TABLE complaints (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  order_id uuid NOT NULL REFERENCES orders (id) ON DELETE CASCADE,\n  user_id uuid NOT NULL REFERENCES users (id),\n  reason text NOT NULL CHECK (char_length(reason) BETWEEN 5 AND 1000),\n  status text NOT NULL DEFAULT 'open' CHECK (status IN ('open', 'resolved', 'dismissed')),\n  created_at timestamptz NOT NULL DEFAULT now()\n);\nCREATE INDEX complaints_order_idx ON complaints (order_id);\n-- A user can have only one open complaint per order; they can file again after it is closed.\nCREATE UNIQUE INDEX complaints_one_open_per_user_idx\n  ON complaints (order_id, user_id) WHERE status = 'open';" }, { "name": "1760000200000_calendar.sql", "up": "CREATE EXTENSION IF NOT EXISTS btree_gist;\n\nALTER TABLE workers\n  ADD COLUMN hourly_rate bigint CHECK (hourly_rate IS NULL OR hourly_rate > 0);\n\n-- Free windows a worker publishes. The exclusion constraint keeps one worker's windows from overlapping.\nCREATE TABLE availability (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  worker_id uuid NOT NULL REFERENCES workers (id) ON DELETE CASCADE,\n  start_time timestamptz NOT NULL,\n  end_time timestamptz NOT NULL,\n  created_at timestamptz NOT NULL DEFAULT now(),\n  CONSTRAINT availability_range_valid CHECK (end_time > start_time),\n  CONSTRAINT availability_no_overlap\n    EXCLUDE USING gist (worker_id WITH =, tstzrange(start_time, end_time) WITH &&)\n);\nCREATE INDEX availability_worker_idx ON availability (worker_id, start_time);\n\nALTER TABLE orders\n  ADD COLUMN description text,\n  ADD COLUMN deadline date,\n  ADD CONSTRAINT orders_service_has_slot CHECK (\n    type = 'product' OR (start_time IS NOT NULL AND end_time IS NOT NULL AND end_time > start_time)\n  ),\n  -- Slot clash is decided by the database, not by a check-then-insert in application code.\n  -- A slot is held from the moment the order is created (even unpaid) until it leaves these states.\n  ADD CONSTRAINT orders_slot_no_overlap\n    EXCLUDE USING gist (worker_id WITH =, tstzrange(start_time, end_time) WITH &&)\n    WHERE (start_time IS NOT NULL AND status IN ('awaiting_payment', 'new', 'accepted', 'in_progress'));\nCREATE INDEX orders_status_created_idx ON orders (status, created_at);\n\nCREATE TABLE order_images (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  order_id uuid NOT NULL REFERENCES orders (id) ON DELETE CASCADE,\n  url text NOT NULL,\n  position integer NOT NULL DEFAULT 0\n);\nCREATE INDEX order_images_order_idx ON order_images (order_id, position);" }, { "name": "1760000300000_materials_savings.sql", "up": "CREATE TABLE materials (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  name text NOT NULL,\n  description text NOT NULL DEFAULT '',\n  price bigint NOT NULL CHECK (price > 0),\n  discount_percent smallint NOT NULL DEFAULT 0 CHECK (discount_percent BETWEEN 0 AND 90),\n  stock integer NOT NULL DEFAULT 0 CHECK (stock >= 0),\n  is_active boolean NOT NULL DEFAULT true,\n  created_at timestamptz NOT NULL DEFAULT now()\n);\n\nCREATE TABLE material_orders (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  worker_id uuid NOT NULL REFERENCES workers (id),\n  status text NOT NULL DEFAULT 'awaiting_payment'\n    CHECK (status IN ('awaiting_payment', 'paid', 'delivered', 'cancelled')),\n  total bigint NOT NULL CHECK (total > 0),\n  created_at timestamptz NOT NULL DEFAULT now(),\n  updated_at timestamptz NOT NULL DEFAULT now()\n);\nCREATE INDEX material_orders_worker_idx ON material_orders (worker_id, created_at DESC);\nCREATE INDEX material_orders_status_idx ON material_orders (status, created_at);\n\nCREATE TABLE material_order_items (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  material_order_id uuid NOT NULL REFERENCES material_orders (id) ON DELETE CASCADE,\n  material_id uuid REFERENCES materials (id) ON DELETE SET NULL,\n  name_snapshot text NOT NULL,\n  unit_price bigint NOT NULL CHECK (unit_price > 0),\n  quantity integer NOT NULL CHECK (quantity > 0)\n);\nCREATE INDEX material_order_items_order_idx ON material_order_items (material_order_id);\n\n-- Same shape as `payments`, kept apart so product/service payment code stays untouched.\nCREATE TABLE material_payments (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  material_order_id uuid NOT NULL REFERENCES material_orders (id) ON DELETE CASCADE,\n  amount bigint NOT NULL CHECK (amount > 0),\n  status text NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'paid', 'refunded', 'failed')),\n  provider text NOT NULL,\n  provider_ref text,\n  idempotency_key text NOT NULL UNIQUE,\n  created_at timestamptz NOT NULL DEFAULT now()\n);\nCREATE INDEX material_payments_order_idx ON material_payments (material_order_id);\n\nCREATE TABLE savings_goals (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  worker_id uuid NOT NULL UNIQUE REFERENCES workers (id) ON DELETE CASCADE,\n  target_amount bigint NOT NULL CHECK (target_amount > 0),\n  created_at timestamptz NOT NULL DEFAULT now(),\n  updated_at timestamptz NOT NULL DEFAULT now()\n);\n\nCREATE INDEX reviews_status_idx ON reviews (status, created_at DESC);\nCREATE INDEX complaints_status_idx ON complaints (status, created_at DESC);\nCREATE INDEX workers_verified_idx ON workers (is_verified, created_at DESC);" }, { "name": "1760000400000_commission_rate.sql", "up": "-- Every order keeps the rate it was charged at, so changing the platform rate never rewrites history.\n-- Rows that exist before this migration were all charged at the previous rate of 5%.\nALTER TABLE orders RENAME COLUMN commission TO commission_amount;\nALTER TABLE orders\n  ADD COLUMN commission_rate numeric(5, 4) NOT NULL DEFAULT 0.05\n    CHECK (commission_rate >= 0 AND commission_rate < 1);\nALTER TABLE orders ALTER COLUMN commission_rate DROP DEFAULT;" }, { "name": "1760000500000_drop_hourly_rate.sql", "up": "-- Service orders no longer carry a price: a worker's calendar only publishes free time.\nALTER TABLE workers DROP COLUMN IF EXISTS hourly_rate;" }, { "name": "1760000600000_order_owner_guard_notifications.sql", "up": "-- Hard guarantee that a product line can only sit on an order addressed to the product's owner.\n-- Checked on every insert/update of order_items; existing rows are not touched or validated here.\nCREATE FUNCTION order_item_owner_matches() RETURNS trigger\n  LANGUAGE plpgsql\n  AS $$\nDECLARE\n  product_owner uuid;\n  order_worker uuid;\nBEGIN\n  IF NEW.product_id IS NULL THEN\n    RETURN NEW;\n  END IF;\n  SELECT worker_id INTO product_owner FROM products WHERE id = NEW.product_id;\n  SELECT worker_id INTO order_worker FROM orders WHERE id = NEW.order_id;\n  IF product_owner IS DISTINCT FROM order_worker THEN\n    RAISE EXCEPTION 'order_items.product owner % does not match orders.worker_id %',\n      product_owner, order_worker\n      USING ERRCODE = 'check_violation', CONSTRAINT = 'order_items_owner_matches';\n  END IF;\n  RETURN NEW;\nEND;\n$$;\n\nCREATE TRIGGER order_items_owner_matches\n  BEFORE INSERT OR UPDATE OF product_id, order_id ON order_items\n  FOR EACH ROW EXECUTE FUNCTION order_item_owner_matches();\n\n-- In-app notifications; the SMS gateway is a separate, not yet connected, channel.\nCREATE TABLE notifications (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  user_id uuid NOT NULL REFERENCES users (id) ON DELETE CASCADE,\n  kind text NOT NULL CHECK (kind IN ('order_new')),\n  order_id uuid REFERENCES orders (id) ON DELETE CASCADE,\n  read_at timestamptz,\n  created_at timestamptz NOT NULL DEFAULT now()\n);\nCREATE INDEX notifications_user_unread_idx ON notifications (user_id, created_at DESC)\n  WHERE read_at IS NULL;\nCREATE INDEX notifications_user_idx ON notifications (user_id, created_at DESC);" }];
 
 // src/app.ts
 var import_cookie_parser = __toESM(require_cookie_parser(), 1);
 var import_cors = __toESM(require_lib(), 1);
-var import_express11 = __toESM(require_express2(), 1);
+var import_express12 = __toESM(require_express2(), 1);
 
 // ../../node_modules/.pnpm/helmet@8.3.0/node_modules/helmet/index.mjs
 var dashify = (str) => str.replace(/[A-Z]/g, (capitalLetter) => "-" + capitalLetter.toLowerCase());
@@ -71456,12 +71456,19 @@ async function cached(cache, key, ttlSeconds, load) {
 }
 
 // src/infra/sms.ts
+var VISIBLE_SUFFIX = 2;
+function maskPhone(phone) {
+  const prefix = phone.startsWith("+") ? phone.slice(0, 4) : "";
+  const rest = phone.slice(prefix.length);
+  if (rest.length <= VISIBLE_SUFFIX) return `${prefix}${"*".repeat(rest.length)}`;
+  return `${prefix}${"*".repeat(rest.length - VISIBLE_SUFFIX)}${rest.slice(-VISIBLE_SUFFIX)}`;
+}
 var ConsoleSmsProvider = class {
   constructor(verbose) {
     this.verbose = verbose;
   }
   async send(phone, message) {
-    if (this.verbose) logger.info("SMS", { phone, message });
+    if (this.verbose) logger.info("SMS", { phone: maskPhone(phone), message });
   }
 };
 
@@ -72992,7 +72999,8 @@ function toUserDto(row) {
     name: row.name,
     role: row.role,
     language: row.language,
-    workerId: row.worker_id
+    workerId: row.worker_id,
+    workerName: row.worker_name
   };
 }
 var AuthRepository = class {
@@ -73031,8 +73039,12 @@ var AuthRepository = class {
   async setRole(userId, role) {
     await this.db.updateTable("users").set({ role }).where("id", "=", userId).execute();
   }
+  /** One name per person: a worker's public display name follows the profile name. */
   async updateProfile(userId, name, language) {
-    await this.db.updateTable("users").set(language ? { name, language } : { name }).where("id", "=", userId).execute();
+    await this.db.transaction().execute(async (trx) => {
+      await trx.updateTable("users").set(language ? { name, language } : { name }).where("id", "=", userId).execute();
+      await trx.updateTable("workers").set({ display_name: name }).where("user_id", "=", userId).execute();
+    });
   }
   async insertRefreshToken(userId, tokenHash, expiresAt) {
     await this.db.insertInto("refresh_tokens").values({ user_id: userId, token_hash: tokenHash, expires_at: expiresAt }).execute();
@@ -73049,7 +73061,15 @@ var AuthRepository = class {
     await this.db.updateTable("refresh_tokens").set({ revoked_at: /* @__PURE__ */ new Date() }).where("user_id", "=", userId).where("revoked_at", "is", null).execute();
   }
   userQuery() {
-    return this.db.selectFrom("users as u").leftJoin("workers as w", "w.user_id", "u.id").select(["u.id", "u.phone", "u.name", "u.role", "u.language", "w.id as worker_id"]);
+    return this.db.selectFrom("users as u").leftJoin("workers as w", "w.user_id", "u.id").select([
+      "u.id",
+      "u.phone",
+      "u.name",
+      "u.role",
+      "u.language",
+      "w.id as worker_id",
+      "w.display_name as worker_name"
+    ]);
   }
 };
 
@@ -73414,6 +73434,51 @@ var MaterialService = class {
 // src/modules/admin/admin.service.ts
 init_esm();
 
+// src/modules/notifications/notification.service.ts
+var LIST_LIMIT = 30;
+async function notifyWorkerOfNewOrder(trx, orderId3) {
+  const worker = await trx.selectFrom("orders as o").innerJoin("workers as w", "w.id", "o.worker_id").innerJoin("users as u", "u.id", "w.user_id").select(["u.id as user_id", "u.phone"]).where("o.id", "=", orderId3).executeTakeFirstOrThrow();
+  await trx.insertInto("notifications").values({ user_id: worker.user_id, kind: "order_new", order_id: orderId3 }).execute();
+  return worker.phone;
+}
+async function sendNewOrderSms(ctx, phone, message) {
+  try {
+    await ctx.sms.send(phone, message);
+  } catch (error) {
+    logger.warn("Order SMS was not sent", {
+      message: error instanceof Error ? error.message : "unknown"
+    });
+  }
+}
+var NotificationService = class {
+  constructor(ctx) {
+    this.ctx = ctx;
+  }
+  async list(userId) {
+    const [items, unread] = await Promise.all([
+      this.ctx.db.selectFrom("notifications").selectAll().where("user_id", "=", userId).orderBy("created_at", "desc").limit(LIST_LIMIT).execute(),
+      this.ctx.db.selectFrom("notifications").select((eb) => eb.fn.countAll().as("n")).where("user_id", "=", userId).where("read_at", "is", null).executeTakeFirstOrThrow()
+    ]);
+    return {
+      unread: Number(unread.n),
+      items: items.map((row) => ({
+        id: row.id,
+        kind: row.kind,
+        orderId: row.order_id,
+        readAt: row.read_at ? row.read_at.toISOString() : null,
+        createdAt: row.created_at.toISOString()
+      }))
+    };
+  }
+  /** Marks everything about one order as read; opening the order is the natural "seen". */
+  async markOrderRead(userId, orderId3) {
+    await this.ctx.db.updateTable("notifications").set({ read_at: /* @__PURE__ */ new Date() }).where("user_id", "=", userId).where("order_id", "=", orderId3).where("read_at", "is", null).execute();
+  }
+  async markAllRead(userId) {
+    await this.ctx.db.updateTable("notifications").set({ read_at: /* @__PURE__ */ new Date() }).where("user_id", "=", userId).where("read_at", "is", null).execute();
+  }
+};
+
 // src/modules/orders/order.repository.ts
 init_esm();
 var OrderRepository = class {
@@ -73557,6 +73622,7 @@ var OrderRepository = class {
 };
 
 // src/modules/payments/payment.service.ts
+var NEW_ORDER_SMS = "BarakaLi: yangi buyurtma / \u043D\u043E\u0432\u044B\u0439 \u0437\u0430\u043A\u0430\u0437";
 async function restoreStock(trx, orderId3) {
   const items = await trx.selectFrom("order_items").select(["product_id", "quantity"]).where("order_id", "=", orderId3).execute();
   for (const item of items) {
@@ -73615,9 +73681,12 @@ var PaymentService = class {
       if (order.type === "product") await reserveStock(trx, orderId3);
       await trx.updateTable("payments").set({ status: "paid", provider_ref: result.providerRef }).where("id", "=", payment.id).execute();
       await trx.updateTable("orders").set({ status: "new", updated_at: /* @__PURE__ */ new Date() }).where("id", "=", orderId3).execute();
-      return "paid";
+      return { outcome: "paid", workerPhone: await notifyWorkerOfNewOrder(trx, orderId3) };
     });
     if (outcome === "declined") throw new AppError("PAYMENT_DECLINED", 402);
+    if (typeof outcome === "object") {
+      await sendNewOrderSms(this.ctx, outcome.workerPhone, NEW_ORDER_SMS);
+    }
     const [dto] = await this.orders.findDtos([orderId3], {
       userId: customerId,
       workerId: void 0
@@ -74541,16 +74610,43 @@ function createFilesRouter(ctx) {
   return router;
 }
 
-// src/modules/materials/material.routes.ts
+// src/modules/notifications/notification.routes.ts
 var import_express7 = __toESM(require_express2(), 1);
 var UUID_PATTERN4 = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-function idParam3(req) {
-  const value = req.params.id;
+function orderIdParam(req) {
+  const value = req.params.orderId;
   if (typeof value !== "string" || !UUID_PATTERN4.test(value)) throw AppError.notFound();
   return value;
 }
-function createMaterialRouter(ctx) {
+function createNotificationRouter(ctx) {
   const router = (0, import_express7.Router)();
+  const service = new NotificationService(ctx);
+  const { requireAuth } = createAuthMiddleware(ctx);
+  const userId = (req) => req.auth?.userId ?? "";
+  router.get("/my/notifications", requireAuth, async (req, res) => {
+    res.json(await service.list(userId(req)));
+  });
+  router.post("/my/notifications/read", requireAuth, async (req, res) => {
+    await service.markAllRead(userId(req));
+    res.status(204).end();
+  });
+  router.post("/my/notifications/orders/:orderId/read", requireAuth, async (req, res) => {
+    await service.markOrderRead(userId(req), orderIdParam(req));
+    res.status(204).end();
+  });
+  return router;
+}
+
+// src/modules/materials/material.routes.ts
+var import_express8 = __toESM(require_express2(), 1);
+var UUID_PATTERN5 = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+function idParam3(req) {
+  const value = req.params.id;
+  if (typeof value !== "string" || !UUID_PATTERN5.test(value)) throw AppError.notFound();
+  return value;
+}
+function createMaterialRouter(ctx) {
+  const router = (0, import_express8.Router)();
   const service = new MaterialService(ctx);
   const { requireWorker } = createAuthMiddleware(ctx);
   const workerId = (req) => req.workerId ?? "";
@@ -74578,7 +74674,7 @@ function createMaterialRouter(ctx) {
 }
 
 // src/modules/savings/savings.routes.ts
-var import_express8 = __toESM(require_express2(), 1);
+var import_express9 = __toESM(require_express2(), 1);
 
 // src/modules/savings/savings.service.ts
 var SavingsService = class {
@@ -74609,7 +74705,7 @@ var SavingsService = class {
 
 // src/modules/savings/savings.routes.ts
 function createSavingsRouter(ctx) {
-  const router = (0, import_express8.Router)();
+  const router = (0, import_express9.Router)();
   const service = new SavingsService(ctx);
   const { requireWorker } = createAuthMiddleware(ctx);
   const workerId = (req) => req.workerId ?? "";
@@ -74629,7 +74725,7 @@ function createSavingsRouter(ctx) {
 
 // src/modules/orders/order.routes.ts
 var import_node_crypto4 = require("node:crypto");
-var import_express9 = __toESM(require_express2(), 1);
+var import_express10 = __toESM(require_express2(), 1);
 
 // src/middleware/upload.ts
 var import_multer = __toESM(require_multer(), 1);
@@ -74695,6 +74791,19 @@ var TASHKENT_OFFSET_MS = 5 * 60 * 60 * 1e3;
 function startOfTashkentMonth(now) {
   const local = new Date(now.getTime() + TASHKENT_OFFSET_MS);
   return new Date(Date.UTC(local.getUTCFullYear(), local.getUTCMonth(), 1) - TASHKENT_OFFSET_MS);
+}
+async function assertLinesOwnedBy(trx, workerId, lines) {
+  const owners = await trx.selectFrom("products").select(["id", "worker_id"]).where(
+    "id",
+    "in",
+    lines.map((line) => line.productId)
+  ).forShare().execute();
+  const ownerById = new Map(owners.map((row) => [row.id, row.worker_id]));
+  for (const line of lines) {
+    if (ownerById.get(line.productId) !== workerId) {
+      throw AppError.conflict("ORDER_WORKER_MISMATCH");
+    }
+  }
 }
 function mergeDuplicates(items) {
   const merged = /* @__PURE__ */ new Map();
@@ -74821,6 +74930,7 @@ var OrderService = class {
     });
   }
   async insertOrder(trx, customerId, workerId, lines, input) {
+    await assertLinesOwnedBy(trx, workerId, lines);
     const split = splitOrderAmount(lines.reduce((sum, line) => sum + line.lineTotal, 0));
     const order = await trx.insertInto("orders").values({
       type: "product",
@@ -74852,6 +74962,7 @@ var OrderService = class {
 
 // src/modules/orders/service-order.service.ts
 var HOUR_MS4 = 60 * 60 * 1e3;
+var NEW_REQUEST_SMS = "BarakaLi: yangi buyurtma / \u043D\u043E\u0432\u044B\u0439 \u0437\u0430\u043A\u0430\u0437";
 var IMAGE_CONTENT_TYPE = "image/webp";
 var ServiceOrderService = class {
   constructor(ctx, now = () => /* @__PURE__ */ new Date()) {
@@ -74879,7 +74990,7 @@ var ServiceOrderService = class {
     await this.assertImagesStored(input.imageUrls);
     const split = splitOrderAmount(0);
     try {
-      const orderId3 = await this.ctx.db.transaction().execute(async (trx) => {
+      const created = await this.ctx.db.transaction().execute(async (trx) => {
         const order = await trx.insertInto("orders").values({
           type: "service",
           customer_id: customerId,
@@ -74900,8 +75011,10 @@ var ServiceOrderService = class {
         if (input.imageUrls.length > 0) {
           await trx.insertInto("order_images").values(input.imageUrls.map((url, position) => ({ order_id: order.id, url, position }))).execute();
         }
-        return order.id;
+        return { id: order.id, workerPhone: await notifyWorkerOfNewOrder(trx, order.id) };
       });
+      await sendNewOrderSms(this.ctx, created.workerPhone, NEW_REQUEST_SMS);
+      const orderId3 = created.id;
       const [dto] = await this.repo.findDtos([orderId3], {
         userId: customerId,
         workerId: void 0
@@ -74948,7 +75061,7 @@ function orderId2(req) {
   return parsed.data;
 }
 function createOrderRouter(ctx) {
-  const router = (0, import_express9.Router)();
+  const router = (0, import_express10.Router)();
   const orders = new OrderService(ctx);
   const serviceOrders = new ServiceOrderService(ctx);
   const payments = new PaymentService(ctx);
@@ -75119,7 +75232,7 @@ function createPaymentProvider(config2) {
 }
 
 // src/modules/products/product.routes.ts
-var import_express10 = __toESM(require_express2(), 1);
+var import_express11 = __toESM(require_express2(), 1);
 
 // src/modules/products/product.service.ts
 var import_node_crypto6 = require("node:crypto");
@@ -80272,14 +80385,14 @@ var ProductService = class {
 };
 
 // src/modules/products/product.routes.ts
-var UUID_PATTERN5 = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+var UUID_PATTERN6 = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 function idParam4(req, name = "id") {
   const value = req.params[name];
-  if (typeof value !== "string" || !UUID_PATTERN5.test(value)) throw AppError.notFound();
+  if (typeof value !== "string" || !UUID_PATTERN6.test(value)) throw AppError.notFound();
   return value;
 }
 function createProductRouter(ctx) {
-  const router = (0, import_express10.Router)();
+  const router = (0, import_express11.Router)();
   const service = new ProductService(ctx);
   const { requireWorker } = createAuthMiddleware(ctx);
   const workerId = (req) => req.workerId ?? "";
@@ -80354,15 +80467,15 @@ function createApp(options) {
   if (config2.isProduction && ctx.payments.name === "internal") {
     logger.warn("Real payment provider is not connected: PAYMENT_PROVIDER=internal");
   }
-  const app = (0, import_express11.default)();
+  const app = (0, import_express12.default)();
   app.set("trust proxy", 1);
   app.disable("x-powered-by");
   app.use(helmet({ crossOriginResourcePolicy: { policy: "same-site" } }));
   app.use((0, import_cors.default)({ origin: config2.allowedOrigins, credentials: true }));
   app.use(originGuard(config2.allowedOrigins));
-  app.use(import_express11.default.json({ limit: "100kb" }));
+  app.use(import_express12.default.json({ limit: "100kb" }));
   app.use((0, import_cookie_parser.default)());
-  const api = import_express11.default.Router();
+  const api = import_express12.default.Router();
   api.get("/health", (_req, res) => {
     res.json({ status: "ok" });
   });
@@ -80375,6 +80488,7 @@ function createApp(options) {
   api.use(createProductRouter(ctx));
   api.use(createOrderRouter(ctx));
   api.use(createFeedbackRouter(ctx));
+  api.use(createNotificationRouter(ctx));
   api.use(createMaterialRouter(ctx));
   api.use(createSavingsRouter(ctx));
   api.use(createAdminRouter(ctx));

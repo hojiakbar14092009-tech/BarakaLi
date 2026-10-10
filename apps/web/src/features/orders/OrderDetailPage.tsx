@@ -1,4 +1,5 @@
 import { Check } from 'lucide-react';
+import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useParams } from 'react-router-dom';
 import {
@@ -13,6 +14,7 @@ import { Button, buttonClasses } from '../../components/Button';
 import { ErrorState, LoadingState } from '../../components/StateViews';
 import { errorMessage } from '../../lib/errors';
 import { formatPrice } from '../../lib/format';
+import { useMarkOrderRead } from '../notifications/api';
 import { useOrder, useOrderAction } from './api';
 import { ComplaintSection } from './ComplaintSection';
 import { shortId } from './OrdersPage';
@@ -96,6 +98,12 @@ export default function OrderDetailPage() {
   const { t, i18n } = useTranslation();
   const { id } = useParams();
   const query = useOrder(id);
+  const markRead = useMarkOrderRead();
+  const isWorkerView = query.data?.viewerRole === 'worker';
+  const { mutate: markOrderRead } = markRead;
+  useEffect(() => {
+    if (id && isWorkerView) markOrderRead(id);
+  }, [id, isWorkerView, markOrderRead]);
 
   if (query.isPending) return <LoadingState />;
   if (query.isError) {

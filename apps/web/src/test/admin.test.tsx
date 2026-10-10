@@ -65,6 +65,7 @@ describe('admin route guard', () => {
     role,
     language: 'uz' as const,
     workerId: null,
+    workerName: null,
   });
 
   it('sends anonymous visitors to sign in and non-admins home', () => {

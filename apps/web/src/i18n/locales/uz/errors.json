@@ -40,5 +40,6 @@
   "MATERIAL_UNAVAILABLE": "Bu material hozir mavjud emas.",
   "MATERIAL_ORDER_NOT_PAYABLE": "Bu buyurtmani toʻlab boʻlmaydi.",
   "ORDER_NOT_REFUNDABLE": "Bu buyurtma uchun pulni qaytarib boʻlmaydi.",
-  "COMPLAINT_NOT_OPEN": "Bu shikoyat allaqachon koʻrib chiqilgan."
+  "COMPLAINT_NOT_OPEN": "Bu shikoyat allaqachon koʻrib chiqilgan.",
+  "ORDER_WORKER_MISMATCH": "Savatdagi mahsulot egasi mos kelmadi. Savatni yangilab, qayta urinib koʻring."
 }

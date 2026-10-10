@@ -29,7 +29,8 @@
     "calendar": "Kalendar",
     "admin": "Boshqaruv",
     "materials": "Materiallar",
-    "lessons": "Darslar"
+    "lessons": "Darslar",
+    "unread": "{{count}} ta yangi buyurtma"
   },
   "header": {
     "signIn": "Kirish",

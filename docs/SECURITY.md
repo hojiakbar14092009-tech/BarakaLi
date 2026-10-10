@@ -23,6 +23,8 @@ qayerda amalga oshirilgani va qanday tekshirilgani ko'rsatilgan. Qolgan xavflar 
 | Pul to'liq sonlarda, komissiya bir joyda         | ✅    | `bigint`, `splitOrderAmount` (testlangan); earnings/payments/status bitta tranzaksiyada                                                                                                                  |
 | Poyga holatlari (race)                           | ✅    | Zaxira `UPDATE … WHERE stock >= qty`; slot DB exclusion constraint; sharh `unique(order_id)` + qator qulfi; to'lov callback idempotent                                                                   |
 | Admin kirishi                                    | ✅    | `ADMIN_PHONES` + SMS tasdig'i. **Yangi:** `EXPOSE_SMS_CODE=true` rejimida ham admin raqami kodi javobda qaytmaydi (aks holda istalgan kishi admin bo'lardi); kod server logiga yoziladi (`auth.test.ts`) |
+| Buyurtma egasi                                   | ✅    | `order_items_owner_matches` triggeri + tranzaksiya ichida `FOR SHARE` tekshiruv; mijoz yuborgan `workerId` e'tiborga olinmaydi (`order-routing.test.ts`)                                                 |
+| Telefon loglarda yo'q                            | ✅    | `ConsoleSmsProvider` raqamni maskalaydi (`maskPhone`), admin kodi logida raqam yo'q; telefon URL parametrida ishlatilmaydi                                                                               |
 | Bog'liqliklarni ko'rib chiqish                   | ⚠️    | `pnpm audit` CI'da yo'q; qo'lda ishga tushirish tavsiya etiladi                                                                                                                                          |
 
 ## Qolgan xavflar va ochiq masalalar

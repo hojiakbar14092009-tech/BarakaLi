@@ -4,6 +4,10 @@ import type { AppContext } from '../../context.js';
 import type { PaymentProvider } from './payment-provider.js';
 import type { Database } from '../../db/schema.js';
 import { AppError } from '../../errors.js';
+
+/** Plain, language-neutral SMS text; the in-app notification carries the translated copy. */
+const NEW_ORDER_SMS = 'BarakaLi: yangi buyurtma / новый заказ';
+import { notifyWorkerOfNewOrder, sendNewOrderSms } from '../notifications/notification.service.js';
 import { OrderRepository } from '../orders/order.repository.js';
 
 /** Returns reserved stock to the shelf when a paid order is refunded. */
@@ -129,9 +133,12 @@ export class PaymentService {
         .set({ status: 'new', updated_at: new Date() })
         .where('id', '=', orderId)
         .execute();
-      return 'paid' as const;
+      return { outcome: 'paid' as const, workerPhone: await notifyWorkerOfNewOrder(trx, orderId) };
     });
     if (outcome === 'declined') throw new AppError('PAYMENT_DECLINED', 402);
+    if (typeof outcome === 'object') {
+      await sendNewOrderSms(this.ctx, outcome.workerPhone, NEW_ORDER_SMS);
+    }
     const [dto] = await this.orders.findDtos([orderId], {
       userId: customerId,
       workerId: undefined,

@@ -225,6 +225,15 @@ export interface SavingsGoalsTable {
   updated_at: Timestamp;
 }
 
+export interface NotificationsTable {
+  id: Generated<string>;
+  user_id: string;
+  kind: 'order_new';
+  order_id: string | null;
+  read_at: Date | null;
+  created_at: CreatedAt;
+}
+
 export interface Database {
   categories: CategoriesTable;
   users: UsersTable;
@@ -248,4 +257,5 @@ export interface Database {
   material_order_items: MaterialOrderItemsTable;
   material_payments: MaterialPaymentsTable;
   savings_goals: SavingsGoalsTable;
+  notifications: NotificationsTable;
 }

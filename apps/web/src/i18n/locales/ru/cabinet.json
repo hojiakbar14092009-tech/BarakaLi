@@ -71,5 +71,7 @@
     "commissionLine": "Комиссия: {{amount}}",
     "received": "Мастерице: {{amount}}"
   },
-  "calendarText": "Отметьте свободное время и цену услуги."
+  "calendarText": "Отметьте свободное время и цену услуги.",
+  "workerAs": "Профиль мастера: {{name}}",
+  "unreadOrders": "У вас {{count}} новых заказов"
 }

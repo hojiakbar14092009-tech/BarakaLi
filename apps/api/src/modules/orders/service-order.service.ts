@@ -9,9 +9,11 @@ import { isExclusionViolation } from '../../db/errors.js';
 import { AppError } from '../../errors.js';
 import { FILES_URL_PREFIX } from '../../infra/storage.js';
 import { expireUnpaidOrders } from '../jobs/order-expiry.js';
+import { notifyWorkerOfNewOrder, sendNewOrderSms } from '../notifications/notification.service.js';
 import { OrderRepository } from './order.repository.js';
 
 const HOUR_MS = 60 * 60 * 1000;
+const NEW_REQUEST_SMS = 'BarakaLi: yangi buyurtma / новый заказ';
 const IMAGE_CONTENT_TYPE = 'image/webp';
 
 export class ServiceOrderService {
@@ -49,7 +51,7 @@ export class ServiceOrderService {
 
     const split = splitOrderAmount(0);
     try {
-      const orderId = await this.ctx.db.transaction().execute(async (trx) => {
+      const created = await this.ctx.db.transaction().execute(async (trx) => {
         const order = await trx
           .insertInto('orders')
           .values({
@@ -77,8 +79,10 @@ export class ServiceOrderService {
             .values(input.imageUrls.map((url, position) => ({ order_id: order.id, url, position })))
             .execute();
         }
-        return order.id;
+        return { id: order.id, workerPhone: await notifyWorkerOfNewOrder(trx, order.id) };
       });
+      await sendNewOrderSms(this.ctx, created.workerPhone, NEW_REQUEST_SMS);
+      const orderId = created.id;
       const [dto] = await this.repo.findDtos([orderId], {
         userId: customerId,
         workerId: undefined,
