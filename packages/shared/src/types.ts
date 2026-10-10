@@ -302,6 +302,78 @@ export interface AdminOrderDto {
   createdAt: string;
 }
 
+export interface AdminProductDto {
+  id: string;
+  title: string;
+  description: string;
+  workerId: string;
+  workerName: string;
+  categoryId: string;
+  categorySlug: string;
+  retailPrice: number;
+  wholesalePrice: number | null;
+  wholesaleMinQty: number | null;
+  stock: number;
+  status: ProductStatus;
+  imageUrl: string | null;
+  /** How many order lines refer to it; such a product can be hidden but never deleted. */
+  ordersCount: number;
+  createdAt: string;
+}
+
+export interface RefundDto {
+  id: string;
+  amount: number;
+  commissionReversed: number;
+  reason: string | null;
+  adminName: string | null;
+  createdAt: string;
+}
+
+export interface AdminOrderPartyDto {
+  id: string;
+  name: string | null;
+  phone: string;
+}
+
+export interface AdminOrderDetailDto {
+  id: string;
+  type: OrderType;
+  status: OrderStatus;
+  total: number;
+  commission: number;
+  commissionRate: number;
+  workerAmount: number;
+  fulfillment: FulfillmentType;
+  deliveryAddress: string | null;
+  startTime: string | null;
+  endTime: string | null;
+  description: string | null;
+  customer: AdminOrderPartyDto;
+  worker: AdminOrderPartyDto;
+  paymentStatus: PaymentStatus | null;
+  items: OrderItemDto[];
+  refunds: RefundDto[];
+  /** Statuses the administrator may move this order to next (refund has its own action). */
+  allowedTransitions: OrderStatus[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AdminUserDto {
+  id: string;
+  name: string | null;
+  phone: string;
+  role: UserRole;
+  language: 'uz' | 'ru';
+  workerId: string | null;
+  workerStatus: WorkerStatus | null;
+  ordersCount: number;
+  blockedAt: string | null;
+  blockReason: string | null;
+  createdAt: string;
+}
+
 export interface AdminReviewDto {
   id: string;
   orderId: string;

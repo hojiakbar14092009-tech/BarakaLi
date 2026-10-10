@@ -170,7 +170,14 @@
       "material.create": "Material qoʻshildi",
       "material.update": "Material yangilandi",
       "material_order.deliver": "Material buyurtmasi topshirildi",
-      "worker.suspend": "Hunarmand toʻxtatildi"
+      "worker.suspend": "Hunarmand toʻxtatildi",
+      "order.status": "Buyurtma holati oʻzgartirildi",
+      "product.update": "Mahsulot tahrirlandi",
+      "product.hide": "Mahsulot yashirildi",
+      "product.show": "Mahsulot qayta koʻrsatildi",
+      "product.delete": "Mahsulot oʻchirildi",
+      "user.block": "Foydalanuvchi bloklandi",
+      "user.unblock": "Foydalanuvchi blokdan chiqarildi"
     }
   },
   "notReady": {
@@ -180,5 +187,127 @@
   "moderation": {
     "reviews": "Sharhlar",
     "complaints": "Shikoyatlar"
+  },
+  "products": {
+    "search": "Mahsulotni qidirish",
+    "searchPlaceholder": "Mahsulot nomi",
+    "status": "Holat",
+    "category": "Toifa",
+    "statuses": {
+      "draft": "Qoralama",
+      "published": "Chop etilgan",
+      "hidden": "Yashirilgan"
+    },
+    "stock": "zaxira: {{count}}",
+    "ordersCount": "buyurtmalar: {{count}}",
+    "empty": "Mahsulot topilmadi.",
+    "emptyHint": "Filtrni yoki qidiruv soʻzini oʻzgartirib koʻring.",
+    "hide": "Yashirish",
+    "show": "Koʻrsatish",
+    "hasOrders": "Bu mahsulot buyurtmalarda bor: oʻchirib boʻlmaydi, faqat yashirish mumkin.",
+    "workerFilter": "Faqat bitta hunarmandning mahsulotlari koʻrsatilmoqda.",
+    "openWorker": "Hunarmandni ochish",
+    "clearFilter": "Filtrni olib tashlash",
+    "form": {
+      "title": "Nomi",
+      "description": "Tavsif",
+      "price": "Narx (soʻm)"
+    },
+    "dialog": {
+      "hide": {
+        "title": "Mahsulotni yashirish",
+        "text": "«{{title}}» katalogdan yashiriladi. Hunarmand uni oʻzi koʻraveradi.",
+        "confirm": "Mahsulotni yashirish"
+      },
+      "show": {
+        "title": "Mahsulotni koʻrsatish",
+        "text": "«{{title}}» yana katalogda koʻrinadi.",
+        "confirm": "Mahsulotni koʻrsatish"
+      },
+      "delete": {
+        "title": "Mahsulotni oʻchirish",
+        "text": "«{{title}}» katalogdan va hunarmand roʻyxatidan olib tashlanadi. Buni qaytarib boʻlmaydi.",
+        "confirm": "Mahsulotni oʻchirish"
+      }
+    }
+  },
+  "orderDetail": {
+    "back": "Buyurtmalar roʻyxatiga",
+    "title": "Buyurtma {{id}}",
+    "customer": "Buyurtmachi",
+    "worker": "Hunarmand",
+    "items": "Tarkibi",
+    "money": "Pul",
+    "commission": "komissiya {{percent}}%: {{amount}}",
+    "workerAmount": "hunarmandga: {{amount}}",
+    "payment": "Toʻlov",
+    "paymentStatus": {
+      "pending": "Kutilmoqda",
+      "paid": "Toʻlangan",
+      "refunded": "Qaytarilgan",
+      "failed": "Muvaffaqiyatsiz"
+    },
+    "fulfillment": "Topshirish",
+    "slot": "Vaqt",
+    "description": "Tavsif",
+    "created": "Yaratilgan",
+    "actions": "Amallar",
+    "nextStatus": "Keyingi holat",
+    "choose": "Tanlang",
+    "changeStatus": "Holatni oʻzgartirish",
+    "closed": "Bu buyurtma yakunlangan: holatini oʻzgartirib boʻlmaydi.",
+    "refunds": "Qaytarishlar",
+    "commissionReversed": "komissiya qaytarildi: {{amount}}",
+    "dialog": {
+      "status": {
+        "title": "Buyurtma holatini oʻzgartirish",
+        "text": "{{from}} → {{to}}. Oʻtish faqat ruxsat etilgan ketma-ketlikda bajariladi."
+      },
+      "refund": {
+        "title": "Pulni qaytarish",
+        "text": "{{amount}} buyurtmachiga qaytariladi, zaxira tiklanadi va buyurtma yopiladi.",
+        "confirm": "Pulni qaytarish",
+        "reasonLabel": "Sabab (ixtiyoriy)",
+        "reasonHint": "Audit jurnalida saqlanadi."
+      }
+    }
+  },
+  "users": {
+    "search": "Foydalanuvchini qidirish",
+    "filter": {
+      "blocked": "Bloklangan",
+      "admin": "Admin",
+      "worker": "Hunarmand",
+      "customer": "Mijoz"
+    },
+    "role": {
+      "admin": "Administrator",
+      "worker": "Hunarmand",
+      "customer": "Mijoz"
+    },
+    "empty": "Foydalanuvchi topilmadi.",
+    "noName": "Ismsiz",
+    "ordersCount": "buyurtmalar: {{count}}",
+    "orders": "Buyurtmalar",
+    "language": "Til",
+    "joined": "Roʻyxatdan oʻtgan",
+    "blocked": "Bloklangan",
+    "blockedAt": "Bloklangan vaqti",
+    "back": "Foydalanuvchilar roʻyxatiga",
+    "block": "Bloklash",
+    "unblock": "Blokdan chiqarish",
+    "dialog": {
+      "block": {
+        "title": "Foydalanuvchini bloklash",
+        "text": "{{name}} tizimga kira olmaydi va ochiq sessiyalari yopiladi.",
+        "confirm": "Foydalanuvchini bloklash",
+        "reasonLabel": "Bloklash sababi"
+      },
+      "unblock": {
+        "title": "Blokdan chiqarish",
+        "text": "{{name}} yana tizimga kira oladi.",
+        "confirm": "Blokdan chiqarish"
+      }
+    }
   }
 }

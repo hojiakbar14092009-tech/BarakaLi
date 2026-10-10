@@ -67,6 +67,7 @@ export class ProductRepository {
         .selectFrom('products as p')
         .innerJoin('workers as w', 'w.id', 'p.worker_id')
         .innerJoin('categories as c', 'c.id', 'p.category_id')
+        .where('p.deleted_at', 'is', null)
         .select([
           'p.id',
           'p.worker_id',
@@ -149,6 +150,7 @@ export class ProductRepository {
       .selectFrom('products')
       .select('id')
       .where('worker_id', '=', workerId)
+      .where('deleted_at', 'is', null)
       .orderBy('created_at', 'desc')
       .execute();
     return rows.map((row) => row.id);
@@ -159,6 +161,7 @@ export class ProductRepository {
       .selectFrom('products')
       .select(['id', 'worker_id', 'status'])
       .where('id', '=', id)
+      .where('deleted_at', 'is', null)
       .executeTakeFirst();
     return row ? { id: row.id, workerId: row.worker_id, status: row.status } : undefined;
   }
@@ -298,7 +301,8 @@ export class ProductRepository {
     let query = this.db
       .selectFrom('products as p')
       .innerJoin('workers as w', 'w.id', 'p.worker_id')
-      .innerJoin('categories as c', 'c.id', 'p.category_id');
+      .innerJoin('categories as c', 'c.id', 'p.category_id')
+      .where('p.deleted_at', 'is', null);
     // Public listings: published products of approved workers only. Pending and rejected
     // applicants never show up, whatever the client asks for.
     if (filter.publishedOnly) {

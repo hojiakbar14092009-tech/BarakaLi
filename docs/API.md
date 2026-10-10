@@ -382,6 +382,25 @@ Hunarmandlar: `GET /admin/workers?status=pending|approved|rejected|suspended&q=<
 `approved` uchun, aks holda 409 `WORKER_NOT_APPROVED`). Toʻxtatilgan hunarmand katalogda koʻrinmaydi va yangi
 buyurtma ololmaydi (`accept` → 403), mavjud buyurtmalarini yakunlaydi; unga `worker_suspended` bildirishnomasi boradi.
 
+Mahsulotlar: `GET /admin/products?q&status&workerId&categoryId&page` → `Page<AdminProductDto>` (oʻchirilganlar
+chiqmaydi), `PATCH /admin/products/:id` (`{ title, description, retailPrice, categoryId }`),
+`POST /admin/products/:id/hide | show` (koʻrsatish uchun kamida bitta rasm kerak, aks holda 400
+`IMAGE_REQUIRED`), `DELETE /admin/products/:id` — yumshoq oʻchirish (`deleted_at`); buyurtmada bor mahsulot
+uchun 409 `PRODUCT_HAS_ORDERS` (faqat yashirish mumkin).
+
+Buyurtmalar: `GET /admin/orders/:id` → `AdminOrderDetailDto` (tomonlar, tarkib, toʻlov, qaytarishlar,
+`allowedTransitions`), `PATCH /admin/orders/:id/status` (`{ status }`; faqat `ORDER_STATUS_TRANSITIONS`
+boʻyicha, aks holda 409 `ORDER_INVALID_TRANSITION`; `delivered` da `earnings` yoziladi),
+`POST /admin/orders/:id/refund` (`{ reason? }`) → 201 `RefundDto`: bitta tranzaksiyada provayder qaytarishi,
+`payments → refunded`, zaxira tiklanadi, `refunds` ledger qatori (summa toʻlovdan, butun soʻm), daromad
+yozilgan boʻlsa komissiya teskari yoziladi, buyurtma `refunded`, audit. Qaytarib boʻlmasa 409
+`ORDER_NOT_REFUNDABLE`.
+
+Foydalanuvchilar: `GET /admin/users?q&status=blocked|admin|worker|customer&page` → `Page<AdminUserDto>`,
+`GET /admin/users/:id`, `POST /admin/users/:id/block` (`{ reason }`, 10–300 belgi) va `/unblock`.
+Bloklangan foydalanuvchi: kirish va refresh rad etiladi, mavjud access token bilan soʻrovlar 403
+`USER_BLOCKED`. Oʻziga nisbatan 409 `CANNOT_ACT_ON_SELF`, oxirgi adminga 409 `LAST_ADMIN`.
+
 `GET /admin/audit?page=1` → `Page<AdminAuditEntryDto>` (`id, action, targetType, targetId, details, adminName, createdAt`); `details` da telefon yoʻq.
 
 Xatolar: 401 tokensiz, 403 `FORBIDDEN` admin boʻlmasa, 409 `CANNOT_ACT_ON_SELF` / `LAST_ADMIN` (admin hisoblariga nisbatan amallar).

@@ -9,6 +9,8 @@ declare global {
   namespace Express {
     interface Request {
       auth?: { userId: string; role: UserRole };
+      /** Set when the bearer token belongs to a blocked account. */
+      blocked?: boolean;
       workerId?: string;
     }
   }
@@ -29,16 +31,28 @@ function readBearer(header: string | undefined): string | undefined {
 }
 
 export function createAuthMiddleware(ctx: AppContext): AuthMiddleware {
+  // A stateless token stays valid until it expires, so a block is checked on every request.
   const optionalAuth: RequestHandler = (req, _res, next) => {
     const token = readBearer(req.get('authorization'));
     const claims = token ? verifyAccessToken(token, ctx.config.jwtAccessSecret) : null;
-    if (claims) req.auth = claims;
-    next();
+    if (!claims) return next();
+    ctx.db
+      .selectFrom('users')
+      .select('blocked_at')
+      .where('id', '=', claims.userId)
+      .executeTakeFirst()
+      .then((row) => {
+        if (row?.blocked_at) req.blocked = true;
+        else req.auth = claims;
+        next();
+      }, next);
   };
 
   const requireAuth: RequestHandler = (req, _res, next) => {
-    optionalAuth(req, _res, () => {
-      next(req.auth ? undefined : AppError.unauthenticated());
+    optionalAuth(req, _res, (error?: unknown) => {
+      if (error) return next(error);
+      if (req.blocked) return next(new AppError('USER_BLOCKED', 403));
+      return next(req.auth ? undefined : AppError.unauthenticated());
     });
   };
 

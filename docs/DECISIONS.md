@@ -292,3 +292,21 @@ Brifdagi noaniqliklar bo'yicha qabul qilingan qarorlar. Yangi qaror oxiriga qo's
 - Har amal `ConfirmDialog` orqali: nomi aniq ("Hunarmandni tasdiqlash / rad etish / toʻxtatish"), rad etish
   va toʻxtatishda sabab (≥10 belgi) majburiy; fokus dialog ichida, Esc yopadi, fokus tugmaga qaytadi.
 - "Tasdiqlangan" belgisi faqat `status === 'approved'` da (`isVerified` serverdan).
+
+## Mahsulot, buyurtma va foydalanuvchi boshqaruvi (2026-10-10)
+
+- Mahsulot oʻchirish yumshoq: `products.deleted_at` (migratsiya `1760001400000`); barcha soʻrovlar uni chetlab
+  oʻtadi. Buyurtmada uchragan mahsulot oʻchirilmaydi (409 `PRODUCT_HAS_ORDERS`), faqat yashiriladi — buyurtma
+  tarixi buzilmasin.
+- Admin buyurtma holatini faqat `ORDER_STATUS_TRANSITIONS` boʻyicha oʻzgartiradi (409 aks holda);
+  `refunded` ga faqat qaytarish amali orqali oʻtiladi. `delivered` da hunarmand oqimidagidek `earnings`
+  yoziladi.
+- Qaytarish ledger bilan: `refunds` jadvali (`amount`, `commission_reversed`, `reason`, `admin_user_id`),
+  hammasi bitta tranzaksiyada. Daromad allaqachon yozilgan boʻlsa `earnings` ga manfiy qator qoʻshiladi
+  (komissiya teskari). Summa klientdan emas, `payments.amount` dan, butun soʻm. Yetkazilgan buyurtma
+  (`delivered`) hech kim uchun qaytarilmaydi — bu oldingi qoida saqlandi.
+- Bloklash: `users.blocked_at/block_reason`; bloklashda refresh tokenlar bekor qilinadi, har soʻrovda
+  `blocked_at` tekshiriladi (stateless JWT muddati tugaguncha ham rad etilsin), kirishda 403
+  `USER_BLOCKED`. `assertCanActOnAdmin` bloklashga ulandi.
+- Admin buyurtma tafsilotida ikkala tomonning telefoni koʻrinadi (admin uchun ruxsat etilgan); audit
+  `details` va URL'larda telefon yoʻq.

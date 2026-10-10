@@ -108,6 +108,15 @@ export class AuthRepository {
     return row.id;
   }
 
+  async isBlocked(userId: string): Promise<boolean> {
+    const row = await this.db
+      .selectFrom('users')
+      .select('blocked_at')
+      .where('id', '=', userId)
+      .executeTakeFirst();
+    return row?.blocked_at != null;
+  }
+
   async setRole(userId: string, role: 'customer' | 'worker' | 'admin'): Promise<void> {
     await this.db.updateTable('users').set({ role }).where('id', '=', userId).execute();
   }

@@ -13,10 +13,17 @@ export type AuditAction =
   | 'order.refund'
   | 'material.create'
   | 'material.update'
-  | 'material_order.deliver';
+  | 'material_order.deliver'
+  | 'order.status'
+  | 'product.update'
+  | 'product.hide'
+  | 'product.show'
+  | 'product.delete'
+  | 'user.block'
+  | 'user.unblock';
 
 export type AuditTarget =
-  'worker' | 'review' | 'complaint' | 'order' | 'material' | 'material_order';
+  'worker' | 'review' | 'complaint' | 'order' | 'product' | 'user' | 'material' | 'material_order';
 
 /** Plain values only; the writer never receives phone numbers, codes or tokens. */
 export type AuditDetails = Record<string, string | number | boolean | null>;

@@ -14,6 +14,7 @@ import { originGuard } from './middleware/origin.js';
 import { generalLimiter } from './middleware/rate-limit.js';
 import { createAuthRouter } from './modules/auth/auth.routes.js';
 import { createAdminRouter } from './modules/admin/admin.routes.js';
+import { createAdminManagementRouter } from './modules/admin/admin-management.routes.js';
 import { createCalendarRouter } from './modules/calendar/calendar.routes.js';
 import { createCatalogRouter } from './modules/catalog/catalog.routes.js';
 import { createFeedbackRouter } from './modules/feedback/feedback.routes.js';
@@ -94,6 +95,7 @@ export function createApp(options: AppOptions): Express {
   api.use(createMaterialRouter(ctx));
   api.use(createSavingsRouter(ctx));
   api.use(createAdminRouter(ctx));
+  api.use(createAdminManagementRouter(ctx));
   api.use(createFilesRouter(ctx));
   app.use('/api', api);
 

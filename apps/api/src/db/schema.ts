@@ -18,6 +18,8 @@ export interface UsersTable {
   name: string | null;
   role: Generated<'customer' | 'worker' | 'admin'>;
   language: Generated<'uz' | 'ru'>;
+  blocked_at: Date | null;
+  block_reason: string | null;
   created_at: CreatedAt;
 }
 
@@ -49,6 +51,7 @@ export interface ProductsTable {
   wholesale_min_qty: number | null;
   stock: Generated<number>;
   status: Generated<'draft' | 'published' | 'hidden'>;
+  deleted_at: Date | null;
   created_at: CreatedAt;
   updated_at: Timestamp;
 }
@@ -255,6 +258,17 @@ export interface AuditLogTable {
   created_at: CreatedAt;
 }
 
+export interface RefundsTable {
+  id: Generated<string>;
+  order_id: string;
+  payment_id: string;
+  amount: number;
+  commission_reversed: Generated<number>;
+  reason: string | null;
+  admin_user_id: string | null;
+  created_at: CreatedAt;
+}
+
 export interface Database {
   categories: CategoriesTable;
   users: UsersTable;
@@ -280,4 +294,5 @@ export interface Database {
   savings_goals: SavingsGoalsTable;
   notifications: NotificationsTable;
   audit_log: AuditLogTable;
+  refunds: RefundsTable;
 }

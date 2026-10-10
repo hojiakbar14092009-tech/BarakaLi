@@ -166,7 +166,7 @@ export function ComplaintsTab() {
                     <Button
                       variant="secondary"
                       disabled={refund.isPending}
-                      onClick={() => refund.mutate(complaint.orderId)}
+                      onClick={() => refund.mutate({ orderId: complaint.orderId })}
                     >
                       {t('admin.complaints.refund')}
                     </Button>

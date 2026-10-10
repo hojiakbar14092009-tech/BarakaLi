@@ -45,5 +45,7 @@
   "WORKER_NOT_APPROVED": "Profilingiz hali tasdiqlanmagan, shuning uchun buyurtmani qabul qila olmaysiz.",
   "INVALID_TELEGRAM_USERNAME": "Telegram foydalanuvchi nomi notoʻgʻri: 5–32 belgi, faqat harf, raqam va pastki chiziq (_).",
   "CANNOT_ACT_ON_SELF": "Bu amalni oʻzingizga nisbatan bajarib boʻlmaydi.",
-  "LAST_ADMIN": "Yagona administratorni olib tashlab boʻlmaydi."
+  "LAST_ADMIN": "Yagona administratorni olib tashlab boʻlmaydi.",
+  "USER_BLOCKED": "Bu hisob bloklangan. Savol boʻlsa, platforma maʼmuriyatiga murojaat qiling.",
+  "PRODUCT_HAS_ORDERS": "Bu mahsulot buyurtmalarda bor: uni oʻchirib boʻlmaydi, faqat yashirish mumkin."
 }

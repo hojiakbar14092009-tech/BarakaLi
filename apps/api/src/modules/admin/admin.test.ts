@@ -148,7 +148,7 @@ describe('complaints and manual refund', () => {
     const refund = await request(t.app)
       .post(`/api/admin/orders/${orderId}/refund`)
       .set(bearer(admin));
-    expect(refund.status).toBe(204);
+    expect(refund.status).toBe(201);
     const stockAfter = await t.db
       .selectFrom('products')
       .select('stock')

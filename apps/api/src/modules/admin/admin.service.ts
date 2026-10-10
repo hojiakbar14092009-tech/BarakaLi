@@ -3,7 +3,6 @@ import { TASHKENT_UTC_OFFSET_HOURS } from '@barakali/shared';
 import {
   ADMIN_PAGE_SIZE,
   WORKER_STATUSES,
-  canTransition,
   type AdminComplaintDto,
   type AdminListQuery,
   type AdminOrderDto,
@@ -18,7 +17,6 @@ import {
 } from '@barakali/shared';
 import type { AppContext } from '../../context.js';
 import { AppError } from '../../errors.js';
-import { refundPaidOrder } from '../payments/payment.service.js';
 import { escapeLike } from '../products/product.repository.js';
 import { nextRating } from '../feedback/feedback.service.js';
 import { writeAudit } from './audit.js';
@@ -485,41 +483,5 @@ export class AdminService {
       .where('id', '=', id)
       .executeTakeFirst();
     throw exists ? AppError.conflict('COMPLAINT_NOT_OPEN') : AppError.notFound();
-  }
-
-  /** Manual refund after a complaint: money back through the provider, stock restored, order closed. */
-  async refundOrder(adminId: string, orderId: string): Promise<void> {
-    await this.ctx.db.transaction().execute(async (trx) => {
-      const order = await trx
-        .selectFrom('orders')
-        .select(['id', 'status'])
-        .where('id', '=', orderId)
-        .forUpdate()
-        .executeTakeFirst();
-      if (!order) throw AppError.notFound();
-      if (!canTransition(order.status as OrderStatus, 'refunded')) {
-        throw AppError.conflict('ORDER_NOT_REFUNDABLE');
-      }
-      const paid = await trx
-        .selectFrom('payments')
-        .select('id')
-        .where('order_id', '=', orderId)
-        .where('status', '=', 'paid')
-        .executeTakeFirst();
-      if (!paid) throw AppError.conflict('ORDER_NOT_REFUNDABLE');
-      await refundPaidOrder(trx, this.ctx.payments, orderId);
-      await trx
-        .updateTable('orders')
-        .set({ status: 'refunded', updated_at: this.now() })
-        .where('id', '=', orderId)
-        .execute();
-      await writeAudit(trx, {
-        adminId,
-        action: 'order.refund',
-        targetType: 'order',
-        targetId: orderId,
-        details: { from: order.status, to: 'refunded' },
-      });
-    });
   }
 }

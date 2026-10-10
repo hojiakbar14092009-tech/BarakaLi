@@ -68,11 +68,6 @@ export function createAdminRouter(ctx: AppContext): Router {
     res.json(await admin.listOrders(adminListQuerySchema.parse(req.query)));
   });
 
-  router.post('/admin/orders/:id/refund', async (req, res) => {
-    await admin.refundOrder(adminId(req), idParam(req));
-    res.status(204).end();
-  });
-
   router.get('/admin/reviews', async (req, res) => {
     res.json(await admin.listReviews(adminListQuerySchema.parse(req.query)));
   });

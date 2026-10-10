@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 import { ORDER_STATUSES } from '@barakali/shared';
 import { SelectField } from '../../components/Field';
 import { EmptyState, ErrorState, LoadingState } from '../../components/StateViews';
@@ -45,9 +46,12 @@ export function OrdersTab() {
             className="space-y-1 rounded-card border border-bisque bg-white/60 p-4"
           >
             <p className="flex flex-wrap items-center justify-between gap-2">
-              <span className="font-semibold">
+              <Link
+                to={`/admin/buyurtmalar/${order.id}`}
+                className="inline-flex min-h-12 items-center font-semibold underline-offset-4 hover:underline"
+              >
                 {order.workerName} ← {order.customerName ?? '—'}
-              </span>
+              </Link>
               <StatusBadge status={order.status} />
             </p>
             <p className="flex flex-wrap justify-between gap-2 text-sm text-mocha">

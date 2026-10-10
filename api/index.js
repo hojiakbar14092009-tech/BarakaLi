@@ -21472,11 +21472,11 @@ var require_router = __commonJS({
     var slice = Array.prototype.slice;
     var flatten = Array.prototype.flat;
     var methods = METHODS.map((method) => method.toLowerCase());
-    module2.exports = Router12;
+    module2.exports = Router13;
     module2.exports.Route = Route;
-    function Router12(options) {
-      if (!(this instanceof Router12)) {
-        return new Router12(options);
+    function Router13(options) {
+      if (!(this instanceof Router13)) {
+        return new Router13(options);
       }
       const opts = options || {};
       function router(req, res, next) {
@@ -21490,9 +21490,9 @@ var require_router = __commonJS({
       router.stack = [];
       return router;
     }
-    Router12.prototype = function() {
+    Router13.prototype = function() {
     };
-    Router12.prototype.param = function param(name, fn) {
+    Router13.prototype.param = function param(name, fn) {
       if (!name) {
         throw new TypeError("argument name is required");
       }
@@ -21512,7 +21512,7 @@ var require_router = __commonJS({
       params.push(fn);
       return this;
     };
-    Router12.prototype.handle = function handle(req, res, callback) {
+    Router13.prototype.handle = function handle(req, res, callback) {
       if (!callback) {
         throw new TypeError("argument callback is required");
       }
@@ -21639,7 +21639,7 @@ var require_router = __commonJS({
         }
       }
     };
-    Router12.prototype.use = function use(handler) {
+    Router13.prototype.use = function use(handler) {
       let offset = 0;
       let path = "/";
       if (typeof handler !== "function") {
@@ -21672,7 +21672,7 @@ var require_router = __commonJS({
       }
       return this;
     };
-    Router12.prototype.route = function route(path) {
+    Router13.prototype.route = function route(path) {
       const route2 = new Route(path);
       const layer = new Layer(path, {
         sensitive: this.caseSensitive,
@@ -21687,7 +21687,7 @@ var require_router = __commonJS({
       return route2;
     };
     methods.concat("all").forEach(function(method) {
-      Router12.prototype[method] = function(path) {
+      Router13.prototype[method] = function(path) {
         const route = this.route(path);
         route[method].apply(route, slice.call(arguments, 1));
         return this;
@@ -21870,7 +21870,7 @@ var require_application = __commonJS({
     var compileTrust = require_utils3().compileTrust;
     var resolve = require("node:path").resolve;
     var once = require_once();
-    var Router12 = require_router();
+    var Router13 = require_router();
     var slice = Array.prototype.slice;
     var flatten = Array.prototype.flat;
     var app = exports2 = module2.exports = {};
@@ -21886,7 +21886,7 @@ var require_application = __commonJS({
         enumerable: true,
         get: function getrouter() {
           if (router === null) {
-            router = new Router12({
+            router = new Router13({
               caseSensitive: this.enabled("case sensitive routing"),
               strict: this.enabled("strict routing")
             });
@@ -24240,7 +24240,7 @@ var require_express = __commonJS({
     var EventEmitter = require("node:events").EventEmitter;
     var mixin = require_merge_descriptors();
     var proto = require_application();
-    var Router12 = require_router();
+    var Router13 = require_router();
     var req = require_request();
     var res = require_response();
     exports2 = module2.exports = createApplication;
@@ -24262,8 +24262,8 @@ var require_express = __commonJS({
     exports2.application = proto;
     exports2.request = req;
     exports2.response = res;
-    exports2.Route = Router12.Route;
-    exports2.Router = Router12;
+    exports2.Route = Router13.Route;
+    exports2.Router = Router13;
     exports2.json = bodyParser.json;
     exports2.raw = bodyParser.raw;
     exports2.static = require_serve_static();
@@ -66688,12 +66688,12 @@ var migrations_default = [{ "name": "1760000000000_core.sql", "up": "CREATE EXTE
 -- chosen for new workers or products.
 ALTER TABLE categories ADD COLUMN is_active boolean NOT NULL DEFAULT true;
 
-UPDATE categories SET is_active = false WHERE slug = 'masofaviy-ishlar';` }, { "name": "1760001000000_catering_requests.sql", "up": "-- Catering enquiries from the landing page. Not an order: no price, no payment; the team calls back.\n-- service_type_id mirrors CATERING_SERVICE_IDS in packages/shared.\nCREATE TABLE catering_requests (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  name text NOT NULL,\n  phone text NOT NULL,\n  service_type_id text NOT NULL\n    CHECK (service_type_id IN ('tikuvchilik', 'pishiriq', 'qolmehnat', 'dizayn', 'boshqa')),\n  event_date date NOT NULL,\n  guests_count integer NOT NULL CHECK (guests_count >= 1),\n  note text NOT NULL DEFAULT '',\n  status text NOT NULL DEFAULT 'new' CHECK (status IN ('new', 'contacted', 'closed')),\n  created_at timestamptz NOT NULL DEFAULT now()\n);\n\nCREATE INDEX catering_requests_status_created_idx ON catering_requests (status, created_at DESC);" }, { "name": "1760001100000_drop_catering_requests.sql", "up": "-- The catering section was removed. The table is dropped only when it holds no rows; if enquiries\n-- exist they are left untouched for the team to export first (nothing in the app reads them).\nDO $$\nBEGIN\n  IF to_regclass('public.catering_requests') IS NOT NULL THEN\n    IF (SELECT count(*) FROM catering_requests) = 0 THEN\n      DROP TABLE catering_requests;\n    ELSE\n      RAISE NOTICE 'catering_requests has rows; table kept';\n    END IF;\n  END IF;\nEND\n$$;" }, { "name": "1760001200000_audit_log.sql", "up": "-- Every administrator action, who did it and to what. `details` holds only ids, statuses and\n-- reasons: never a phone number, a code or a token.\nCREATE TABLE audit_log (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  admin_user_id uuid NOT NULL REFERENCES users (id),\n  action text NOT NULL,\n  target_type text NOT NULL,\n  target_id uuid,\n  details jsonb NOT NULL DEFAULT '{}'::jsonb,\n  created_at timestamptz NOT NULL DEFAULT now()\n);\n\nCREATE INDEX audit_log_created_idx ON audit_log (created_at DESC);\nCREATE INDEX audit_log_target_idx ON audit_log (target_type, target_id);" }, { "name": "1760001300000_worker_suspension.sql", "up": "-- An approved worker can be suspended: hidden from the catalog and unable to take new orders, while\n-- orders already placed run to completion. Sample and existing workers keep their current status.\nALTER TABLE workers DROP CONSTRAINT IF EXISTS workers_status_check;\nALTER TABLE workers\n  ADD CONSTRAINT workers_status_check\n    CHECK (status IN ('pending', 'approved', 'rejected', 'suspended'));\n\nALTER TABLE notifications DROP CONSTRAINT IF EXISTS notifications_kind_check;\nALTER TABLE notifications\n  ADD CONSTRAINT notifications_kind_check CHECK (\n    kind IN (\n      'order_new',\n      'worker_application_received',\n      'worker_approved',\n      'worker_rejected',\n      'worker_suspended'\n    )\n  );" }];
+UPDATE categories SET is_active = false WHERE slug = 'masofaviy-ishlar';` }, { "name": "1760001000000_catering_requests.sql", "up": "-- Catering enquiries from the landing page. Not an order: no price, no payment; the team calls back.\n-- service_type_id mirrors CATERING_SERVICE_IDS in packages/shared.\nCREATE TABLE catering_requests (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  name text NOT NULL,\n  phone text NOT NULL,\n  service_type_id text NOT NULL\n    CHECK (service_type_id IN ('tikuvchilik', 'pishiriq', 'qolmehnat', 'dizayn', 'boshqa')),\n  event_date date NOT NULL,\n  guests_count integer NOT NULL CHECK (guests_count >= 1),\n  note text NOT NULL DEFAULT '',\n  status text NOT NULL DEFAULT 'new' CHECK (status IN ('new', 'contacted', 'closed')),\n  created_at timestamptz NOT NULL DEFAULT now()\n);\n\nCREATE INDEX catering_requests_status_created_idx ON catering_requests (status, created_at DESC);" }, { "name": "1760001100000_drop_catering_requests.sql", "up": "-- The catering section was removed. The table is dropped only when it holds no rows; if enquiries\n-- exist they are left untouched for the team to export first (nothing in the app reads them).\nDO $$\nBEGIN\n  IF to_regclass('public.catering_requests') IS NOT NULL THEN\n    IF (SELECT count(*) FROM catering_requests) = 0 THEN\n      DROP TABLE catering_requests;\n    ELSE\n      RAISE NOTICE 'catering_requests has rows; table kept';\n    END IF;\n  END IF;\nEND\n$$;" }, { "name": "1760001200000_audit_log.sql", "up": "-- Every administrator action, who did it and to what. `details` holds only ids, statuses and\n-- reasons: never a phone number, a code or a token.\nCREATE TABLE audit_log (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  admin_user_id uuid NOT NULL REFERENCES users (id),\n  action text NOT NULL,\n  target_type text NOT NULL,\n  target_id uuid,\n  details jsonb NOT NULL DEFAULT '{}'::jsonb,\n  created_at timestamptz NOT NULL DEFAULT now()\n);\n\nCREATE INDEX audit_log_created_idx ON audit_log (created_at DESC);\nCREATE INDEX audit_log_target_idx ON audit_log (target_type, target_id);" }, { "name": "1760001300000_worker_suspension.sql", "up": "-- An approved worker can be suspended: hidden from the catalog and unable to take new orders, while\n-- orders already placed run to completion. Sample and existing workers keep their current status.\nALTER TABLE workers DROP CONSTRAINT IF EXISTS workers_status_check;\nALTER TABLE workers\n  ADD CONSTRAINT workers_status_check\n    CHECK (status IN ('pending', 'approved', 'rejected', 'suspended'));\n\nALTER TABLE notifications DROP CONSTRAINT IF EXISTS notifications_kind_check;\nALTER TABLE notifications\n  ADD CONSTRAINT notifications_kind_check CHECK (\n    kind IN (\n      'order_new',\n      'worker_application_received',\n      'worker_approved',\n      'worker_rejected',\n      'worker_suspended'\n    )\n  );" }, { "name": "1760001400000_admin_management.sql", "up": "-- Products are never hard-deleted by an administrator: a deleted product keeps its rows (order\n-- history refers to them) and simply stops existing for every query.\nALTER TABLE products ADD COLUMN deleted_at timestamptz;\nCREATE INDEX products_live_idx ON products (worker_id, status) WHERE deleted_at IS NULL;\n\n-- A blocked user cannot sign in and their sessions are refused.\nALTER TABLE users\n  ADD COLUMN blocked_at timestamptz,\n  ADD COLUMN block_reason text;\n\n-- Money going back: one row per refund, written in the same transaction as the payment and order\n-- status change. commission_reversed is non-zero only when earnings had already been recorded.\nCREATE TABLE refunds (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  order_id uuid NOT NULL REFERENCES orders (id),\n  payment_id uuid NOT NULL REFERENCES payments (id),\n  amount integer NOT NULL CHECK (amount > 0),\n  commission_reversed integer NOT NULL DEFAULT 0 CHECK (commission_reversed >= 0),\n  reason text,\n  admin_user_id uuid REFERENCES users (id) ON DELETE SET NULL,\n  created_at timestamptz NOT NULL DEFAULT now()\n);\nCREATE INDEX refunds_order_idx ON refunds (order_id);" }];
 
 // src/app.ts
 var import_cookie_parser = __toESM(require_cookie_parser(), 1);
 var import_cors = __toESM(require_lib(), 1);
-var import_express12 = __toESM(require_express2(), 1);
+var import_express13 = __toESM(require_express2(), 1);
 
 // ../../node_modules/.pnpm/helmet@8.3.0/node_modules/helmet/index.mjs
 var dashify = (str) => str.replace(/[A-Z]/g, (capitalLetter) => "-" + capitalLetter.toLowerCase());
@@ -71385,6 +71385,16 @@ function discountedPrice(price, discountPercent) {
 }
 
 // ../../packages/shared/src/order-status.ts
+var ORDER_STATUSES = [
+  "awaiting_payment",
+  "new",
+  "accepted",
+  "in_progress",
+  "ready",
+  "delivered",
+  "cancelled",
+  "refunded"
+];
 var ORDER_STATUS_TRANSITIONS = {
   awaiting_payment: ["new", "cancelled"],
   // `refunded` from a started order is reachable only through the admin refund (complaints).
@@ -71582,7 +71592,22 @@ var adminListQuerySchema = external_exports.object({
   page: external_exports.coerce.number().int().min(1).default(1),
   status: external_exports.string().trim().max(30).optional(),
   /** Free text: a name, or the last digits of a phone number. */
-  q: external_exports.string().trim().max(60).optional()
+  q: external_exports.string().trim().max(60).optional(),
+  workerId: external_exports.string().uuid().optional(),
+  categoryId: external_exports.string().uuid().optional()
+});
+var adminProductUpdateSchema = external_exports.object({
+  title: external_exports.string().trim().min(MIN_NAME_LENGTH).max(MAX_TITLE_LENGTH),
+  description: external_exports.string().trim().max(MAX_DESCRIPTION_LENGTH).default(""),
+  retailPrice: moneySchema,
+  categoryId: external_exports.string().uuid()
+});
+var adminOrderStatusSchema = external_exports.object({ status: external_exports.enum(ORDER_STATUSES) });
+var refundRequestSchema = external_exports.object({
+  reason: external_exports.string().trim().max(MAX_REJECT_REASON_LENGTH).optional().transform((v) => v || null)
+});
+var userBlockSchema = external_exports.object({
+  reason: external_exports.string().trim().min(MIN_REJECT_REASON_LENGTH).max(MAX_REJECT_REASON_LENGTH)
 });
 
 // ../../packages/shared/src/slots.ts
@@ -72895,12 +72920,18 @@ function createAuthMiddleware(ctx) {
   const optionalAuth = (req, _res, next) => {
     const token = readBearer(req.get("authorization"));
     const claims = token ? verifyAccessToken(token, ctx.config.jwtAccessSecret) : null;
-    if (claims) req.auth = claims;
-    next();
+    if (!claims) return next();
+    ctx.db.selectFrom("users").select("blocked_at").where("id", "=", claims.userId).executeTakeFirst().then((row) => {
+      if (row?.blocked_at) req.blocked = true;
+      else req.auth = claims;
+      next();
+    }, next);
   };
   const requireAuth = (req, _res, next) => {
-    optionalAuth(req, _res, () => {
-      next(req.auth ? void 0 : AppError.unauthenticated());
+    optionalAuth(req, _res, (error) => {
+      if (error) return next(error);
+      if (req.blocked) return next(new AppError("USER_BLOCKED", 403));
+      return next(req.auth ? void 0 : AppError.unauthenticated());
     });
   };
   const requireWorker = (req, res, next) => {
@@ -73085,6 +73116,10 @@ var AuthRepository = class {
     const row = await this.db.insertInto("users").values({ phone, name, role }).returning("id").executeTakeFirstOrThrow();
     return row.id;
   }
+  async isBlocked(userId) {
+    const row = await this.db.selectFrom("users").select("blocked_at").where("id", "=", userId).executeTakeFirst();
+    return row?.blocked_at != null;
+  }
   async setRole(userId, role) {
     await this.db.updateTable("users").set({ role }).where("id", "=", userId).execute();
   }
@@ -73170,6 +73205,7 @@ var AuthService = class {
   async verifyCode(input) {
     await this.checkCode(input.phone, input.code);
     const user = await this.findOrCreateUser(input);
+    if (await this.repo.isBlocked(user.id)) throw new AppError("USER_BLOCKED", 403);
     return this.issueSession(user);
   }
   async refresh(refreshToken) {
@@ -73184,7 +73220,7 @@ var AuthService = class {
     if (stored.expires_at.getTime() <= this.now().getTime()) throw AppError.unauthenticated();
     if (!await this.repo.revokeRefreshToken(tokenHash)) throw AppError.unauthenticated();
     const user = await this.repo.findUserById(stored.user_id);
-    if (!user) throw AppError.unauthenticated();
+    if (!user || await this.repo.isBlocked(user.id)) throw AppError.unauthenticated();
     return this.issueSession(user);
   }
   async logout(refreshToken) {
@@ -73503,294 +73539,6 @@ var MaterialService = class {
 // src/modules/admin/admin.service.ts
 init_esm();
 
-// src/modules/notifications/notification.service.ts
-var LIST_LIMIT = 30;
-async function notifyWorkerOfNewOrder(trx, orderId3) {
-  const worker = await trx.selectFrom("orders as o").innerJoin("workers as w", "w.id", "o.worker_id").innerJoin("users as u", "u.id", "w.user_id").select(["u.id as user_id", "u.phone"]).where("o.id", "=", orderId3).executeTakeFirstOrThrow();
-  await trx.insertInto("notifications").values({ user_id: worker.user_id, kind: "order_new", order_id: orderId3 }).execute();
-  return worker.phone;
-}
-async function sendNewOrderSms(ctx, phone, message) {
-  try {
-    await ctx.sms.send(phone, message);
-  } catch (error) {
-    logger.warn("Order SMS was not sent", {
-      message: error instanceof Error ? error.message : "unknown"
-    });
-  }
-}
-var NotificationService = class {
-  constructor(ctx) {
-    this.ctx = ctx;
-  }
-  async list(userId) {
-    const [items, unread] = await Promise.all([
-      this.ctx.db.selectFrom("notifications").selectAll().where("user_id", "=", userId).orderBy("created_at", "desc").limit(LIST_LIMIT).execute(),
-      this.ctx.db.selectFrom("notifications").select((eb) => eb.fn.countAll().as("n")).where("user_id", "=", userId).where("read_at", "is", null).executeTakeFirstOrThrow()
-    ]);
-    return {
-      unread: Number(unread.n),
-      items: items.map((row) => ({
-        id: row.id,
-        kind: row.kind,
-        detail: row.detail,
-        orderId: row.order_id,
-        readAt: row.read_at ? row.read_at.toISOString() : null,
-        createdAt: row.created_at.toISOString()
-      }))
-    };
-  }
-  /** Marks everything about one order as read; opening the order is the natural "seen". */
-  async markOrderRead(userId, orderId3) {
-    await this.ctx.db.updateTable("notifications").set({ read_at: /* @__PURE__ */ new Date() }).where("user_id", "=", userId).where("order_id", "=", orderId3).where("read_at", "is", null).execute();
-  }
-  async markAllRead(userId) {
-    await this.ctx.db.updateTable("notifications").set({ read_at: /* @__PURE__ */ new Date() }).where("user_id", "=", userId).where("read_at", "is", null).execute();
-  }
-};
-
-// src/modules/orders/order.repository.ts
-init_esm();
-var OrderRepository = class {
-  constructor(db2) {
-    this.db = db2;
-  }
-  async listIdsForCustomer(userId) {
-    const rows = await this.db.selectFrom("orders").select("id").where("customer_id", "=", userId).orderBy("created_at", "desc").limit(50).execute();
-    return rows.map((row) => row.id);
-  }
-  async listIdsForWorker(workerId) {
-    const rows = await this.db.selectFrom("orders").select("id").where("worker_id", "=", workerId).where("status", "!=", "awaiting_payment").orderBy("created_at", "desc").limit(50).execute();
-    return rows.map((row) => row.id);
-  }
-  /** One order query, one items query (IN) and one payments query (IN) for any number of orders. */
-  async findDtos(ids, viewer) {
-    if (ids.length === 0) return [];
-    const [orders, items, payments, reviews, complaints, images] = await Promise.all([
-      this.db.selectFrom("orders as o").innerJoin("workers as w", "w.id", "o.worker_id").innerJoin("users as wu", "wu.id", "w.user_id").innerJoin("users as cu", "cu.id", "o.customer_id").select([
-        "o.id",
-        "o.type",
-        "o.status",
-        "o.total",
-        "o.commission_amount",
-        "o.commission_rate",
-        "o.worker_amount",
-        "o.fulfillment",
-        "o.delivery_address",
-        "o.start_time",
-        "o.end_time",
-        "o.description",
-        sql`o.deadline::text`.as("deadline"),
-        "o.created_at",
-        "o.customer_id",
-        "o.worker_id",
-        "w.display_name as worker_name",
-        "wu.phone as worker_phone",
-        "w.telegram_username as worker_telegram_username",
-        "cu.name as customer_name",
-        "cu.phone as customer_phone"
-      ]).where("o.id", "in", ids).execute(),
-      this.db.selectFrom("order_items").selectAll().where("order_id", "in", ids).execute(),
-      this.db.selectFrom("payments").select(["order_id", "status", "created_at"]).where("order_id", "in", ids).orderBy("created_at").execute(),
-      this.db.selectFrom("reviews").selectAll().where("order_id", "in", ids).execute(),
-      this.db.selectFrom("complaints").selectAll().where("order_id", "in", ids).where("user_id", "=", viewer.userId).orderBy("created_at", "desc").execute(),
-      this.db.selectFrom("order_images").select(["order_id", "url"]).where("order_id", "in", ids).orderBy("position").execute()
-    ]);
-    const imagesByOrder = /* @__PURE__ */ new Map();
-    for (const image of images) {
-      imagesByOrder.set(image.order_id, [...imagesByOrder.get(image.order_id) ?? [], image.url]);
-    }
-    const reviewByOrder = new Map(
-      reviews.map((row) => [
-        row.order_id,
-        {
-          id: row.id,
-          orderId: row.order_id,
-          rating: row.rating,
-          comment: row.comment,
-          status: row.status,
-          createdAt: row.created_at.toISOString()
-        }
-      ])
-    );
-    const complaintByOrder = /* @__PURE__ */ new Map();
-    for (const row of complaints) {
-      if (complaintByOrder.has(row.order_id)) continue;
-      complaintByOrder.set(row.order_id, {
-        id: row.id,
-        orderId: row.order_id,
-        reason: row.reason,
-        status: row.status,
-        createdAt: row.created_at.toISOString()
-      });
-    }
-    const itemsByOrder = /* @__PURE__ */ new Map();
-    for (const item of items) {
-      const list = itemsByOrder.get(item.order_id) ?? [];
-      list.push({
-        id: item.id,
-        productId: item.product_id,
-        title: item.title_snapshot,
-        unitPrice: item.unit_price,
-        quantity: item.quantity,
-        priceType: item.price_type
-      });
-      itemsByOrder.set(item.order_id, list);
-    }
-    const paymentStatus = new Map(
-      payments.map((p) => [p.order_id, p.status])
-    );
-    const byId = new Map(
-      orders.map((row) => {
-        const asWorker = viewer.workerId !== void 0 && viewer.workerId === row.worker_id;
-        const phoneVisible = PHONE_VISIBLE_STATUSES.includes(row.status);
-        const counterpart = asWorker ? { name: row.customer_name, phone: row.customer_phone, telegramUsername: null } : {
-          name: row.worker_name,
-          phone: row.worker_phone,
-          telegramUsername: row.worker_telegram_username
-        };
-        const dto = {
-          id: row.id,
-          type: row.type,
-          status: row.status,
-          viewerRole: asWorker ? "worker" : "customer",
-          total: row.total,
-          commission: row.commission_amount,
-          commissionRate: Number(row.commission_rate),
-          workerAmount: row.worker_amount,
-          fulfillment: row.fulfillment,
-          deliveryAddress: row.delivery_address,
-          items: itemsByOrder.get(row.id) ?? [],
-          counterpart: {
-            name: counterpart.name,
-            phone: phoneVisible ? counterpart.phone : null,
-            telegramUsername: phoneVisible ? counterpart.telegramUsername : null
-          },
-          paymentStatus: paymentStatus.get(row.id) ?? null,
-          review: reviewByOrder.get(row.id) ?? null,
-          complaint: complaintByOrder.get(row.id) ?? null,
-          startTime: row.start_time ? row.start_time.toISOString() : null,
-          endTime: row.end_time ? row.end_time.toISOString() : null,
-          description: row.description,
-          deadline: row.deadline,
-          images: imagesByOrder.get(row.id) ?? [],
-          createdAt: row.created_at.toISOString()
-        };
-        return [row.id, dto];
-      })
-    );
-    return ids.flatMap((id) => {
-      const dto = byId.get(id);
-      return dto ? [dto] : [];
-    });
-  }
-  async findOwnerRefs(id) {
-    const row = await this.db.selectFrom("orders").select(["customer_id", "worker_id"]).where("id", "=", id).executeTakeFirst();
-    return row ? { customerId: row.customer_id, workerId: row.worker_id } : void 0;
-  }
-  async earningsFor(workerId, limit) {
-    return this.db.selectFrom("earnings").select(["order_id", "amount", "commission", "created_at"]).where("worker_id", "=", workerId).orderBy("created_at", "desc").limit(limit).execute();
-  }
-  async earningsSince(workerId, since) {
-    const row = await this.db.selectFrom("earnings").select((eb) => eb.fn.coalesce(eb.fn.sum("amount"), eb.lit(0)).as("total")).where("worker_id", "=", workerId).where("created_at", ">=", since).executeTakeFirstOrThrow();
-    return Number(row.total);
-  }
-  async earningsTotal(workerId) {
-    return this.earningsSince(workerId, /* @__PURE__ */ new Date(0));
-  }
-};
-
-// src/modules/payments/payment.service.ts
-var NEW_ORDER_SMS = "BarakaLi: yangi buyurtma / \u043D\u043E\u0432\u044B\u0439 \u0437\u0430\u043A\u0430\u0437";
-async function restoreStock(trx, orderId3) {
-  const items = await trx.selectFrom("order_items").select(["product_id", "quantity"]).where("order_id", "=", orderId3).execute();
-  for (const item of items) {
-    if (!item.product_id) continue;
-    await trx.updateTable("products").set((eb) => ({ stock: eb("stock", "+", item.quantity) })).where("id", "=", item.product_id).execute();
-  }
-}
-async function refundPaidOrder(trx, provider, orderId3) {
-  const payment = await trx.selectFrom("payments").select(["id", "provider_ref"]).where("order_id", "=", orderId3).where("status", "=", "paid").forUpdate().executeTakeFirst();
-  if (!payment) return;
-  await provider.refund(payment.provider_ref ?? "");
-  await trx.updateTable("payments").set({ status: "refunded" }).where("id", "=", payment.id).execute();
-  await restoreStock(trx, orderId3);
-}
-async function reserveStock(trx, orderId3) {
-  const items = await trx.selectFrom("order_items").select(["product_id", "quantity"]).where("order_id", "=", orderId3).execute();
-  for (const item of items) {
-    if (!item.product_id) throw AppError.conflict("PRODUCT_UNAVAILABLE");
-    const result = await trx.updateTable("products").set((eb) => ({ stock: eb("stock", "-", item.quantity) })).where("id", "=", item.product_id).where("stock", ">=", item.quantity).executeTakeFirst();
-    if (Number(result.numUpdatedRows) !== 1) throw AppError.conflict("INSUFFICIENT_STOCK");
-  }
-}
-var PaymentService = class {
-  constructor(ctx) {
-    this.ctx = ctx;
-    this.orders = new OrderRepository(ctx.db);
-  }
-  orders;
-  /** Creates (or returns) the pending payment for an order the customer still has to pay. */
-  async start(customerId, orderId3) {
-    const order = await this.ctx.db.selectFrom("orders").select(["id", "customer_id", "status", "total"]).where("id", "=", orderId3).executeTakeFirst();
-    if (!order || order.customer_id !== customerId) throw AppError.notFound();
-    const existing = await this.findPayment(orderId3);
-    if (existing?.status === "paid") throw AppError.conflict("PAYMENT_ALREADY_PAID");
-    if (order.status !== "awaiting_payment") throw AppError.conflict("ORDER_NOT_PAYABLE");
-    const payment = existing ?? await this.createPending(orderId3, order.total);
-    return {
-      paymentId: payment.id,
-      orderId: orderId3,
-      amount: payment.amount,
-      status: payment.status,
-      redirectUrl: `/tolov/${orderId3}`
-    };
-  }
-  /** Provider callback: idempotent, so a repeated confirmation never reserves stock twice. */
-  async confirm(customerId, orderId3, card) {
-    const outcome = await this.ctx.db.transaction().execute(async (trx) => {
-      const order = await trx.selectFrom("orders").select(["id", "customer_id", "status", "total", "type"]).where("id", "=", orderId3).forUpdate().executeTakeFirst();
-      if (!order || order.customer_id !== customerId) throw AppError.notFound();
-      const payment = await trx.selectFrom("payments").selectAll().where("order_id", "=", orderId3).forUpdate().executeTakeFirst();
-      if (!payment) throw AppError.conflict("ORDER_NOT_PAYABLE");
-      if (payment.status === "paid") return "already-paid";
-      if (order.status !== "awaiting_payment") throw AppError.conflict("ORDER_NOT_PAYABLE");
-      const result = await this.ctx.payments.verifyCallback(card, { orderId: orderId3, amount: order.total });
-      if (result.status === "failed") return "declined";
-      if (order.type === "product") await reserveStock(trx, orderId3);
-      await trx.updateTable("payments").set({ status: "paid", provider_ref: result.providerRef }).where("id", "=", payment.id).execute();
-      await trx.updateTable("orders").set({ status: "new", updated_at: /* @__PURE__ */ new Date() }).where("id", "=", orderId3).execute();
-      return { outcome: "paid", workerPhone: await notifyWorkerOfNewOrder(trx, orderId3) };
-    });
-    if (outcome === "declined") throw new AppError("PAYMENT_DECLINED", 402);
-    if (typeof outcome === "object") {
-      await sendNewOrderSms(this.ctx, outcome.workerPhone, NEW_ORDER_SMS);
-    }
-    const [dto] = await this.orders.findDtos([orderId3], {
-      userId: customerId,
-      workerId: void 0
-    });
-    if (!dto) throw AppError.notFound();
-    return dto;
-  }
-  findPayment(orderId3) {
-    return this.ctx.db.selectFrom("payments").selectAll().where("order_id", "=", orderId3).executeTakeFirst();
-  }
-  async createPending(orderId3, amount) {
-    const created = await this.ctx.payments.createPayment({ orderId: orderId3, amount });
-    await this.ctx.db.insertInto("payments").values({
-      order_id: orderId3,
-      amount,
-      provider: this.ctx.payments.name,
-      provider_ref: created.providerRef,
-      idempotency_key: `order:${orderId3}`
-    }).onConflict((oc) => oc.column("idempotency_key").doNothing()).execute();
-    const payment = await this.findPayment(orderId3);
-    if (!payment) throw AppError.notFound();
-    return payment;
-  }
-};
-
 // src/modules/products/product.repository.ts
 init_esm();
 var UZ_APOSTROPHES = /['ʻʼ’‘`]/g;
@@ -73817,7 +73565,7 @@ var ProductRepository = class {
   async findDtosByIds(ids) {
     if (ids.length === 0) return [];
     const [rows, images, models] = await Promise.all([
-      this.db.selectFrom("products as p").innerJoin("workers as w", "w.id", "p.worker_id").innerJoin("categories as c", "c.id", "p.category_id").select([
+      this.db.selectFrom("products as p").innerJoin("workers as w", "w.id", "p.worker_id").innerJoin("categories as c", "c.id", "p.category_id").where("p.deleted_at", "is", null).select([
         "p.id",
         "p.worker_id",
         "w.display_name",
@@ -73880,11 +73628,11 @@ var ProductRepository = class {
     return row?.status === "approved";
   }
   async listIdsByWorker(workerId) {
-    const rows = await this.db.selectFrom("products").select("id").where("worker_id", "=", workerId).orderBy("created_at", "desc").execute();
+    const rows = await this.db.selectFrom("products").select("id").where("worker_id", "=", workerId).where("deleted_at", "is", null).orderBy("created_at", "desc").execute();
     return rows.map((row) => row.id);
   }
   async findOwnership(id) {
-    const row = await this.db.selectFrom("products").select(["id", "worker_id", "status"]).where("id", "=", id).executeTakeFirst();
+    const row = await this.db.selectFrom("products").select(["id", "worker_id", "status"]).where("id", "=", id).where("deleted_at", "is", null).executeTakeFirst();
     return row ? { id: row.id, workerId: row.worker_id, status: row.status } : void 0;
   }
   async categoryExists(categoryId) {
@@ -73960,7 +73708,7 @@ var ProductRepository = class {
     await this.db.deleteFrom("product_models").where("product_id", "=", productId).execute();
   }
   filtered(filter) {
-    let query = this.db.selectFrom("products as p").innerJoin("workers as w", "w.id", "p.worker_id").innerJoin("categories as c", "c.id", "p.category_id");
+    let query = this.db.selectFrom("products as p").innerJoin("workers as w", "w.id", "p.worker_id").innerJoin("categories as c", "c.id", "p.category_id").where("p.deleted_at", "is", null);
     if (filter.publishedOnly) {
       query = query.where("p.status", "=", "published").where("w.status", "=", "approved").where("c.is_active", "=", true);
     }
@@ -74456,27 +74204,6 @@ var AdminService = class {
     const exists = await this.ctx.db.selectFrom("complaints").select("id").where("id", "=", id).executeTakeFirst();
     throw exists ? AppError.conflict("COMPLAINT_NOT_OPEN") : AppError.notFound();
   }
-  /** Manual refund after a complaint: money back through the provider, stock restored, order closed. */
-  async refundOrder(adminId, orderId3) {
-    await this.ctx.db.transaction().execute(async (trx) => {
-      const order = await trx.selectFrom("orders").select(["id", "status"]).where("id", "=", orderId3).forUpdate().executeTakeFirst();
-      if (!order) throw AppError.notFound();
-      if (!canTransition(order.status, "refunded")) {
-        throw AppError.conflict("ORDER_NOT_REFUNDABLE");
-      }
-      const paid = await trx.selectFrom("payments").select("id").where("order_id", "=", orderId3).where("status", "=", "paid").executeTakeFirst();
-      if (!paid) throw AppError.conflict("ORDER_NOT_REFUNDABLE");
-      await refundPaidOrder(trx, this.ctx.payments, orderId3);
-      await trx.updateTable("orders").set({ status: "refunded", updated_at: this.now() }).where("id", "=", orderId3).execute();
-      await writeAudit(trx, {
-        adminId,
-        action: "order.refund",
-        targetType: "order",
-        targetId: orderId3,
-        details: { from: order.status, to: "refunded" }
-      });
-    });
-  }
 };
 
 // src/modules/admin/admin.routes.ts
@@ -74521,10 +74248,6 @@ function createAdminRouter(ctx) {
   });
   router.get("/admin/orders", async (req, res) => {
     res.json(await admin.listOrders(adminListQuerySchema.parse(req.query)));
-  });
-  router.post("/admin/orders/:id/refund", async (req, res) => {
-    await admin.refundOrder(adminId(req), idParam(req));
-    res.status(204).end();
   });
   router.get("/admin/reviews", async (req, res) => {
     res.json(await admin.listReviews(adminListQuerySchema.parse(req.query)));
@@ -74583,8 +74306,765 @@ function createAdminRouter(ctx) {
   return router;
 }
 
-// src/modules/calendar/calendar.routes.ts
+// src/modules/admin/admin-management.routes.ts
 var import_express3 = __toESM(require_express2(), 1);
+
+// src/modules/admin/admin-orders.service.ts
+init_esm();
+
+// src/modules/notifications/notification.service.ts
+var LIST_LIMIT = 30;
+async function notifyWorkerOfNewOrder(trx, orderId3) {
+  const worker = await trx.selectFrom("orders as o").innerJoin("workers as w", "w.id", "o.worker_id").innerJoin("users as u", "u.id", "w.user_id").select(["u.id as user_id", "u.phone"]).where("o.id", "=", orderId3).executeTakeFirstOrThrow();
+  await trx.insertInto("notifications").values({ user_id: worker.user_id, kind: "order_new", order_id: orderId3 }).execute();
+  return worker.phone;
+}
+async function sendNewOrderSms(ctx, phone, message) {
+  try {
+    await ctx.sms.send(phone, message);
+  } catch (error) {
+    logger.warn("Order SMS was not sent", {
+      message: error instanceof Error ? error.message : "unknown"
+    });
+  }
+}
+var NotificationService = class {
+  constructor(ctx) {
+    this.ctx = ctx;
+  }
+  async list(userId) {
+    const [items, unread] = await Promise.all([
+      this.ctx.db.selectFrom("notifications").selectAll().where("user_id", "=", userId).orderBy("created_at", "desc").limit(LIST_LIMIT).execute(),
+      this.ctx.db.selectFrom("notifications").select((eb) => eb.fn.countAll().as("n")).where("user_id", "=", userId).where("read_at", "is", null).executeTakeFirstOrThrow()
+    ]);
+    return {
+      unread: Number(unread.n),
+      items: items.map((row) => ({
+        id: row.id,
+        kind: row.kind,
+        detail: row.detail,
+        orderId: row.order_id,
+        readAt: row.read_at ? row.read_at.toISOString() : null,
+        createdAt: row.created_at.toISOString()
+      }))
+    };
+  }
+  /** Marks everything about one order as read; opening the order is the natural "seen". */
+  async markOrderRead(userId, orderId3) {
+    await this.ctx.db.updateTable("notifications").set({ read_at: /* @__PURE__ */ new Date() }).where("user_id", "=", userId).where("order_id", "=", orderId3).where("read_at", "is", null).execute();
+  }
+  async markAllRead(userId) {
+    await this.ctx.db.updateTable("notifications").set({ read_at: /* @__PURE__ */ new Date() }).where("user_id", "=", userId).where("read_at", "is", null).execute();
+  }
+};
+
+// src/modules/orders/order.repository.ts
+init_esm();
+var OrderRepository = class {
+  constructor(db2) {
+    this.db = db2;
+  }
+  async listIdsForCustomer(userId) {
+    const rows = await this.db.selectFrom("orders").select("id").where("customer_id", "=", userId).orderBy("created_at", "desc").limit(50).execute();
+    return rows.map((row) => row.id);
+  }
+  async listIdsForWorker(workerId) {
+    const rows = await this.db.selectFrom("orders").select("id").where("worker_id", "=", workerId).where("status", "!=", "awaiting_payment").orderBy("created_at", "desc").limit(50).execute();
+    return rows.map((row) => row.id);
+  }
+  /** One order query, one items query (IN) and one payments query (IN) for any number of orders. */
+  async findDtos(ids, viewer) {
+    if (ids.length === 0) return [];
+    const [orders, items, payments, reviews, complaints, images] = await Promise.all([
+      this.db.selectFrom("orders as o").innerJoin("workers as w", "w.id", "o.worker_id").innerJoin("users as wu", "wu.id", "w.user_id").innerJoin("users as cu", "cu.id", "o.customer_id").select([
+        "o.id",
+        "o.type",
+        "o.status",
+        "o.total",
+        "o.commission_amount",
+        "o.commission_rate",
+        "o.worker_amount",
+        "o.fulfillment",
+        "o.delivery_address",
+        "o.start_time",
+        "o.end_time",
+        "o.description",
+        sql`o.deadline::text`.as("deadline"),
+        "o.created_at",
+        "o.customer_id",
+        "o.worker_id",
+        "w.display_name as worker_name",
+        "wu.phone as worker_phone",
+        "w.telegram_username as worker_telegram_username",
+        "cu.name as customer_name",
+        "cu.phone as customer_phone"
+      ]).where("o.id", "in", ids).execute(),
+      this.db.selectFrom("order_items").selectAll().where("order_id", "in", ids).execute(),
+      this.db.selectFrom("payments").select(["order_id", "status", "created_at"]).where("order_id", "in", ids).orderBy("created_at").execute(),
+      this.db.selectFrom("reviews").selectAll().where("order_id", "in", ids).execute(),
+      this.db.selectFrom("complaints").selectAll().where("order_id", "in", ids).where("user_id", "=", viewer.userId).orderBy("created_at", "desc").execute(),
+      this.db.selectFrom("order_images").select(["order_id", "url"]).where("order_id", "in", ids).orderBy("position").execute()
+    ]);
+    const imagesByOrder = /* @__PURE__ */ new Map();
+    for (const image of images) {
+      imagesByOrder.set(image.order_id, [...imagesByOrder.get(image.order_id) ?? [], image.url]);
+    }
+    const reviewByOrder = new Map(
+      reviews.map((row) => [
+        row.order_id,
+        {
+          id: row.id,
+          orderId: row.order_id,
+          rating: row.rating,
+          comment: row.comment,
+          status: row.status,
+          createdAt: row.created_at.toISOString()
+        }
+      ])
+    );
+    const complaintByOrder = /* @__PURE__ */ new Map();
+    for (const row of complaints) {
+      if (complaintByOrder.has(row.order_id)) continue;
+      complaintByOrder.set(row.order_id, {
+        id: row.id,
+        orderId: row.order_id,
+        reason: row.reason,
+        status: row.status,
+        createdAt: row.created_at.toISOString()
+      });
+    }
+    const itemsByOrder = /* @__PURE__ */ new Map();
+    for (const item of items) {
+      const list = itemsByOrder.get(item.order_id) ?? [];
+      list.push({
+        id: item.id,
+        productId: item.product_id,
+        title: item.title_snapshot,
+        unitPrice: item.unit_price,
+        quantity: item.quantity,
+        priceType: item.price_type
+      });
+      itemsByOrder.set(item.order_id, list);
+    }
+    const paymentStatus = new Map(
+      payments.map((p) => [p.order_id, p.status])
+    );
+    const byId = new Map(
+      orders.map((row) => {
+        const asWorker = viewer.workerId !== void 0 && viewer.workerId === row.worker_id;
+        const phoneVisible = PHONE_VISIBLE_STATUSES.includes(row.status);
+        const counterpart = asWorker ? { name: row.customer_name, phone: row.customer_phone, telegramUsername: null } : {
+          name: row.worker_name,
+          phone: row.worker_phone,
+          telegramUsername: row.worker_telegram_username
+        };
+        const dto = {
+          id: row.id,
+          type: row.type,
+          status: row.status,
+          viewerRole: asWorker ? "worker" : "customer",
+          total: row.total,
+          commission: row.commission_amount,
+          commissionRate: Number(row.commission_rate),
+          workerAmount: row.worker_amount,
+          fulfillment: row.fulfillment,
+          deliveryAddress: row.delivery_address,
+          items: itemsByOrder.get(row.id) ?? [],
+          counterpart: {
+            name: counterpart.name,
+            phone: phoneVisible ? counterpart.phone : null,
+            telegramUsername: phoneVisible ? counterpart.telegramUsername : null
+          },
+          paymentStatus: paymentStatus.get(row.id) ?? null,
+          review: reviewByOrder.get(row.id) ?? null,
+          complaint: complaintByOrder.get(row.id) ?? null,
+          startTime: row.start_time ? row.start_time.toISOString() : null,
+          endTime: row.end_time ? row.end_time.toISOString() : null,
+          description: row.description,
+          deadline: row.deadline,
+          images: imagesByOrder.get(row.id) ?? [],
+          createdAt: row.created_at.toISOString()
+        };
+        return [row.id, dto];
+      })
+    );
+    return ids.flatMap((id) => {
+      const dto = byId.get(id);
+      return dto ? [dto] : [];
+    });
+  }
+  async findOwnerRefs(id) {
+    const row = await this.db.selectFrom("orders").select(["customer_id", "worker_id"]).where("id", "=", id).executeTakeFirst();
+    return row ? { customerId: row.customer_id, workerId: row.worker_id } : void 0;
+  }
+  async earningsFor(workerId, limit) {
+    return this.db.selectFrom("earnings").select(["order_id", "amount", "commission", "created_at"]).where("worker_id", "=", workerId).orderBy("created_at", "desc").limit(limit).execute();
+  }
+  async earningsSince(workerId, since) {
+    const row = await this.db.selectFrom("earnings").select((eb) => eb.fn.coalesce(eb.fn.sum("amount"), eb.lit(0)).as("total")).where("worker_id", "=", workerId).where("created_at", ">=", since).executeTakeFirstOrThrow();
+    return Number(row.total);
+  }
+  async earningsTotal(workerId) {
+    return this.earningsSince(workerId, /* @__PURE__ */ new Date(0));
+  }
+};
+
+// src/modules/payments/payment.service.ts
+var NEW_ORDER_SMS = "BarakaLi: yangi buyurtma / \u043D\u043E\u0432\u044B\u0439 \u0437\u0430\u043A\u0430\u0437";
+async function restoreStock(trx, orderId3) {
+  const items = await trx.selectFrom("order_items").select(["product_id", "quantity"]).where("order_id", "=", orderId3).execute();
+  for (const item of items) {
+    if (!item.product_id) continue;
+    await trx.updateTable("products").set((eb) => ({ stock: eb("stock", "+", item.quantity) })).where("id", "=", item.product_id).execute();
+  }
+}
+async function refundPaidOrder(trx, provider, orderId3) {
+  const payment = await trx.selectFrom("payments").select(["id", "provider_ref"]).where("order_id", "=", orderId3).where("status", "=", "paid").forUpdate().executeTakeFirst();
+  if (!payment) return;
+  await provider.refund(payment.provider_ref ?? "");
+  await trx.updateTable("payments").set({ status: "refunded" }).where("id", "=", payment.id).execute();
+  await restoreStock(trx, orderId3);
+}
+async function reserveStock(trx, orderId3) {
+  const items = await trx.selectFrom("order_items").select(["product_id", "quantity"]).where("order_id", "=", orderId3).execute();
+  for (const item of items) {
+    if (!item.product_id) throw AppError.conflict("PRODUCT_UNAVAILABLE");
+    const result = await trx.updateTable("products").set((eb) => ({ stock: eb("stock", "-", item.quantity) })).where("id", "=", item.product_id).where("stock", ">=", item.quantity).executeTakeFirst();
+    if (Number(result.numUpdatedRows) !== 1) throw AppError.conflict("INSUFFICIENT_STOCK");
+  }
+}
+var PaymentService = class {
+  constructor(ctx) {
+    this.ctx = ctx;
+    this.orders = new OrderRepository(ctx.db);
+  }
+  orders;
+  /** Creates (or returns) the pending payment for an order the customer still has to pay. */
+  async start(customerId, orderId3) {
+    const order = await this.ctx.db.selectFrom("orders").select(["id", "customer_id", "status", "total"]).where("id", "=", orderId3).executeTakeFirst();
+    if (!order || order.customer_id !== customerId) throw AppError.notFound();
+    const existing = await this.findPayment(orderId3);
+    if (existing?.status === "paid") throw AppError.conflict("PAYMENT_ALREADY_PAID");
+    if (order.status !== "awaiting_payment") throw AppError.conflict("ORDER_NOT_PAYABLE");
+    const payment = existing ?? await this.createPending(orderId3, order.total);
+    return {
+      paymentId: payment.id,
+      orderId: orderId3,
+      amount: payment.amount,
+      status: payment.status,
+      redirectUrl: `/tolov/${orderId3}`
+    };
+  }
+  /** Provider callback: idempotent, so a repeated confirmation never reserves stock twice. */
+  async confirm(customerId, orderId3, card) {
+    const outcome = await this.ctx.db.transaction().execute(async (trx) => {
+      const order = await trx.selectFrom("orders").select(["id", "customer_id", "status", "total", "type"]).where("id", "=", orderId3).forUpdate().executeTakeFirst();
+      if (!order || order.customer_id !== customerId) throw AppError.notFound();
+      const payment = await trx.selectFrom("payments").selectAll().where("order_id", "=", orderId3).forUpdate().executeTakeFirst();
+      if (!payment) throw AppError.conflict("ORDER_NOT_PAYABLE");
+      if (payment.status === "paid") return "already-paid";
+      if (order.status !== "awaiting_payment") throw AppError.conflict("ORDER_NOT_PAYABLE");
+      const result = await this.ctx.payments.verifyCallback(card, { orderId: orderId3, amount: order.total });
+      if (result.status === "failed") return "declined";
+      if (order.type === "product") await reserveStock(trx, orderId3);
+      await trx.updateTable("payments").set({ status: "paid", provider_ref: result.providerRef }).where("id", "=", payment.id).execute();
+      await trx.updateTable("orders").set({ status: "new", updated_at: /* @__PURE__ */ new Date() }).where("id", "=", orderId3).execute();
+      return { outcome: "paid", workerPhone: await notifyWorkerOfNewOrder(trx, orderId3) };
+    });
+    if (outcome === "declined") throw new AppError("PAYMENT_DECLINED", 402);
+    if (typeof outcome === "object") {
+      await sendNewOrderSms(this.ctx, outcome.workerPhone, NEW_ORDER_SMS);
+    }
+    const [dto] = await this.orders.findDtos([orderId3], {
+      userId: customerId,
+      workerId: void 0
+    });
+    if (!dto) throw AppError.notFound();
+    return dto;
+  }
+  findPayment(orderId3) {
+    return this.ctx.db.selectFrom("payments").selectAll().where("order_id", "=", orderId3).executeTakeFirst();
+  }
+  async createPending(orderId3, amount) {
+    const created = await this.ctx.payments.createPayment({ orderId: orderId3, amount });
+    await this.ctx.db.insertInto("payments").values({
+      order_id: orderId3,
+      amount,
+      provider: this.ctx.payments.name,
+      provider_ref: created.providerRef,
+      idempotency_key: `order:${orderId3}`
+    }).onConflict((oc) => oc.column("idempotency_key").doNothing()).execute();
+    const payment = await this.findPayment(orderId3);
+    if (!payment) throw AppError.notFound();
+    return payment;
+  }
+};
+
+// src/modules/admin/admin-orders.service.ts
+var AdminOrdersService = class {
+  constructor(ctx, now = () => /* @__PURE__ */ new Date()) {
+    this.ctx = ctx;
+    this.now = now;
+  }
+  async get(orderId3) {
+    const db2 = this.ctx.db;
+    const order = await db2.selectFrom("orders as o").innerJoin("workers as w", "w.id", "o.worker_id").innerJoin("users as wu", "wu.id", "w.user_id").innerJoin("users as cu", "cu.id", "o.customer_id").select([
+      "o.id",
+      "o.type",
+      "o.status",
+      "o.total",
+      "o.commission_amount",
+      "o.commission_rate",
+      "o.worker_amount",
+      "o.fulfillment",
+      "o.delivery_address",
+      "o.start_time",
+      "o.end_time",
+      "o.description",
+      "o.created_at",
+      "o.updated_at",
+      "cu.id as customer_id",
+      "cu.name as customer_name",
+      "cu.phone as customer_phone",
+      "w.id as worker_id",
+      "w.display_name as worker_name",
+      "wu.phone as worker_phone",
+      sql`(select p.status from payments p where p.order_id = o.id order by p.created_at desc limit 1)`.as(
+        "payment_status"
+      )
+    ]).where("o.id", "=", orderId3).executeTakeFirst();
+    if (!order) throw AppError.notFound();
+    const [items, refunds] = await Promise.all([
+      db2.selectFrom("order_items").select(["id", "product_id", "title_snapshot", "unit_price", "quantity", "price_type"]).where("order_id", "=", orderId3).execute(),
+      db2.selectFrom("refunds as r").leftJoin("users as a", "a.id", "r.admin_user_id").select([
+        "r.id",
+        "r.amount",
+        "r.commission_reversed",
+        "r.reason",
+        "r.created_at",
+        "a.name as admin_name"
+      ]).where("r.order_id", "=", orderId3).orderBy("r.created_at", "desc").execute()
+    ]);
+    const status = order.status;
+    return {
+      id: order.id,
+      type: order.type,
+      status,
+      total: order.total,
+      commission: order.commission_amount,
+      commissionRate: Number(order.commission_rate),
+      workerAmount: order.worker_amount,
+      fulfillment: order.fulfillment,
+      deliveryAddress: order.delivery_address,
+      startTime: order.start_time?.toISOString() ?? null,
+      endTime: order.end_time?.toISOString() ?? null,
+      description: order.description,
+      customer: { id: order.customer_id, name: order.customer_name, phone: order.customer_phone },
+      worker: { id: order.worker_id, name: order.worker_name, phone: order.worker_phone },
+      paymentStatus: order.payment_status,
+      items: items.map((item) => ({
+        id: item.id,
+        productId: item.product_id,
+        title: item.title_snapshot,
+        unitPrice: item.unit_price,
+        quantity: item.quantity,
+        priceType: item.price_type
+      })),
+      refunds: refunds.map(toRefundDto),
+      // Refunds go through their own endpoint, with the money movement.
+      allowedTransitions: ORDER_STATUS_TRANSITIONS[status].filter((next) => next !== "refunded"),
+      createdAt: order.created_at.toISOString(),
+      updatedAt: order.updated_at.toISOString()
+    };
+  }
+  /** Only the transitions in ORDER_STATUS_TRANSITIONS; anything else is 409, never a silent write. */
+  async setStatus(adminId, orderId3, target) {
+    if (target === "refunded") throw AppError.conflict("ORDER_INVALID_TRANSITION");
+    await this.ctx.db.transaction().execute(async (trx) => {
+      const order = await trx.selectFrom("orders").select(["status", "worker_id", "worker_amount", "commission_amount"]).where("id", "=", orderId3).forUpdate().executeTakeFirst();
+      if (!order) throw AppError.notFound();
+      const from = order.status;
+      if (!canTransition(from, target)) throw AppError.conflict("ORDER_INVALID_TRANSITION");
+      if (target === "delivered" && order.worker_amount > 0) {
+        await trx.insertInto("earnings").values({
+          order_id: orderId3,
+          worker_id: order.worker_id,
+          amount: order.worker_amount,
+          commission: order.commission_amount
+        }).execute();
+      }
+      await trx.updateTable("orders").set({ status: target, updated_at: this.now() }).where("id", "=", orderId3).execute();
+      await writeAudit(trx, {
+        adminId,
+        action: "order.status",
+        targetType: "order",
+        targetId: orderId3,
+        details: { from, to: target }
+      });
+    });
+  }
+  /**
+   * Money back in one transaction: provider refund, payment -> refunded, stock restored, a refunds
+   * ledger row, the commission reversed if earnings were already recorded, the order -> refunded,
+   * and the audit entry. Amounts are whole som taken from the payment, never from the client.
+   */
+  async refund(adminId, orderId3, reason) {
+    const created = await this.ctx.db.transaction().execute(async (trx) => {
+      const order = await trx.selectFrom("orders").select(["id", "status", "worker_id", "worker_amount", "commission_amount"]).where("id", "=", orderId3).forUpdate().executeTakeFirst();
+      if (!order) throw AppError.notFound();
+      if (!canTransition(order.status, "refunded")) {
+        throw AppError.conflict("ORDER_NOT_REFUNDABLE");
+      }
+      const payment = await trx.selectFrom("payments").select(["id", "amount"]).where("order_id", "=", orderId3).where("status", "=", "paid").executeTakeFirst();
+      if (!payment) throw AppError.conflict("ORDER_NOT_REFUNDABLE");
+      await refundPaidOrder(trx, this.ctx.payments, orderId3);
+      const earned = await trx.selectFrom("earnings").select("id").where("order_id", "=", orderId3).executeTakeFirst();
+      const commissionReversed = earned ? order.commission_amount : 0;
+      if (earned) {
+        await trx.insertInto("earnings").values({
+          order_id: orderId3,
+          worker_id: order.worker_id,
+          amount: -order.worker_amount,
+          commission: -order.commission_amount
+        }).execute();
+      }
+      const row = await trx.insertInto("refunds").values({
+        order_id: orderId3,
+        payment_id: payment.id,
+        amount: payment.amount,
+        commission_reversed: commissionReversed,
+        reason,
+        admin_user_id: adminId
+      }).returning(["id", "amount", "commission_reversed", "reason", "created_at"]).executeTakeFirstOrThrow();
+      await trx.updateTable("orders").set({ status: "refunded", updated_at: this.now() }).where("id", "=", orderId3).execute();
+      await writeAudit(trx, {
+        adminId,
+        action: "order.refund",
+        targetType: "order",
+        targetId: orderId3,
+        details: {
+          from: order.status,
+          amount: payment.amount,
+          commissionReversed,
+          reason
+        }
+      });
+      return row;
+    });
+    return toRefundDto({ ...created, admin_name: null });
+  }
+};
+function toRefundDto(row) {
+  return {
+    id: row.id,
+    amount: row.amount,
+    commissionReversed: row.commission_reversed,
+    reason: row.reason,
+    adminName: row.admin_name,
+    createdAt: row.created_at.toISOString()
+  };
+}
+
+// src/modules/admin/admin-products.service.ts
+init_esm();
+var FEATURED_CACHE_KEY3 = "workers:featured";
+var AdminProductsService = class {
+  constructor(ctx, now = () => /* @__PURE__ */ new Date()) {
+    this.ctx = ctx;
+    this.now = now;
+  }
+  query() {
+    return this.ctx.db.selectFrom("products as p").innerJoin("workers as w", "w.id", "p.worker_id").innerJoin("categories as c", "c.id", "p.category_id").where("p.deleted_at", "is", null).select([
+      "p.id",
+      "p.title",
+      "p.description",
+      "p.worker_id",
+      "w.display_name as worker_name",
+      "p.category_id",
+      "c.slug as category_slug",
+      "p.retail_price",
+      "p.wholesale_price",
+      "p.wholesale_min_qty",
+      "p.stock",
+      "p.status",
+      "p.created_at",
+      sql`(select i.url from product_images i where i.product_id = p.id order by i.position limit 1)`.as(
+        "image_url"
+      ),
+      sql`(select count(*) from order_items oi where oi.product_id = p.id)`.as(
+        "orders_count"
+      )
+    ]);
+  }
+  async list(query) {
+    const offset = (query.page - 1) * ADMIN_PAGE_SIZE;
+    let filtered = this.query();
+    const status = PRODUCT_STATUSES.find((value) => value === query.status);
+    if (status) filtered = filtered.where("p.status", "=", status);
+    if (query.workerId) filtered = filtered.where("p.worker_id", "=", query.workerId);
+    if (query.categoryId) filtered = filtered.where("p.category_id", "=", query.categoryId);
+    if (query.q) {
+      const pattern = `%${escapeLike(normalizeSearch(query.q))}%`;
+      filtered = filtered.where(sql`uz_normalize(p.title) like ${pattern}`);
+    }
+    const [rows, total] = await Promise.all([
+      filtered.orderBy("p.created_at", "desc").limit(ADMIN_PAGE_SIZE).offset(offset).execute(),
+      filtered.clearSelect().select((eb) => eb.fn.countAll().as("n")).executeTakeFirstOrThrow()
+    ]);
+    return {
+      items: rows.map((row) => ({
+        id: row.id,
+        title: row.title,
+        description: row.description,
+        workerId: row.worker_id,
+        workerName: row.worker_name,
+        categoryId: row.category_id,
+        categorySlug: row.category_slug,
+        retailPrice: row.retail_price,
+        wholesalePrice: row.wholesale_price,
+        wholesaleMinQty: row.wholesale_min_qty,
+        stock: row.stock,
+        status: row.status,
+        imageUrl: row.image_url,
+        ordersCount: Number(row.orders_count),
+        createdAt: row.created_at.toISOString()
+      })),
+      page: query.page,
+      pageSize: ADMIN_PAGE_SIZE,
+      total: Number(total.n)
+    };
+  }
+  async requireLive(id) {
+    const row = await this.ctx.db.selectFrom("products as p").select([
+      "p.status",
+      sql`(select count(*) from order_items oi where oi.product_id = p.id)`.as("n")
+    ]).where("p.id", "=", id).where("p.deleted_at", "is", null).executeTakeFirst();
+    if (!row) throw AppError.notFound();
+    return { status: row.status, ordersCount: Number(row.n) };
+  }
+  async update(adminId, id, input) {
+    await this.requireLive(id);
+    const category = await this.ctx.db.selectFrom("categories").select("id").where("id", "=", input.categoryId).where("is_active", "=", true).executeTakeFirst();
+    if (!category) throw AppError.validation({ categoryId: ["NOT_FOUND"] });
+    await this.ctx.db.transaction().execute(async (trx) => {
+      await trx.updateTable("products").set({
+        title: input.title,
+        description: input.description,
+        retail_price: input.retailPrice,
+        category_id: input.categoryId,
+        updated_at: this.now()
+      }).where("id", "=", id).execute();
+      await writeAudit(trx, {
+        adminId,
+        action: "product.update",
+        targetType: "product",
+        targetId: id,
+        details: { title: input.title, retailPrice: input.retailPrice }
+      });
+    });
+  }
+  /** Hidden products leave the catalog; showing one again requires a photo, like publishing does. */
+  async setVisible(adminId, id, visible) {
+    await this.requireLive(id);
+    if (visible) {
+      const image = await this.ctx.db.selectFrom("product_images").select("id").where("product_id", "=", id).executeTakeFirst();
+      if (!image) throw AppError.validation({ status: ["IMAGE_REQUIRED"] });
+    }
+    await this.ctx.db.transaction().execute(async (trx) => {
+      await trx.updateTable("products").set({ status: visible ? "published" : "hidden", updated_at: this.now() }).where("id", "=", id).execute();
+      await writeAudit(trx, {
+        adminId,
+        action: visible ? "product.show" : "product.hide",
+        targetType: "product",
+        targetId: id
+      });
+    });
+    this.ctx.cache.delete(FEATURED_CACHE_KEY3);
+  }
+  /** Soft delete; a product that appears in any order can only be hidden. */
+  async remove(adminId, id) {
+    const { ordersCount } = await this.requireLive(id);
+    if (ordersCount > 0) throw AppError.conflict("PRODUCT_HAS_ORDERS");
+    await this.ctx.db.transaction().execute(async (trx) => {
+      await trx.updateTable("products").set({ status: "hidden", deleted_at: this.now(), updated_at: this.now() }).where("id", "=", id).execute();
+      await writeAudit(trx, {
+        adminId,
+        action: "product.delete",
+        targetType: "product",
+        targetId: id
+      });
+    });
+    this.ctx.cache.delete(FEATURED_CACHE_KEY3);
+  }
+};
+
+// src/modules/admin/admin-users.service.ts
+init_esm();
+
+// src/modules/admin/guards.ts
+async function assertCanActOnAdmin(db2, actorId, targetUserId) {
+  if (actorId === targetUserId) throw AppError.conflict("CANNOT_ACT_ON_SELF");
+  const target = await db2.selectFrom("users").select("role").where("id", "=", targetUserId).executeTakeFirst();
+  if (target?.role !== "admin") return;
+  const admins = await db2.selectFrom("users").select((eb) => eb.fn.countAll().as("n")).where("role", "=", "admin").executeTakeFirstOrThrow();
+  if (Number(admins.n) <= 1) throw AppError.conflict("LAST_ADMIN");
+}
+
+// src/modules/admin/admin-users.service.ts
+var AdminUsersService = class {
+  constructor(ctx, now = () => /* @__PURE__ */ new Date()) {
+    this.ctx = ctx;
+    this.now = now;
+  }
+  query() {
+    return this.ctx.db.selectFrom("users as u").leftJoin("workers as w", "w.user_id", "u.id").select([
+      "u.id",
+      "u.name",
+      "u.phone",
+      "u.role",
+      "u.language",
+      "u.blocked_at",
+      "u.block_reason",
+      "u.created_at",
+      "w.id as worker_id",
+      "w.status as worker_status",
+      sql`(select count(*) from orders o where o.customer_id = u.id)`.as("orders_count")
+    ]);
+  }
+  toDto(row) {
+    return {
+      id: row.id,
+      name: row.name,
+      phone: row.phone,
+      role: row.role,
+      language: row.language,
+      workerId: row.worker_id,
+      workerStatus: row.worker_status,
+      ordersCount: Number(row.orders_count),
+      blockedAt: row.blocked_at ? row.blocked_at.toISOString() : null,
+      blockReason: row.block_reason,
+      createdAt: row.created_at.toISOString()
+    };
+  }
+  async list(query) {
+    const offset = (query.page - 1) * ADMIN_PAGE_SIZE;
+    let filtered = this.query();
+    if (query.status === "blocked") filtered = filtered.where("u.blocked_at", "is not", null);
+    else if (query.status === "admin" || query.status === "worker" || query.status === "customer") {
+      filtered = filtered.where("u.role", "=", query.status);
+    }
+    const q = query.q?.trim();
+    if (q) {
+      const digits = q.replace(/\D/g, "");
+      filtered = filtered.where(
+        (eb) => eb.or([
+          eb("u.name", "ilike", `%${escapeLike(q)}%`),
+          ...digits ? [eb("u.phone", "like", `%${digits}`)] : []
+        ])
+      );
+    }
+    const [rows, total] = await Promise.all([
+      filtered.orderBy("u.created_at", "desc").limit(ADMIN_PAGE_SIZE).offset(offset).execute(),
+      filtered.clearSelect().select((eb) => eb.fn.countAll().as("n")).executeTakeFirstOrThrow()
+    ]);
+    return {
+      items: rows.map((row) => this.toDto(row)),
+      page: query.page,
+      pageSize: ADMIN_PAGE_SIZE,
+      total: Number(total.n)
+    };
+  }
+  async get(userId) {
+    const row = await this.query().where("u.id", "=", userId).executeTakeFirst();
+    if (!row) throw AppError.notFound();
+    return this.toDto(row);
+  }
+  /** Blocking also revokes every refresh token, so open sessions end at their next refresh. */
+  async setBlocked(adminId, userId, reason, blocked) {
+    await assertCanActOnAdmin(this.ctx.db, adminId, userId);
+    await this.ctx.db.transaction().execute(async (trx) => {
+      const result = await trx.updateTable("users").set({ blocked_at: blocked ? this.now() : null, block_reason: blocked ? reason : null }).where("id", "=", userId).executeTakeFirst();
+      if (Number(result.numUpdatedRows) !== 1) throw AppError.notFound();
+      if (blocked) {
+        await trx.updateTable("refresh_tokens").set({ revoked_at: this.now() }).where("user_id", "=", userId).where("revoked_at", "is", null).execute();
+      }
+      await writeAudit(trx, {
+        adminId,
+        action: blocked ? "user.block" : "user.unblock",
+        targetType: "user",
+        targetId: userId,
+        details: { reason }
+      });
+    });
+  }
+};
+
+// src/modules/admin/admin-management.routes.ts
+var UUID_PATTERN2 = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+function idParam2(req) {
+  const value = req.params.id;
+  if (typeof value !== "string" || !UUID_PATTERN2.test(value)) throw AppError.notFound();
+  return value;
+}
+function createAdminManagementRouter(ctx) {
+  const router = (0, import_express3.Router)();
+  const products = new AdminProductsService(ctx);
+  const orders = new AdminOrdersService(ctx);
+  const users = new AdminUsersService(ctx);
+  const { requireAdmin } = createAuthMiddleware(ctx);
+  const adminId = (req) => req.auth?.userId ?? "";
+  router.use("/admin", requireAdmin);
+  router.get("/admin/products", async (req, res) => {
+    res.json(await products.list(adminListQuerySchema.parse(req.query)));
+  });
+  router.patch("/admin/products/:id", async (req, res) => {
+    await products.update(adminId(req), idParam2(req), adminProductUpdateSchema.parse(req.body));
+    res.status(204).end();
+  });
+  router.post("/admin/products/:id/hide", async (req, res) => {
+    await products.setVisible(adminId(req), idParam2(req), false);
+    res.status(204).end();
+  });
+  router.post("/admin/products/:id/show", async (req, res) => {
+    await products.setVisible(adminId(req), idParam2(req), true);
+    res.status(204).end();
+  });
+  router.delete("/admin/products/:id", async (req, res) => {
+    await products.remove(adminId(req), idParam2(req));
+    res.status(204).end();
+  });
+  router.get("/admin/orders/:id", async (req, res) => {
+    res.json(await orders.get(idParam2(req)));
+  });
+  router.patch("/admin/orders/:id/status", async (req, res) => {
+    const { status } = adminOrderStatusSchema.parse(req.body);
+    await orders.setStatus(adminId(req), idParam2(req), status);
+    res.status(204).end();
+  });
+  router.post("/admin/orders/:id/refund", async (req, res) => {
+    const { reason } = refundRequestSchema.parse(req.body ?? {});
+    res.status(201).json(await orders.refund(adminId(req), idParam2(req), reason));
+  });
+  router.get("/admin/users", async (req, res) => {
+    res.json(await users.list(adminListQuerySchema.parse(req.query)));
+  });
+  router.get("/admin/users/:id", async (req, res) => {
+    res.json(await users.get(idParam2(req)));
+  });
+  router.post("/admin/users/:id/block", async (req, res) => {
+    const { reason } = userBlockSchema.parse(req.body);
+    await users.setBlocked(adminId(req), idParam2(req), reason, true);
+    res.status(204).end();
+  });
+  router.post("/admin/users/:id/unblock", async (req, res) => {
+    await users.setBlocked(adminId(req), idParam2(req), null, false);
+    res.status(204).end();
+  });
+  return router;
+}
+
+// src/modules/calendar/calendar.routes.ts
+var import_express4 = __toESM(require_express2(), 1);
 
 // src/db/errors.ts
 var EXCLUSION_VIOLATION = "23P01";
@@ -74712,19 +75192,19 @@ var AvailabilityService = class {
 };
 
 // src/modules/calendar/calendar.routes.ts
-var UUID_PATTERN2 = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-function idParam2(req) {
+var UUID_PATTERN3 = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+function idParam3(req) {
   const value = req.params.id;
-  if (typeof value !== "string" || !UUID_PATTERN2.test(value)) throw AppError.notFound();
+  if (typeof value !== "string" || !UUID_PATTERN3.test(value)) throw AppError.notFound();
   return value;
 }
 function createCalendarRouter(ctx) {
-  const router = (0, import_express3.Router)();
+  const router = (0, import_express4.Router)();
   const service = new AvailabilityService(ctx);
   const { requireWorker } = createAuthMiddleware(ctx);
   const workerId = (req) => req.workerId ?? "";
   router.get("/workers/:id/availability", async (req, res) => {
-    const id = idParam2(req);
+    const id = idParam3(req);
     if (!await service.workerExists(id)) throw AppError.notFound();
     res.json(await service.read(id));
   });
@@ -74736,14 +75216,14 @@ function createCalendarRouter(ctx) {
     res.status(201).json(await service.add(workerId(req), input));
   });
   router.delete("/my/availability/:id", requireWorker, async (req, res) => {
-    await service.remove(workerId(req), idParam2(req));
+    await service.remove(workerId(req), idParam3(req));
     res.status(204).end();
   });
   return router;
 }
 
 // src/modules/catalog/catalog.routes.ts
-var import_express4 = __toESM(require_express2(), 1);
+var import_express5 = __toESM(require_express2(), 1);
 
 // src/modules/workers/reviews.service.ts
 function firstName(name) {
@@ -74821,13 +75301,13 @@ var CatalogService = class {
 
 // src/modules/catalog/catalog.routes.ts
 var pageQuery = external_exports.object({ page: external_exports.coerce.number().int().min(1).default(1) });
-var UUID_PATTERN3 = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+var UUID_PATTERN4 = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 function requireUuid(value, code) {
-  if (typeof value !== "string" || !UUID_PATTERN3.test(value)) throw AppError.notFound(code);
+  if (typeof value !== "string" || !UUID_PATTERN4.test(value)) throw AppError.notFound(code);
   return value;
 }
 function createCatalogRouter(ctx) {
-  const router = (0, import_express4.Router)();
+  const router = (0, import_express5.Router)();
   const catalog = new CatalogService(ctx);
   const workers = new WorkersService(ctx);
   const workersRepo = new WorkersRepository(ctx.db);
@@ -74860,7 +75340,7 @@ function createCatalogRouter(ctx) {
 }
 
 // src/modules/feedback/feedback.routes.ts
-var import_express5 = __toESM(require_express2(), 1);
+var import_express6 = __toESM(require_express2(), 1);
 var idSchema = external_exports.string().uuid();
 function orderId(req) {
   const parsed = idSchema.safeParse(req.params.id);
@@ -74868,7 +75348,7 @@ function orderId(req) {
   return parsed.data;
 }
 function createFeedbackRouter(ctx) {
-  const router = (0, import_express5.Router)();
+  const router = (0, import_express6.Router)();
   const feedback = new FeedbackService(ctx);
   const { requireAuth } = createAuthMiddleware(ctx);
   router.post("/orders/:id/review", requireAuth, async (req, res) => {
@@ -74883,11 +75363,11 @@ function createFeedbackRouter(ctx) {
 }
 
 // src/modules/files/files.routes.ts
-var import_express6 = __toESM(require_express2(), 1);
+var import_express7 = __toESM(require_express2(), 1);
 var FILE_NAME_PATTERN = /^[a-f0-9-]{36}\.(webp|glb)$/;
 var ONE_YEAR_SECONDS = 31536e3;
 function createFilesRouter(ctx) {
-  const router = (0, import_express6.Router)();
+  const router = (0, import_express7.Router)();
   router.get("/files/:name", async (req, res) => {
     const name = req.params.name ?? "";
     if (!FILE_NAME_PATTERN.test(name)) throw AppError.notFound();
@@ -74903,15 +75383,15 @@ function createFilesRouter(ctx) {
 }
 
 // src/modules/notifications/notification.routes.ts
-var import_express7 = __toESM(require_express2(), 1);
-var UUID_PATTERN4 = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+var import_express8 = __toESM(require_express2(), 1);
+var UUID_PATTERN5 = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 function orderIdParam(req) {
   const value = req.params.orderId;
-  if (typeof value !== "string" || !UUID_PATTERN4.test(value)) throw AppError.notFound();
+  if (typeof value !== "string" || !UUID_PATTERN5.test(value)) throw AppError.notFound();
   return value;
 }
 function createNotificationRouter(ctx) {
-  const router = (0, import_express7.Router)();
+  const router = (0, import_express8.Router)();
   const service = new NotificationService(ctx);
   const { requireAuth } = createAuthMiddleware(ctx);
   const userId = (req) => req.auth?.userId ?? "";
@@ -74930,15 +75410,15 @@ function createNotificationRouter(ctx) {
 }
 
 // src/modules/materials/material.routes.ts
-var import_express8 = __toESM(require_express2(), 1);
-var UUID_PATTERN5 = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-function idParam3(req) {
+var import_express9 = __toESM(require_express2(), 1);
+var UUID_PATTERN6 = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+function idParam4(req) {
   const value = req.params.id;
-  if (typeof value !== "string" || !UUID_PATTERN5.test(value)) throw AppError.notFound();
+  if (typeof value !== "string" || !UUID_PATTERN6.test(value)) throw AppError.notFound();
   return value;
 }
 function createMaterialRouter(ctx) {
-  const router = (0, import_express8.Router)();
+  const router = (0, import_express9.Router)();
   const service = new MaterialService(ctx);
   const { requireWorker } = createAuthMiddleware(ctx);
   const workerId = (req) => req.workerId ?? "";
@@ -74953,20 +75433,20 @@ function createMaterialRouter(ctx) {
     res.status(201).json(await service.createOrder(workerId(req), input));
   });
   router.get("/material-orders/:id", requireWorker, async (req, res) => {
-    res.json(await service.getOwned(workerId(req), idParam3(req)));
+    res.json(await service.getOwned(workerId(req), idParam4(req)));
   });
   router.post("/material-orders/:id/payment", requireWorker, async (req, res) => {
-    res.json(await service.startPayment(workerId(req), idParam3(req)));
+    res.json(await service.startPayment(workerId(req), idParam4(req)));
   });
   router.post("/material-orders/:id/payment/confirm", requireWorker, async (req, res) => {
     const card = cardPaymentSchema.parse(req.body);
-    res.json(await service.confirmPayment(workerId(req), idParam3(req), card));
+    res.json(await service.confirmPayment(workerId(req), idParam4(req), card));
   });
   return router;
 }
 
 // src/modules/savings/savings.routes.ts
-var import_express9 = __toESM(require_express2(), 1);
+var import_express10 = __toESM(require_express2(), 1);
 
 // src/modules/savings/savings.service.ts
 var SavingsService = class {
@@ -74997,7 +75477,7 @@ var SavingsService = class {
 
 // src/modules/savings/savings.routes.ts
 function createSavingsRouter(ctx) {
-  const router = (0, import_express9.Router)();
+  const router = (0, import_express10.Router)();
   const service = new SavingsService(ctx);
   const { requireWorker } = createAuthMiddleware(ctx);
   const workerId = (req) => req.workerId ?? "";
@@ -75017,7 +75497,7 @@ function createSavingsRouter(ctx) {
 
 // src/modules/orders/order.routes.ts
 var import_node_crypto4 = require("node:crypto");
-var import_express10 = __toESM(require_express2(), 1);
+var import_express11 = __toESM(require_express2(), 1);
 
 // src/middleware/upload.ts
 var import_multer = __toESM(require_multer(), 1);
@@ -75358,7 +75838,7 @@ function orderId2(req) {
   return parsed.data;
 }
 function createOrderRouter(ctx) {
-  const router = (0, import_express10.Router)();
+  const router = (0, import_express11.Router)();
   const orders = new OrderService(ctx);
   const serviceOrders = new ServiceOrderService(ctx);
   const payments = new PaymentService(ctx);
@@ -75529,7 +76009,7 @@ function createPaymentProvider(config2) {
 }
 
 // src/modules/products/product.routes.ts
-var import_express11 = __toESM(require_express2(), 1);
+var import_express12 = __toESM(require_express2(), 1);
 
 // src/modules/products/product.service.ts
 var import_node_crypto6 = require("node:crypto");
@@ -80682,14 +81162,14 @@ var ProductService = class {
 };
 
 // src/modules/products/product.routes.ts
-var UUID_PATTERN6 = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-function idParam4(req, name = "id") {
+var UUID_PATTERN7 = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+function idParam5(req, name = "id") {
   const value = req.params[name];
-  if (typeof value !== "string" || !UUID_PATTERN6.test(value)) throw AppError.notFound();
+  if (typeof value !== "string" || !UUID_PATTERN7.test(value)) throw AppError.notFound();
   return value;
 }
 function createProductRouter(ctx) {
-  const router = (0, import_express11.Router)();
+  const router = (0, import_express12.Router)();
   const service = new ProductService(ctx);
   const { requireWorker } = createAuthMiddleware(ctx);
   const workerId = (req) => req.workerId ?? "";
@@ -80703,39 +81183,39 @@ function createProductRouter(ctx) {
   });
   router.put("/my/products/:id", async (req, res) => {
     const input = productInputSchema.parse(req.body);
-    res.json(await service.update(workerId(req), idParam4(req), input));
+    res.json(await service.update(workerId(req), idParam5(req), input));
   });
   router.patch("/my/products/:id/stock", async (req, res) => {
     const { stock } = stockUpdateSchema.parse(req.body);
-    res.json(await service.setStock(workerId(req), idParam4(req), stock));
+    res.json(await service.setStock(workerId(req), idParam5(req), stock));
   });
   router.patch("/my/products/:id/status", async (req, res) => {
     const { status } = productStatusSchema.parse(req.body);
-    res.json(await service.setStatus(workerId(req), idParam4(req), status));
+    res.json(await service.setStatus(workerId(req), idParam5(req), status));
   });
   router.delete("/my/products/:id", async (req, res) => {
-    await service.remove(workerId(req), idParam4(req));
+    await service.remove(workerId(req), idParam5(req));
     res.status(204).end();
   });
   router.post(
     "/my/products/:id/images",
     singleFile("image", MAX_IMAGE_BYTES, "IMAGE_TOO_LARGE"),
     async (req, res) => {
-      res.status(201).json(await service.addImage(workerId(req), idParam4(req), fileOf(req)));
+      res.status(201).json(await service.addImage(workerId(req), idParam5(req), fileOf(req)));
     }
   );
   router.delete("/my/products/:id/images/:imageId", async (req, res) => {
-    res.json(await service.removeImage(workerId(req), idParam4(req), idParam4(req, "imageId")));
+    res.json(await service.removeImage(workerId(req), idParam5(req), idParam5(req, "imageId")));
   });
   router.put(
     "/my/products/:id/model",
     singleFile("model", MAX_MODEL_BYTES, "MODEL_TOO_LARGE"),
     async (req, res) => {
-      res.json(await service.setModel(workerId(req), idParam4(req), fileOf(req)));
+      res.json(await service.setModel(workerId(req), idParam5(req), fileOf(req)));
     }
   );
   router.delete("/my/products/:id/model", async (req, res) => {
-    res.json(await service.removeModel(workerId(req), idParam4(req)));
+    res.json(await service.removeModel(workerId(req), idParam5(req)));
   });
   return router;
 }
@@ -80764,15 +81244,15 @@ function createApp(options) {
   if (config2.isProduction && ctx.payments.name === "internal") {
     logger.warn("Real payment provider is not connected: PAYMENT_PROVIDER=internal");
   }
-  const app = (0, import_express12.default)();
+  const app = (0, import_express13.default)();
   app.set("trust proxy", 1);
   app.disable("x-powered-by");
   app.use(helmet({ crossOriginResourcePolicy: { policy: "same-site" } }));
   app.use((0, import_cors.default)({ origin: config2.allowedOrigins, credentials: true }));
   app.use(originGuard(config2.allowedOrigins));
-  app.use(import_express12.default.json({ limit: "100kb" }));
+  app.use(import_express13.default.json({ limit: "100kb" }));
   app.use((0, import_cookie_parser.default)());
-  const api = import_express12.default.Router();
+  const api = import_express13.default.Router();
   api.get("/health", (_req, res) => {
     res.json({ status: "ok" });
   });
@@ -80789,6 +81269,7 @@ function createApp(options) {
   api.use(createMaterialRouter(ctx));
   api.use(createSavingsRouter(ctx));
   api.use(createAdminRouter(ctx));
+  api.use(createAdminManagementRouter(ctx));
   api.use(createFilesRouter(ctx));
   app.use("/api", api);
   app.use(notFoundHandler);

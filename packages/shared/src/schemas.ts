@@ -29,6 +29,7 @@ import {
   REVIEW_STATUSES,
   MAX_SERVICE_HOURS,
 } from './constants.js';
+import { ORDER_STATUSES } from './order-status.js';
 import { normalizePhone } from './phone.js';
 
 export const phoneSchema = z
@@ -260,5 +261,30 @@ export const adminListQuerySchema = z.object({
   status: z.string().trim().max(30).optional(),
   /** Free text: a name, or the last digits of a phone number. */
   q: z.string().trim().max(60).optional(),
+  workerId: z.string().uuid().optional(),
+  categoryId: z.string().uuid().optional(),
+});
+
+export const adminProductUpdateSchema = z.object({
+  title: z.string().trim().min(MIN_NAME_LENGTH).max(MAX_TITLE_LENGTH),
+  description: z.string().trim().max(MAX_DESCRIPTION_LENGTH).default(''),
+  retailPrice: moneySchema,
+  categoryId: z.string().uuid(),
+});
+export type AdminProductUpdate = z.infer<typeof adminProductUpdateSchema>;
+
+export const adminOrderStatusSchema = z.object({ status: z.enum(ORDER_STATUSES) });
+
+export const refundRequestSchema = z.object({
+  reason: z
+    .string()
+    .trim()
+    .max(MAX_REJECT_REASON_LENGTH)
+    .optional()
+    .transform((v) => v || null),
+});
+
+export const userBlockSchema = z.object({
+  reason: z.string().trim().min(MIN_REJECT_REASON_LENGTH).max(MAX_REJECT_REASON_LENGTH),
 });
 export type AdminListQuery = z.infer<typeof adminListQuerySchema>;

@@ -1,6 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type {
   AdminAuditEntryDto,
+  AdminOrderDetailDto,
+  AdminProductDto,
+  AdminProductUpdate,
+  AdminUserDto,
+  OrderStatus,
+  RefundDto,
   AdminComplaintDto,
   AdminMaterialOrderDto,
   AdminOrderDto,
@@ -58,6 +64,38 @@ export const useAdminAudit = (page: number) =>
       apiRequest<Page<AdminAuditEntryDto>>('/admin/audit', { auth: true, query: { page } }),
   });
 
+export interface ProductListParams {
+  page: number;
+  status?: string;
+  q?: string;
+  workerId?: string;
+  categoryId?: string;
+}
+
+export const useAdminProducts = (params: ProductListParams) =>
+  useQuery({
+    queryKey: [...ADMIN, 'products', params],
+    queryFn: () =>
+      apiRequest<Page<AdminProductDto>>('/admin/products', { auth: true, query: { ...params } }),
+  });
+
+export const useAdminOrder = (id: string) =>
+  useQuery({
+    queryKey: [...ADMIN, 'order', id],
+    queryFn: () => apiRequest<AdminOrderDetailDto>(`/admin/orders/${id}`, { auth: true }),
+    enabled: id.length > 0,
+  });
+
+export const useAdminUsers = (page: number, status?: string, q?: string) =>
+  usePaged<AdminUserDto>('users', '/admin/users', page, status, q);
+
+export const useAdminUser = (id: string) =>
+  useQuery({
+    queryKey: [...ADMIN, 'user', id],
+    queryFn: () => apiRequest<AdminUserDto>(`/admin/users/${id}`, { auth: true }),
+    enabled: id.length > 0,
+  });
+
 export const useAdminMaterials = () =>
   useQuery({
     queryKey: [...ADMIN, 'materials'],
@@ -80,6 +118,8 @@ function useAdminAction<TVariables>(request: (variables: TVariables) => Promise<
       void client.invalidateQueries({ queryKey: ['workers'] });
       void client.invalidateQueries({ queryKey: ['worker'] });
       void client.invalidateQueries({ queryKey: ['materials'] });
+      void client.invalidateQueries({ queryKey: ['products'] });
+      void client.invalidateQueries({ queryKey: ['product'] });
     },
   });
 }
@@ -118,8 +158,49 @@ export const useResolveComplaint = () =>
   );
 
 export const useRefundOrder = () =>
-  useAdminAction((orderId: string) =>
-    apiRequest<void>(`/admin/orders/${orderId}/refund`, { method: 'POST', auth: true }),
+  useAdminAction(({ orderId, reason }: { orderId: string; reason?: string }) =>
+    apiRequest<RefundDto>(`/admin/orders/${orderId}/refund`, {
+      method: 'POST',
+      body: reason ? { reason } : {},
+      auth: true,
+    }),
+  );
+
+export const useSetOrderStatus = () =>
+  useAdminAction(({ id, status }: { id: string; status: OrderStatus }) =>
+    apiRequest<void>(`/admin/orders/${id}/status`, {
+      method: 'PATCH',
+      body: { status },
+      auth: true,
+    }),
+  );
+
+export const useUpdateProduct = () =>
+  useAdminAction(({ id, input }: { id: string; input: AdminProductUpdate }) =>
+    apiRequest<void>(`/admin/products/${id}`, { method: 'PATCH', body: input, auth: true }),
+  );
+
+export const useSetProductVisible = () =>
+  useAdminAction(({ id, visible }: { id: string; visible: boolean }) =>
+    apiRequest<void>(`/admin/products/${id}/${visible ? 'show' : 'hide'}`, {
+      method: 'POST',
+      auth: true,
+    }),
+  );
+
+export const useDeleteProduct = () =>
+  useAdminAction((id: string) =>
+    apiRequest<void>(`/admin/products/${id}`, { method: 'DELETE', auth: true }),
+  );
+
+export const useBlockUser = () =>
+  useAdminAction(({ id, reason }: { id: string; reason: string }) =>
+    apiRequest<void>(`/admin/users/${id}/block`, { method: 'POST', body: { reason }, auth: true }),
+  );
+
+export const useUnblockUser = () =>
+  useAdminAction((id: string) =>
+    apiRequest<void>(`/admin/users/${id}/unblock`, { method: 'POST', auth: true }),
   );
 
 export const useSaveMaterial = () =>

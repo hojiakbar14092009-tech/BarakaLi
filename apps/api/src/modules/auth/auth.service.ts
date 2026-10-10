@@ -71,6 +71,7 @@ export class AuthService {
   async verifyCode(input: VerifyCodeInput): Promise<IssuedSession> {
     await this.checkCode(input.phone, input.code);
     const user = await this.findOrCreateUser(input);
+    if (await this.repo.isBlocked(user.id)) throw new AppError('USER_BLOCKED', 403);
     return this.issueSession(user);
   }
 
@@ -86,7 +87,7 @@ export class AuthService {
     if (stored.expires_at.getTime() <= this.now().getTime()) throw AppError.unauthenticated();
     if (!(await this.repo.revokeRefreshToken(tokenHash))) throw AppError.unauthenticated();
     const user = await this.repo.findUserById(stored.user_id);
-    if (!user) throw AppError.unauthenticated();
+    if (!user || (await this.repo.isBlocked(user.id))) throw AppError.unauthenticated();
     return this.issueSession(user);
   }
 

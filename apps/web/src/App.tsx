@@ -25,12 +25,14 @@ const AdminLayout = lazy(() => import('./features/admin/AdminLayout'));
 const DashboardPage = lazy(() => import('./features/admin/DashboardPage'));
 const AuditPage = lazy(() => import('./features/admin/AuditPage'));
 const AdminWorkerDetailPage = lazy(() => import('./features/admin/AdminWorkerDetailPage'));
+const AdminProductsPage = lazy(() => import('./features/admin/AdminProductsPage'));
+const AdminOrderDetailPage = lazy(() => import('./features/admin/AdminOrderDetailPage'));
+const AdminUsersPage = lazy(() => import('./features/admin/AdminUsersPage'));
+const AdminUserDetailPage = lazy(() => import('./features/admin/AdminUserDetailPage'));
 const adminSection = (name: keyof typeof import('./features/admin/sectionPages')) =>
   lazy(() => import('./features/admin/sectionPages').then((m) => ({ default: m[name] })));
 const AdminWorkersPage = adminSection('AdminWorkersPage');
-const AdminProductsPage = adminSection('AdminProductsPage');
 const AdminOrdersPage = adminSection('AdminOrdersPage');
-const AdminUsersPage = adminSection('AdminUsersPage');
 const AdminModerationPage = adminSection('AdminModerationPage');
 const AdminCategoriesPage = adminSection('AdminCategoriesPage');
 const AdminMaterialsPage = adminSection('AdminMaterialsPage');
@@ -79,7 +81,9 @@ const router = createBrowserRouter([
               { path: 'hunarmandlar/:id', element: <AdminWorkerDetailPage /> },
               { path: 'mahsulotlar', element: <AdminProductsPage /> },
               { path: 'buyurtmalar', element: <AdminOrdersPage /> },
+              { path: 'buyurtmalar/:id', element: <AdminOrderDetailPage /> },
               { path: 'foydalanuvchilar', element: <AdminUsersPage /> },
+              { path: 'foydalanuvchilar/:id', element: <AdminUserDetailPage /> },
               { path: 'sharhlar', element: <AdminModerationPage /> },
               { path: 'xizmat-turlari', element: <AdminCategoriesPage /> },
               { path: 'materiallar', element: <AdminMaterialsPage /> },

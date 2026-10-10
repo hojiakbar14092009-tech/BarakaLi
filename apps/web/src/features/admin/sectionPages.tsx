@@ -51,7 +51,5 @@ export function AdminMaterialsPage() {
   );
 }
 
-export const AdminProductsPage = () => <SectionPage titleKey="products" />;
-export const AdminUsersPage = () => <SectionPage titleKey="users" />;
 export const AdminCategoriesPage = () => <SectionPage titleKey="categories" />;
 export const AdminSettingsPage = () => <SectionPage titleKey="settings" />;
