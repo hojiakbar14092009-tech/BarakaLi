@@ -1,9 +1,7 @@
-import { LazyMotion, m, useReducedMotion, useScroll, useTransform } from 'framer-motion';
+import { m, useReducedMotion, useScroll, useTransform } from 'framer-motion';
 import { useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { imageSource, type CateringImageKey } from './images';
-
-const loadFeatures = () => import('../../components/motionFeatures').then((mod) => mod.default);
 
 export const SCALE_FROM_CARD = 1.08;
 export const SCALE_FROM_HERO = 1.12;
@@ -37,23 +35,21 @@ export function CateringImage({
 
   return (
     <div ref={ref} className={`overflow-hidden ${className}`}>
-      <LazyMotion features={loadFeatures} strict>
-        <m.img
-          src={source.src}
-          srcSet={source.srcSet}
-          sizes={sizes}
-          width={source.width}
-          height={source.height}
-          alt={t(`catering.images.${imageKey}`)}
-          loading={eager ? 'eager' : 'lazy'}
-          // React 18 only forwards the lowercase HTML attribute.
-          {...{ fetchpriority: eager ? 'high' : 'auto' }}
-          decoding="async"
-          data-scale-from={reduced ? 1 : scaleFrom}
-          style={reduced ? { scale: 1 } : { scale }}
-          className="h-full w-full object-cover will-change-transform"
-        />
-      </LazyMotion>
+      <m.img
+        src={source.src}
+        srcSet={source.srcSet}
+        sizes={sizes}
+        width={source.width}
+        height={source.height}
+        alt={t(`catering.images.${imageKey}`)}
+        loading={eager ? 'eager' : 'lazy'}
+        // React 18 only forwards the lowercase HTML attribute.
+        {...{ fetchpriority: eager ? 'high' : 'auto' }}
+        decoding="async"
+        data-scale-from={reduced ? 1 : scaleFrom}
+        style={reduced ? { scale: 1 } : { scale }}
+        className="h-full w-full object-cover will-change-transform"
+      />
     </div>
   );
 }

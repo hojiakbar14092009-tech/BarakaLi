@@ -56,7 +56,8 @@ describe('home page', () => {
   it('opens on the catering hero, before the marketplace, on desktop', async () => {
     useDesktop();
     renderHome();
-    const hero = await screen.findByRole('heading', { level: 1 });
+    // The landing is a lazy chunk; under a full parallel run it can take longer than the default 1 s.
+    const hero = await screen.findByRole('heading', { level: 1 }, { timeout: 5000 });
     expect(hero).toHaveTextContent(
       'Uyda tayyorlangan catering, qoʻl mehnati va dizayn, bitta joyda',
     );
@@ -77,7 +78,9 @@ describe('home page', () => {
     const scrollIntoView = vi.fn();
     Element.prototype.scrollIntoView = scrollIntoView;
     renderHome();
-    fireEvent.click(await screen.findByRole('link', { name: /Katalogga oʻtish/ }));
+    fireEvent.click(
+      await screen.findByRole('link', { name: /Katalogga oʻtish/ }, { timeout: 5000 }),
+    );
     expect(scrollIntoView).toHaveBeenCalledWith({ behavior: 'smooth', block: 'start' });
   });
 

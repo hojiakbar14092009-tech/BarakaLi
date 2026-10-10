@@ -1,4 +1,5 @@
 import { CateringHero } from './CateringHero';
+import { MotionRoot } from './motion';
 import { useHashScroll } from './sectionScroll';
 import { WhyBarakaLi } from './WhyBarakaLi';
 
@@ -7,9 +8,11 @@ export default function CateringLanding() {
   // The landing loads as its own chunk, after the page's own hash handling has already run.
   useHashScroll();
   return (
-    <div className="flex flex-col gap-28">
-      <CateringHero />
-      <WhyBarakaLi />
-    </div>
+    <MotionRoot>
+      <div className="flex flex-col gap-32">
+        <CateringHero />
+        <WhyBarakaLi />
+      </div>
+    </MotionRoot>
   );
 }

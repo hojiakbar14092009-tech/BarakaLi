@@ -11,7 +11,33 @@ import {
 } from './helpers';
 import { translator } from './i18n';
 
+/**
+ * Waits until no Framer Motion element is mid-fade: a half-faded element would otherwise be measured
+ * for contrast against its background while it is still animating in.
+ */
+async function motionSettled(page: Page): Promise<void> {
+  await page.waitForFunction(
+    () => {
+      // Opacity fades run on the Web Animations API (inline style only updates at the end), so both
+      // finite running animations and half-applied inline opacity count as "still moving".
+      const animating = document
+        .getAnimations()
+        .some((a) => a.playState === 'running' && a.effect?.getTiming().iterations !== Infinity);
+      const halfFaded = Array.from(
+        document.querySelectorAll<HTMLElement>('[style*="opacity"]'),
+      ).some((el) => {
+        const opacity = parseFloat(el.style.opacity);
+        return opacity > 0 && opacity < 1;
+      });
+      return !animating && !halfFaded;
+    },
+    undefined,
+    { polling: 100, timeout: 10_000 },
+  );
+}
+
 async function violations(page: Page) {
+  await motionSettled(page);
   const result = await new AxeBuilder({ page })
     .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
     .analyze();

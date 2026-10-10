@@ -121,3 +121,25 @@ test.describe('catering actions on desktop', () => {
     await expect(page.getByRole('tabpanel')).toContainText('2%');
   });
 });
+
+test.describe('catering motion respects reduced motion', () => {
+  test.use({ viewport: { width: 1280, height: 800 }, reducedMotion: 'reduce' });
+
+  test('keeps photos at scale 1 and nothing drifts', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+    for (const scale of await page
+      .locator('img[data-scale-from]')
+      .evaluateAll((imgs) => imgs.map((img) => img.getAttribute('data-scale-from')))) {
+      expect(scale).toBe('1');
+    }
+    const transforms = () =>
+      page
+        .locator('main *')
+        .evaluateAll((els) => els.map((el) => getComputedStyle(el).transform).join('|'));
+    await page.waitForTimeout(1500);
+    const before = await transforms();
+    await page.waitForTimeout(800);
+    expect(await transforms()).toBe(before);
+  });
+});
