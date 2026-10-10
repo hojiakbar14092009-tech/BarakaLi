@@ -1,10 +1,10 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
 import {
-  ADMIN_PHONE,
   VIEWPORTS,
   addWindow,
   becomeWorker,
+  loginAsAdmin,
   publishedProductId,
   productWithModelId,
   signIn,
@@ -64,7 +64,7 @@ test.describe('accessibility (axe, WCAG 2.1 AA)', () => {
     await page.waitForLoadState('networkidle');
     expect(await violations(page), 'new service order').toEqual([]);
 
-    await signIn(context, 'Axe Admin', ADMIN_PHONE);
+    await loginAsAdmin(context);
     await page.goto('/admin');
     await page.waitForLoadState('networkidle');
     expect(await violations(page), 'admin').toEqual([]);

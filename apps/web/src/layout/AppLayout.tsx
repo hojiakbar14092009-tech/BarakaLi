@@ -34,7 +34,7 @@ function Header() {
   const status = useAuthStore((s) => s.status);
   return (
     <header className="sticky top-0 z-30 border-b border-bisque bg-sugar/95 pt-[env(safe-area-inset-top)] backdrop-blur">
-      <div className="mx-auto flex min-h-16 max-w-6xl items-center justify-between gap-2 px-4">
+      <div className="mx-auto flex min-h-16 max-w-6xl items-center justify-between gap-2 px-4 lg:max-w-7xl 2xl:max-w-[96rem]">
         <Link to="/" className="inline-flex min-h-12 items-center text-2xl" aria-label="BarakaLi">
           <Logo />
         </Link>
@@ -56,7 +56,7 @@ function Footer() {
   const { t } = useTranslation();
   return (
     <footer className="mt-16 border-t border-bisque bg-bisque/40">
-      <div className="mx-auto flex max-w-6xl flex-col gap-2 px-4 py-8">
+      <div className="mx-auto flex max-w-6xl flex-col gap-2 px-4 py-8 lg:max-w-7xl 2xl:max-w-[96rem]">
         <Logo className="text-xl" />
         <p className="text-mocha">{t('footer.tagline')}</p>
         <p className="text-sm text-mocha">
@@ -79,7 +79,7 @@ export function AppLayout() {
         {t('common.skipToContent')}
       </a>
       <Header />
-      <div className="mx-auto flex w-full max-w-6xl flex-1">
+      <div className="mx-auto flex w-full max-w-6xl flex-1 lg:max-w-7xl 2xl:max-w-[96rem]">
         <NavBar />
         <div className={`flex min-w-0 flex-1 flex-col ${hasNav ? 'pb-20 sm:pb-0' : ''}`}>
           <main id="content" className="w-full flex-1 px-4 pt-6">

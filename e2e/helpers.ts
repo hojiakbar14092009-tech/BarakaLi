@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { expect, type APIRequestContext, type BrowserContext, type Page } from '@playwright/test';
 
 export const VIEWPORTS = [
@@ -53,38 +54,41 @@ export async function firstCategoryId(request: APIRequestContext): Promise<strin
 
 const ORIGIN = 'http://localhost:4173';
 
-let adminToken: Promise<string> | undefined;
-
 /**
- * One administrator session for the whole run: sign-in codes are limited per phone, and every
- * test worker needs an approval.
+ * One real admin sign-in for the whole suite happens in global setup (see global-setup.ts), which
+ * writes the resulting `{ accessToken, user }` here — the same shape `/auth/verify` and
+ * `/auth/refresh` return. Every spec file gets its own module instance, so a cache kept in this
+ * file's own module state would not be shared between them, and each would spend its own entry
+ * from the 5-per-15-minutes SMS code limit on ADMIN_PHONE if it signed in again; reading the same
+ * on-disk session avoids that.
  */
-function adminAccessToken(): Promise<string> {
-  adminToken ??= (async () => {
-    const headers = { 'Content-Type': 'application/json', Origin: ORIGIN };
-    const codeRes = await fetch(`${ORIGIN}/api/auth/request-code`, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify({ phone: ADMIN_PHONE }),
-    });
-    const { code } = (await codeRes.json()) as { code: string };
-    const verify = await fetch(`${ORIGIN}/api/auth/verify`, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify({ phone: ADMIN_PHONE, code, name: 'Admin' }),
-    });
-    return ((await verify.json()) as { accessToken: string }).accessToken;
-  })();
-  return adminToken;
+export const ADMIN_AUTH_FILE = 'test-results/admin-auth.json';
+
+function readAdminAuth(): { accessToken: string } {
+  return JSON.parse(readFileSync(ADMIN_AUTH_FILE, 'utf8')) as { accessToken: string };
 }
 
 /** Approves a worker application as the administrator, through the public API. */
 export async function approveWorker(workerId: string): Promise<void> {
   const res = await fetch(`${ORIGIN}/api/admin/workers/${workerId}/approve`, {
     method: 'POST',
-    headers: { Origin: ORIGIN, Authorization: `Bearer ${await adminAccessToken()}` },
+    headers: { Origin: ORIGIN, Authorization: `Bearer ${readAdminAuth().accessToken}` },
   });
   expect(res.status).toBe(204);
+}
+
+/**
+ * Logs a browser context in as the administrator without spending another sign-in: refresh tokens
+ * rotate on every use, so a cookie captured once could only ever authenticate a single page load.
+ * Instead, every `/auth/refresh` call in this context is answered with the cached admin session
+ * from global setup — a stateless access token, good for its own lifetime no matter how many pages
+ * "refresh" with it, exactly like the app's own restore-session flow would return on page load.
+ */
+export async function loginAsAdmin(context: BrowserContext): Promise<void> {
+  const body = readFileSync(ADMIN_AUTH_FILE, 'utf8');
+  await context.route('**/api/auth/refresh', (route) =>
+    route.fulfill({ status: 200, contentType: 'application/json', body }),
+  );
 }
 
 /** Applies as a worker and gets approved, so the profile is public and can take orders. */
@@ -136,8 +140,33 @@ export async function hasHorizontalScroll(page: Page): Promise<boolean> {
   );
 }
 
+const MIN_TOUCH_TARGET = 48;
+
+/**
+ * Visible buttons, links, inputs, selects and textareas shorter than `minPx` (default 48, the
+ * platform's minimum touch target). Returns a short description of each offender so a failing
+ * assertion says what to go fix, not just that something failed.
+ */
+export async function smallTouchTargets(page: Page, minPx = MIN_TOUCH_TARGET): Promise<string[]> {
+  return page.evaluate((min) => {
+    const targets = Array.from(
+      document.querySelectorAll<HTMLElement>('button, a[href], input, select, textarea'),
+    );
+    return targets
+      .filter((el) => {
+        const box = el.getBoundingClientRect();
+        const style = getComputedStyle(el);
+        const visible = box.width > 0 && style.visibility !== 'hidden' && style.display !== 'none';
+        const hiddenInput = el.classList.contains('sr-only');
+        // Inline links inside sentences are covered by their own min-h class.
+        return visible && !hiddenInput && box.height < min - 0.5;
+      })
+      .map((el) => `${el.tagName.toLowerCase()}:${(el.textContent ?? '').trim().slice(0, 30)}`);
+  }, minPx);
+}
+
 // 1x1 PNG: enough for the server's image pipeline to accept a photo.
-const TINY_PNG = Buffer.from(
+export const TINY_PNG = Buffer.from(
   'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
   'base64',
 );

@@ -73,7 +73,7 @@ export default function WorkerPage() {
         )}
         {products.data && products.data.items.length > 0 && (
           <>
-            <ul className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
+            <ul className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
               {products.data.items.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}

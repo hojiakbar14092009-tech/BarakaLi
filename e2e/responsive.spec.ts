@@ -1,15 +1,14 @@
 import { expect, test } from '@playwright/test';
 import {
-  ADMIN_PHONE,
   VIEWPORTS,
   addWindow,
   becomeWorker,
   hasHorizontalScroll,
+  loginAsAdmin,
   publishedProductId,
   signIn,
+  smallTouchTargets,
 } from './helpers';
-
-const MIN_TOUCH_TARGET = 48;
 
 for (const viewport of VIEWPORTS) {
   test.describe(`${viewport.name} ${viewport.width}px`, () => {
@@ -35,25 +34,8 @@ for (const viewport of VIEWPORTS) {
         await page.goto(route);
         await page.waitForLoadState('networkidle');
         expect(await hasHorizontalScroll(page), `${route} scrolls sideways`).toBe(false);
-        const small = await page.evaluate((min) => {
-          const targets = Array.from(
-            document.querySelectorAll<HTMLElement>('button, a[href], input, select, textarea'),
-          );
-          return targets
-            .filter((el) => {
-              const box = el.getBoundingClientRect();
-              const style = getComputedStyle(el);
-              const visible =
-                box.width > 0 && style.visibility !== 'hidden' && style.display !== 'none';
-              const hiddenInput = el.classList.contains('sr-only');
-              // Inline links inside sentences are covered by their own min-h class.
-              return visible && !hiddenInput && box.height < min - 0.5;
-            })
-            .map(
-              (el) => `${el.tagName.toLowerCase()}:${(el.textContent ?? '').trim().slice(0, 30)}`,
-            );
-        }, MIN_TOUCH_TARGET);
-        expect(small, `${route} has targets under ${MIN_TOUCH_TARGET}px`).toEqual([]);
+        const small = await smallTouchTargets(page);
+        expect(small, `${route} has targets under 48px`).toEqual([]);
       }
     });
 
@@ -91,7 +73,7 @@ for (const viewport of VIEWPORTS) {
     });
 
     test('admin panel tabs stay within the screen', async ({ page, context }) => {
-      await signIn(context, 'Admin', ADMIN_PHONE);
+      await loginAsAdmin(context);
       await page.goto('/admin');
       await page.waitForLoadState('networkidle');
       for (const tab of ['Hunarmandlar', 'Buyurtmalar', 'Sharhlar', 'Shikoyatlar', 'Materiallar']) {

@@ -106,7 +106,7 @@ export default function CategoryPage() {
       {products.data && products.data.items.length > 0 && (
         <>
           <p className="text-mocha">{t('catalog.results', { count: products.data.total })}</p>
-          <ul className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
+          <ul className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
             {products.data.items.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}
