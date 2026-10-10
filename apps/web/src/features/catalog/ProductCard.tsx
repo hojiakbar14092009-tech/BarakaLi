@@ -54,7 +54,7 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
           {product.model && (
             <span className="absolute left-2 top-2 inline-flex items-center gap-1 rounded-full bg-sugar/95 px-2.5 py-1 text-xs font-bold text-espresso">
               <Box className="size-3.5" aria-hidden="true" />
-              {t('product.tab3d')}
+              {t('product.badge3d')}
             </span>
           )}
         </div>

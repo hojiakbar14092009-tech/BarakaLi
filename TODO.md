@@ -125,3 +125,10 @@ pnpm db:audit-orders
 
 - [ ] Promptdagi "CATERING HERO: FAQAT DESKTOP UCHUN" bloki avvalgi "catering toʻliq olib tashlansin" qaroriga
       zid. Qayta qoʻshilmadi; tasdiqlansa alohida bosqich sifatida qilinadi
+
+## Mahsulot sahifasi: koʻrish tablari (2026-10-10)
+
+- [x] "Rasmlar" + bitta koʻrish tabi: `.glb` boʻlsa va qurilma WebGL qoʻllasa "3D koʻrinish", aks holda rasm asosidagi
+      "Aylantirib koʻrish" (perspektiva + soya, WebGL'siz). Model yuklanmasa xatosiz rasmlarga qaytadi
+- Qaror: rasmi yoʻq mahsulotda (hozir "Toʻy taklifnomalari", rasm kutilmoqda) aylantiradigan narsa yoʻq, shuning uchun
+  koʻrish tabi chiqmaydi; rasm qoʻshilishi bilan avtomatik paydo boʻladi

@@ -10,6 +10,7 @@ import {
 } from 'react';
 import { RotateCcw, RotateCw, ZoomIn, ZoomOut, Undo2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { ToolButton } from './ToolButton';
 import type { ViewerApi } from './ViewerCanvas';
 import {
   hasCoarsePointer,
@@ -22,13 +23,12 @@ import {
 // three.js, react-three-fiber and drei live in this dynamic chunk only.
 const ViewerCanvas = lazy(() => import('./ViewerCanvas'));
 
-export type ViewerFailure = 'failed' | 'noWebgl';
-
 interface Product3DViewerProps {
   modelUrl: string;
   posterUrl: string | null;
   title: string;
-  onFallback: (reason: ViewerFailure) => void;
+  /** Called when the model cannot be shown; the gallery then quietly switches to photos. */
+  onFallback: () => void;
 }
 
 interface BoundaryProps {
@@ -72,7 +72,7 @@ export function Product3DViewer({ modelUrl, posterUrl, title, onFallback }: Prod
   const [showHint, setShowHint] = useState(() => !hintAlreadySeen());
 
   useEffect(() => {
-    if (!supported) onFallback('noWebgl');
+    if (!supported) onFallback();
   }, [supported, onFallback]);
 
   useEffect(() => {
@@ -87,7 +87,7 @@ export function Product3DViewer({ modelUrl, posterUrl, title, onFallback }: Prod
     setShowHint(false);
   }, []);
   const handleReady = useCallback(() => setReady(true), []);
-  const handleError = useCallback(() => onFallback('failed'), [onFallback]);
+  const handleError = useCallback(() => onFallback(), [onFallback]);
 
   if (!supported) return null;
 
@@ -175,27 +175,5 @@ export function Product3DViewer({ modelUrl, posterUrl, title, onFallback }: Prod
         )}
       </div>
     </div>
-  );
-}
-
-function ToolButton({
-  label,
-  onClick,
-  children,
-}: {
-  label: string;
-  onClick: () => void;
-  children: ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      aria-label={label}
-      title={label}
-      onClick={onClick}
-      className="grid size-12 place-items-center rounded-full bg-mocha text-sugar shadow-soft active:scale-95"
-    >
-      {children}
-    </button>
   );
 }

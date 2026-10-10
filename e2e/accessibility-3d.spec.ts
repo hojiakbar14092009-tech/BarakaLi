@@ -123,14 +123,12 @@ test.describe('3D viewer', () => {
     page.on('request', (req) => requested.push(req.url()));
     await page.getByRole('tab', { name: t('product.tab3d') }).click();
     const canvas = page.locator('canvas');
-    const fallback = page.getByText(t('product.viewer.noWebgl'));
-    // Software GL is enabled in the test browser; if the machine still refuses WebGL the app must
-    // fall back instead of breaking, which is asserted by the next test.
-    await expect(canvas.or(fallback)).toBeVisible({ timeout: 30_000 });
+    // Software GL is enabled in the test browser, so the model renders on a real canvas.
+    await expect(canvas).toBeVisible({ timeout: 30_000 });
     expect(requested.some((url) => /\.glb|\/api\/files\//.test(url))).toBe(true);
   });
 
-  test('falls back to the photos when WebGL is not supported', async ({ page, request }) => {
+  test('without WebGL offers the rotate view instead, with no error', async ({ page, request }) => {
     await page.addInitScript(() => {
       const original = HTMLCanvasElement.prototype.getContext;
       HTMLCanvasElement.prototype.getContext = function patched(
@@ -144,11 +142,9 @@ test.describe('3D viewer', () => {
     });
     const productId = await productWithModelId(request);
     await page.goto(`/mahsulot/${productId}`);
-    await page.getByRole('tab', { name: t('product.tab3d') }).click();
-
-    await expect(page.getByText(t('product.viewer.noWebgl'))).toBeVisible();
-    // The page keeps working: the photo gallery is shown and the 3D tab is gone.
+    await expect(page.getByRole('tab', { name: t('product.tabRotate') })).toBeVisible();
     await expect(page.getByRole('tab', { name: t('product.tab3d') })).toHaveCount(0);
+    await expect(page.getByRole('alert')).toHaveCount(0);
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
     await expect(page.locator('canvas')).toHaveCount(0);
     await expect(page.getByRole('img').first()).toBeVisible();

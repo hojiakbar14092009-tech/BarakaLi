@@ -1,7 +1,7 @@
 {
   "gallery": "Mahsulot rasmlari",
   "tabPhotos": "Rasmlar",
-  "tab3d": "3D",
+  "tab3d": "3D koʻrinish",
   "noImage": "Rasm yoʻq",
   "retailPrice": "Dona narxi",
   "wholesalePrice": "Ulgurji narx",
@@ -26,13 +26,18 @@
     "hintTouch": "Barmogʻingiz bilan aylantiring",
     "hintMouse": "Sichqoncha bilan aylantiring, gʻildirak bilan yaqinlashtiring",
     "loading": "3D model yuklanmoqda…",
-    "failed": "3D koʻrinishni ochib boʻlmadi. Rasmlar koʻrsatilmoqda.",
-    "noWebgl": "Qurilmangiz 3D koʻrinishni qoʻllamaydi. Rasmlar koʻrsatilmoqda.",
     "rotateLeft": "Chapga aylantirish",
     "rotateRight": "Oʻngga aylantirish",
     "zoomIn": "Yaqinlashtirish",
     "zoomOut": "Uzoqlashtirish",
     "reset": "Asl holatga qaytarish"
   },
-  "wholesaleCompact": "Ulgurji {{qty}}+: {{price}}"
+  "wholesaleCompact": "Ulgurji {{qty}}+: {{price}}",
+  "badge3d": "3D",
+  "tabRotate": "Aylantirib koʻrish",
+  "rotate": {
+    "label": "{{title}}: aylantirib koʻrish. Strelka tugmalari bilan aylantiring, Home bilan asl holatga qaytaring.",
+    "hintTouch": "Barmogʻingiz bilan aylantiring",
+    "hintMouse": "Sichqoncha bilan suring va aylantiring"
+  }
 }
