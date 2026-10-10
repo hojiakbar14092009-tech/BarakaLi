@@ -25,13 +25,23 @@ const base: ProductDto = {
 };
 
 describe('ProductGallery', () => {
-  it('has no 3D tab for a product without a model', () => {
+  it('offers the rotate view, not 3D, for a product without a model', () => {
     render(<ProductGallery product={base} />);
     expect(screen.queryByRole('tab', { name: /3D/ })).not.toBeInTheDocument();
-    expect(screen.getAllByRole('img').length).toBeGreaterThan(0);
+    const rotate = screen.getByRole('tab', { name: 'Aylantirib koʻrish' });
+    fireEvent.click(rotate);
+    expect(rotate).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByRole('group', { name: /aylantirib koʻrish/ })).toBeInTheDocument();
   });
 
-  it('shows a 3D tab next to the photos when a model exists', () => {
+  it('has no viewer tab for a product without photos', () => {
+    render(<ProductGallery product={{ ...base, images: [] }} />);
+    expect(screen.queryByRole('tab')).not.toBeInTheDocument();
+    expect(screen.getByRole('img', { name: 'Rasm yoʻq' })).toBeInTheDocument();
+  });
+
+  it('without WebGL a model product gets the rotate view and no error message', () => {
+    // The test DOM has no WebGL (see test/setup.ts), like an old phone.
     render(
       <ProductGallery
         product={{
@@ -40,24 +50,9 @@ describe('ProductGallery', () => {
         }}
       />,
     );
-    expect(screen.getByRole('tab', { name: /3D/ })).toBeInTheDocument();
-    expect(screen.getByRole('tab', { name: /Rasmlar/ })).toBeInTheDocument();
-  });
-
-  it('falls back to the photos with a message when WebGL is unavailable', async () => {
-    render(
-      <ProductGallery
-        product={{
-          ...base,
-          model: { fileUrl: '/api/files/m.glb', fileSize: 1000, posterUrl: null },
-        }}
-      />,
-    );
-    fireEvent.click(screen.getByRole('tab', { name: /3D/ }));
-    expect(
-      await screen.findByText(/3D koʻrinishni qoʻllamaydi/, {}, { timeout: 10_000 }),
-    ).toBeInTheDocument();
     expect(screen.queryByRole('tab', { name: /3D/ })).not.toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Aylantirib koʻrish' })).toBeInTheDocument();
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
     expect(screen.getByAltText('Sopol vaza')).toBeInTheDocument();
   });
 });
