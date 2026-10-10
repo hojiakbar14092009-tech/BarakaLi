@@ -34,7 +34,8 @@
   },
   "header": {
     "signIn": "Kirish",
-    "cart": "Savat"
+    "cart": "Savat",
+    "catering": "Catering"
   },
   "categories": {
     "tikuvchilik": "Tikuvchilik",
@@ -85,7 +86,8 @@
         "text": "Mijozlarni topish va ular bilan ishonchli aloqa oʻrnatish."
       }
     },
-    "lessonsAll": "Barcha darslar"
+    "lessonsAll": "Barcha darslar",
+    "catalogLabel": "Katalog"
   },
   "footer": {
     "tagline": "Halol mehnat, oila va iqtisodiy mustaqillik.",

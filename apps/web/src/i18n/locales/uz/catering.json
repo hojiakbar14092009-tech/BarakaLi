@@ -4,5 +4,19 @@
     "pishiriq": "Kumush tagliklarda uyda pishirilgan tort va pishiriqlar",
     "qolmehnat": "Toʻqilgan savatda makrame iplari va yogʻoch munchoqlar",
     "dizayn": "Interyer uchun mato boʻlaklari, rang palitrasi va xona chizmasi"
+  },
+  "hero": {
+    "eyebrow": "Catering va qoʻl mehnati",
+    "title": "Uyda tayyorlangan catering, qoʻl mehnati va dizayn, bitta joyda",
+    "pointsLabel": "BarakaLi’da",
+    "points": {
+      "workers": "Hunarmandlar",
+      "request": "Catering soʻrovi",
+      "view3d": "3D koʻrinish",
+      "safe": "Xavfsiz buyurtma"
+    },
+    "requestCta": "Catering soʻrovi",
+    "catalogCta": "Katalogga oʻtish",
+    "badge": "Har bir hunarmand admin tasdiqlagandan keyin ishlaydi"
   }
 }

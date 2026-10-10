@@ -1,17 +1,16 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { describe, expect, it, vi } from 'vitest';
 import '../i18n';
 import { Logo } from '../components/Logo';
 import { HomePage } from '../features/home/HomePage';
 
-// The entry animation loads its features lazily; it is not under test, and a late import must not
-// outlive the test environment.
-vi.mock('../components/MotionFade', () => ({
-  MotionFade: ({ children, className }: { children: React.ReactNode; className?: string }) => (
-    <div className={className}>{children}</div>
-  ),
+// Motion features load lazily; they are not under test, and a late import must not outlive the
+// test environment.
+vi.mock('framer-motion', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('framer-motion')>()),
+  LazyMotion: ({ children }: { children: React.ReactNode }) => children,
 }));
 
 vi.stubGlobal(
@@ -31,7 +30,34 @@ function renderHome() {
 }
 
 describe('home page', () => {
-  it('shows search, the five categories and the become-worker call to action', async () => {
+  it('opens on the catering hero, before the marketplace', () => {
+    renderHome();
+    const hero = screen.getByRole('heading', { level: 1 });
+    expect(hero).toHaveTextContent(
+      'Uyda tayyorlangan catering, qoʻl mehnati va dizayn, bitta joyda',
+    );
+    const catalog = screen.getByRole('region', { name: 'Katalog' });
+    expect(hero.compareDocumentPosition(catalog) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(catalog).toHaveAttribute('id', 'katalog');
+    expect(screen.getByRole('link', { name: /Katalogga oʻtish/ })).toHaveAttribute(
+      'href',
+      '/#katalog',
+    );
+    expect(screen.getByRole('link', { name: 'Catering soʻrovi' })).toHaveAttribute(
+      'href',
+      '/#catering-sorov',
+    );
+  });
+
+  it('scrolls to the catalog in place instead of navigating', () => {
+    const scrollIntoView = vi.fn();
+    Element.prototype.scrollIntoView = scrollIntoView;
+    renderHome();
+    fireEvent.click(screen.getByRole('link', { name: /Katalogga oʻtish/ }));
+    expect(scrollIntoView).toHaveBeenCalledWith({ behavior: 'smooth', block: 'start' });
+  });
+
+  it('shows search, the four categories and the become-worker call to action', async () => {
     renderHome();
     expect(screen.getByRole('search')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Tikuvchilik/ })).toHaveAttribute(

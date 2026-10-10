@@ -27,6 +27,7 @@ test.describe('accessibility (axe, WCAG 2.1 AA)', () => {
       const productId = await publishedProductId(request);
       for (const route of [
         '/',
+        '/catering',
         '/xizmatlar/tikuvchilik',
         `/mahsulot/${productId}`,
         '/kirish',
