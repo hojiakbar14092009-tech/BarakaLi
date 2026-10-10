@@ -28,7 +28,13 @@ Vercel loyihasida **Storage → Create Database → Neon (Postgres)** ni tanlang
 4. **Deploy**. Birinchi so'rov (masalan bosh sahifa ochilishi) migratsiya va namuna ma'lumotlarni yaratadi,
    shuning uchun u 3–5 soniya sekinroq bo'lishi mumkin.
 
-## 3. Tekshiruv
+## 3. Admin sifatida kirish
+
+`ADMIN_PHONES` dagi raqam bilan kirishda tasdiqlash kodi **ekranda ko'rsatilmaydi** (aks holda `EXPOSE_SMS_CODE=true`
+bilan istalgan kishi admin bo'lib kira olardi). SMS shlyuzi ulanmaguncha kodni Vercel → Logs dan oling
+(`Administrator sign-in code issued`): u 5 daqiqa amal qiladi va bir marta ishlaydi.
+
+## 4. Tekshiruv
 
 - `https://<loyiha>.vercel.app/api/health` → `{"status":"ok"}`
 - Bosh sahifada 4 ta hunarmand ko'rinishi kerak (`SEED_SAMPLE_DATA=true` bo'lsa).
@@ -39,5 +45,18 @@ Vercel loyihasida **Storage → Create Database → Neon (Postgres)** ni tanlang
 - Funksiya so'rov tanasi 4,5 MB bilan cheklangan (Vercel). Rasmlar brauzerda kichraytirilib yuboriladi;
   `.glb` fayl amalda 4,5 MB gacha. S3-mos `StorageProvider` (to'g'ridan-to'g'ri yuklash) TODO'da.
 - Rate limit xotirada (har instansiya alohida); SMS kodi so'rovlari esa DB orqali ham cheklanadi.
-- Maxfiylik: shaxsiy ma'lumotlarni mamlakat ichidagi serverda saqlash talab qilinishi mumkin. Kod
-  konkret provayderga bog'lanmagan (faqat `DATABASE_URL`), shuning uchun bazani boshqa hostingga ko'chirish mumkin.
+- Maxfiylik: shaxsiy ma'lumotlarni mamlakat ichidagi serverda saqlash talab qilinishi mumkin (quyida).
+- Migratsiya `btree_gist` va `pg_trgm` kengaytmalarini yaratadi: ma'lumotlar bazasi foydalanuvchisiga
+  `CREATE EXTENSION` ruxsati kerak (Neon, Supabase va oddiy PostgreSQL 13+ da mavjud).
+
+## Mamlakat ichidagi hosting (13.17-band)
+
+Kod konkret provayderga bog'lanmagan: faqat `DATABASE_URL` (PostgreSQL 13+) va Node.js 20+ kerak.
+Shaxsiy ma'lumotlar mamlakat ichida turishi shart bo'lsa:
+
+1. Mamlakat ichidagi VPS yoki PaaS'da PostgreSQL 13+ ni ishga tushiring (`btree_gist`, `pg_trgm` yoqilgan).
+2. Shu serverda: `pnpm install --frozen-lockfile`, `pnpm --filter @barakali/web build`, so'ng
+   `pnpm --filter @barakali/api start` (API va migratsiya; `DATABASE_URL`, JWT sirlari, `ALLOWED_ORIGINS`).
+3. `apps/web/dist` papkasini Nginx/Caddy orqali bering va `/api` ni API portiga (3001) yo'naltiring.
+   Bu rejimda `JobQueue` doimiy ishlaydi (to'lanmagan buyurtmalarni bekor qilish va qaytarish).
+4. Fayllar hozircha bazada saqlanadi (`StorageProvider`), shuning uchun alohida obyekt ombori kerak emas.

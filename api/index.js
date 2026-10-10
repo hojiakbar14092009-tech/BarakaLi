@@ -73081,8 +73081,21 @@ var AuthService = class {
     );
     await this.ctx.sms.send(phone, code);
     const response = { expiresInSeconds: SMS_CODE_TTL_MINUTES * 60 };
-    if (this.ctx.config.exposeSmsCode) response.code = code;
+    if (this.ctx.config.exposeSmsCode && !this.withholdFromResponse(phone, code)) {
+      response.code = code;
+    }
     return response;
+  }
+  /**
+   * The exposed-code preview mode would let anyone sign in as an administrator, so codes for
+   * ADMIN_PHONES numbers are never put in a response (only NODE_ENV=test may). Without an SMS
+   * gateway the administrator reads the one-time code from the server log instead.
+   */
+  withholdFromResponse(phone, code) {
+    const { adminPhones, nodeEnv } = this.ctx.config;
+    if (!adminPhones.includes(phone) || nodeEnv === "test") return false;
+    logger.info("Administrator sign-in code issued", { code });
+    return true;
   }
   async verifyCode(input) {
     await this.checkCode(input.phone, input.code);

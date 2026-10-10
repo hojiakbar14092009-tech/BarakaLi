@@ -108,6 +108,24 @@ describe('SMS login', () => {
     expect(res.body.user.role).toBe('admin');
   });
 
+  it('never returns the code of an ADMIN_PHONES number, even when codes are exposed', async () => {
+    const preview = await createTestApp({
+      NODE_ENV: 'development',
+      EXPOSE_SMS_CODE: 'true',
+      ADMIN_PHONES: '+998909999998',
+    });
+    const admin = await request(preview.app)
+      .post('/api/auth/request-code')
+      .send({ phone: '+998909999998' });
+    expect(admin.status).toBe(200);
+    expect(admin.body.code).toBeUndefined();
+    const other = await request(preview.app)
+      .post('/api/auth/request-code')
+      .send({ phone: nextPhone() });
+    expect(other.body.code).toMatch(/^\d{6}$/);
+    await preview.close();
+  });
+
   it('hides the code from the response unless the deployment exposes it', async () => {
     const hidden = await createTestApp({ EXPOSE_SMS_CODE: 'false' });
     const res = await request(hidden.app)
