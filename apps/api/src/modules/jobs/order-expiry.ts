@@ -38,8 +38,9 @@ export async function expireUnpaidOrders(db: Db, now: Date): Promise<number> {
 }
 
 /**
- * Paid orders the worker neither accepted nor rejected within 24 hours are refunded. `updated_at`
- * of a `new` order is the moment it was paid, because `new` is only entered through payment.
+ * Orders the worker neither accepted nor rejected within 24 hours are closed: paid product orders
+ * are refunded, free service requests are cancelled (which frees their slot). `updated_at` of a
+ * `new` order is the moment it was paid or requested, because `new` is only entered once.
  */
 export async function refundUnacceptedOrders(ctx: AppContext, now: Date): Promise<number> {
   const cutoff = new Date(now.getTime() - WORKER_ACCEPT_TTL_HOURS * HOUR_MS);
@@ -70,16 +71,18 @@ async function refundOne(ctx: AppContext, id: string, cutoff: Date, now: Date): 
   return ctx.db.transaction().execute(async (trx) => {
     const order = await trx
       .selectFrom('orders')
-      .select(['status', 'updated_at'])
+      .select(['status', 'updated_at', 'type', 'worker_amount'])
       .where('id', '=', id)
       .forUpdate()
       .executeTakeFirst();
     // The worker may have answered between the scan and the lock.
     if (!order || order.status !== 'new' || order.updated_at >= cutoff) return 0;
-    await refundPaidOrder(trx, ctx.payments, id);
+    // Legacy service orders that were paid before payment was removed are still refunded.
+    const free = order.type === 'service' && order.worker_amount === 0;
+    if (!free) await refundPaidOrder(trx, ctx.payments, id);
     await trx
       .updateTable('orders')
-      .set({ status: 'refunded', updated_at: now })
+      .set({ status: free ? 'cancelled' : 'refunded', updated_at: now })
       .where('id', '=', id)
       .execute();
     return 1;

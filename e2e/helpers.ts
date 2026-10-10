@@ -64,18 +64,6 @@ export async function becomeWorker(
   return ((await res.json()) as { workerId: string }).workerId;
 }
 
-export async function setHourlyRate(
-  request: APIRequestContext,
-  account: Account,
-  hourlyRate: number,
-): Promise<void> {
-  const res = await request.put('/api/my/hourly-rate', {
-    headers: auth(account),
-    data: { hourlyRate },
-  });
-  expect(res.ok()).toBe(true);
-}
-
 /** Adds a window that starts `daysAhead` days from now at a whole UTC hour. */
 export async function addWindow(
   request: APIRequestContext,

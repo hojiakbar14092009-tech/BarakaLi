@@ -4,7 +4,7 @@ Bu ro'yxat `CLAUDE.md` dagi bosqichlardan MVP'ga kirmagan qismlarni o'z ichiga o
 
 ## 8-bosqich: frontend qoldig'i
 
-- [x] Hunarmand kalendar sahifasi (boʻsh vaqt, band vaqtlar, soatlik narx)
+- [x] Hunarmand kalendar sahifasi (boʻsh vaqt, band vaqtlar)
 - [x] Buyurtma sahifasida xizmat tafsilotlari (vaqt, tavsif, muddat, rasmlar), toʻlov muddati va bekor/qaytarilgan eslatmalari
 - [x] 360 / 768 / 1280 px da gorizontal scroll va 48 px tekshiruvi (Playwright)
 

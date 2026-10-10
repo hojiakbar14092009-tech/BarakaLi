@@ -19,7 +19,7 @@
   "productsCount": "Количество работ: {{count}}",
   "wholesaleFrom": "от {{qty}} шт.: {{price}}",
   "inStock": "В наличии: {{count}}",
-  "orderService": "Заказать услугу",
+  "orderService": "Записаться",
   "reviewsTitle": "Отзывы ({{count}})",
   "customer": "Заказчик"
 }

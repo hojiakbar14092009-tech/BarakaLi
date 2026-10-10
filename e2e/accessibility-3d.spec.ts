@@ -7,7 +7,6 @@ import {
   becomeWorker,
   publishedProductId,
   productWithModelId,
-  setHourlyRate,
   signIn,
 } from './helpers';
 import { translator } from './i18n';
@@ -45,7 +44,6 @@ test.describe('accessibility (axe, WCAG 2.1 AA)', () => {
     await page.setViewportSize({ width: 390, height: 844 });
     const worker = await signIn(context, 'Axe Usta');
     const workerId = await becomeWorker(context.request, worker, 'Axe Usta');
-    await setHourlyRate(context.request, worker, 40_000);
     await addWindow(context.request, worker, 3);
     for (const route of [
       '/hunarmand/panel',

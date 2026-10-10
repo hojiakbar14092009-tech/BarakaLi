@@ -13,7 +13,7 @@ umumiy zod sxemalari va konstantalar (`packages/shared`). To'liq reja: [CLAUDE.m
 - Mahsulot sahifasi: dona va ulgurji narx (hisoblash serverda), zaxira, 3D ko'rinish (faqat 3D tab ochilganda yuklanadi, WebGL yo'q bo'lsa rasmlarga qaytadi)
 - Telefon + SMS kod orqali kirish (parolsiz), aylantiriladigan refresh token
 - Hunarmand kabineti: mahsulot qo'shish/tahrirlash, rasm (kameradan ham), `.glb` model, zaxira, daromad va jamg'arma maqsadi
-- Ish kalendari: bo'sh vaqt (Ertalab / Tushlik / Kechqurun), soatlik narx; xizmat buyurtmasi (tavsif, muddat, ≤ 5 rasm, slot tanlash). Slot to'qnashuvi DB darajasida bloklanadi
+- Ish kalendari: bo'sh vaqt (Ertalab / Tushlik / Kechqurun), xizmat buyurtmasi (tavsif, muddat, ≤ 5 rasm, slot tanlash) to'lovsiz: vaqt va aloqa uchun. Slot to'qnashuvi DB darajasida bloklanadi
 - Savat, buyurtma, to'lov (platformaning o'z to'lov sahifasi), buyurtma holatlari, 2% komissiya va daromad
 - To'lanmagan buyurtma 15 daqiqada bekor bo'ladi; 24 soatda qabul qilinmasa pul avtomatik qaytariladi
 - Sharh (bir marta, reytingni yangilaydi) va shikoyat; hunarmand profilida sharhlar

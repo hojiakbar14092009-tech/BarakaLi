@@ -1,9 +1,6 @@
 {
   "title": "Xizmat buyurtmasi",
   "with": "Hunarmand: {{name}}",
-  "rate": "soatiga {{price}}",
-  "noService": "Bu hunarmand hozircha xizmat buyurtmasini qabul qilmaydi",
-  "noServiceHint": "Uning tayyor mahsulotlarini profil sahifasidan koʻrishingiz mumkin.",
   "slotTitle": "Vaqtni tanlang",
   "hours": "Ish davomiyligi",
   "hoursOption": "{{count}} soat",
@@ -20,6 +17,6 @@
   "removePhoto": "Rasmni olib tashlash",
   "addPhoto": "Rasm qoʻshish",
   "uploading": "Yuklanmoqda…",
-  "total": "Jami",
-  "submit": "Buyurtma berish va toʻlash"
+  "submit": "Buyurtma berish",
+  "noPayment": "Bu buyurtma uchun toʻlov yoʻq. Hunarmand qabul qilgach, ish va narxni u bilan telefon orqali kelishasiz."
 }

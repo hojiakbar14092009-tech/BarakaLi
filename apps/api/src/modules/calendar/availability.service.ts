@@ -103,23 +103,4 @@ export class AvailabilityService {
       .executeTakeFirst();
     if (Number(result.numDeletedRows) !== 1) throw AppError.notFound();
   }
-
-  async setHourlyRate(workerId: string, hourlyRate: number | null): Promise<number | null> {
-    await this.ctx.db
-      .updateTable('workers')
-      .set({ hourly_rate: hourlyRate })
-      .where('id', '=', workerId)
-      .execute();
-    this.ctx.cache.delete('workers:featured');
-    return hourlyRate;
-  }
-
-  async hourlyRate(workerId: string): Promise<number | null> {
-    const row = await this.ctx.db
-      .selectFrom('workers')
-      .select('hourly_rate')
-      .where('id', '=', workerId)
-      .executeTakeFirst();
-    return row?.hourly_rate == null ? null : Number(row.hourly_rate);
-  }
 }

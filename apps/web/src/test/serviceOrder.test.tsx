@@ -45,7 +45,6 @@ function mockApi(extra: Record<string, () => Promise<Response>> = {}) {
         rating: 5,
         reviewsCount: 1,
         isVerified: true,
-        hourlyRate: 40_000,
         minPrice: null,
         productsCount: 0,
       });
@@ -64,7 +63,7 @@ function renderPage(ui: React.ReactElement, path: string) {
         <Routes>
           <Route path="/buyurtma/yangi" element={ui} />
           <Route path="/hunarmand/kalendar" element={ui} />
-          <Route path="/tolov/:id" element={<p>Toʻlov sahifasi</p>} />
+          <Route path="/buyurtmalar/:id" element={<p>Buyurtma sahifasi</p>} />
         </Routes>
       </MemoryRouter>
     </QueryClientProvider>,
@@ -89,15 +88,17 @@ describe('new service order page', () => {
       expect(button.className).toContain('min-h-12');
     }
 
-    const submit = screen.getByRole('button', { name: /Buyurtma berish va toʻlash/ });
+    const submit = screen.getByRole('button', { name: /^Buyurtma berish$/ });
     expect(submit).toBeDisabled();
     fireEvent.click(screen.getByRole('button', { name: '11:00' }));
     fireEvent.change(screen.getByLabelText(/Nima kerak/), { target: { value: 'Koʻylak tikish' } });
     expect(submit).toBeEnabled();
-    expect(screen.getByText(/40 000 soʻm/, { selector: 'dd' })).toBeInTheDocument();
+    // Nothing to pay: the page says so and shows no price.
+    expect(screen.getByText(/toʻlov yoʻq/)).toBeInTheDocument();
+    expect(screen.queryByText(/soʻm/)).not.toBeInTheDocument();
     fireEvent.click(submit);
 
-    expect(await screen.findByText('Toʻlov sahifasi')).toBeInTheDocument();
+    expect(await screen.findByText('Buyurtma sahifasi')).toBeInTheDocument();
     const call = fetchMock.mock.calls.find(([url]) => String(url).endsWith('/orders/service'));
     const body = JSON.parse(String((call?.[1] as RequestInit).body)) as Record<string, unknown>;
     expect(body).toMatchObject({
@@ -115,7 +116,7 @@ describe('new service order page', () => {
     renderPage(<NewServiceOrderPage />, `/buyurtma/yangi?hunarmand=${WORKER}`);
     fireEvent.click(await screen.findByRole('button', { name: '10:00' }));
     fireEvent.change(screen.getByLabelText(/Nima kerak/), { target: { value: 'Koʻylak' } });
-    fireEvent.click(screen.getByRole('button', { name: /Buyurtma berish va toʻlash/ }));
+    fireEvent.click(screen.getByRole('button', { name: /^Buyurtma berish$/ }));
     expect(await screen.findByText(/Bu vaqt band/)).toBeInTheDocument();
   });
 
@@ -131,9 +132,11 @@ describe('new service order page', () => {
 describe('worker calendar page', () => {
   it('fills the hours from a quick button and posts a Tashkent-time window', async () => {
     const fetchMock = mockApi({
-      '/my/availability': () => jsonResponse({ windows: [], booked: [], hourlyRate: null }),
+      '/my/availability': () => jsonResponse({ windows: [], booked: [] }),
     });
     renderPage(<CalendarPage />, '/hunarmand/kalendar');
+    expect(await screen.findByRole('heading', { level: 1 })).toBeInTheDocument();
+    expect(screen.queryByLabelText(/narx/i)).not.toBeInTheDocument();
 
     fireEvent.click(await screen.findByRole('button', { name: 'Kechqurun' }));
     fireEvent.change(screen.getByLabelText('Kun'), { target: { value: day } });

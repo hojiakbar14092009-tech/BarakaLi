@@ -30,7 +30,6 @@ export interface WorkersTable {
   rating: Generated<number>;
   reviews_count: Generated<number>;
   is_verified: Generated<boolean>;
-  hourly_rate: number | null;
   created_at: CreatedAt;
 }
 

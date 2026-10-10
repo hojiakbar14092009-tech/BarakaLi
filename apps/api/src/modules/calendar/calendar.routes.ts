@@ -1,5 +1,5 @@
 import { Router, type Request } from 'express';
-import { availabilityInputSchema, hourlyRateSchema } from '@barakali/shared';
+import { availabilityInputSchema } from '@barakali/shared';
 import type { AppContext } from '../../context.js';
 import { AppError } from '../../errors.js';
 import { createAuthMiddleware } from '../../middleware/auth.js';
@@ -26,10 +26,7 @@ export function createCalendarRouter(ctx: AppContext): Router {
   });
 
   router.get('/my/availability', requireWorker, async (req, res) => {
-    res.json({
-      ...(await service.read(workerId(req))),
-      hourlyRate: await service.hourlyRate(workerId(req)),
-    });
+    res.json(await service.read(workerId(req)));
   });
 
   router.post('/my/availability', requireWorker, async (req, res) => {
@@ -40,11 +37,6 @@ export function createCalendarRouter(ctx: AppContext): Router {
   router.delete('/my/availability/:id', requireWorker, async (req, res) => {
     await service.remove(workerId(req), idParam(req));
     res.status(204).end();
-  });
-
-  router.put('/my/hourly-rate', requireWorker, async (req, res) => {
-    const { hourlyRate } = hourlyRateSchema.parse(req.body);
-    res.json({ hourlyRate: await service.setHourlyRate(workerId(req), hourlyRate) });
   });
 
   return router;

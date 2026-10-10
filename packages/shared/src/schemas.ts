@@ -156,8 +156,6 @@ export const availabilityInputSchema = z.object({
 });
 export type AvailabilityInput = z.infer<typeof availabilityInputSchema>;
 
-export const hourlyRateSchema = z.object({ hourlyRate: moneySchema.nullable() });
-
 export const createServiceOrderSchema = z.object({
   workerId: z.string().uuid(),
   description: z.string().trim().min(MIN_NAME_LENGTH).max(MAX_ORDER_DESCRIPTION_LENGTH),

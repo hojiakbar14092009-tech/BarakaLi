@@ -13,7 +13,7 @@ export type OrderStatus = (typeof ORDER_STATUSES)[number];
 export const ORDER_STATUS_TRANSITIONS: Record<OrderStatus, readonly OrderStatus[]> = {
   awaiting_payment: ['new', 'cancelled'],
   // `refunded` from a started order is reachable only through the admin refund (complaints).
-  new: ['accepted', 'refunded'],
+  new: ['accepted', 'refunded', 'cancelled'],
   accepted: ['in_progress', 'refunded'],
   in_progress: ['ready', 'refunded'],
   ready: ['delivered', 'refunded'],

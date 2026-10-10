@@ -1,11 +1,6 @@
 {
   "title": "Ish kalendari",
-  "intro": "Qaysi kun va soatlarda ishlashingizni belgilang. Buyurtmalar faqat shu vaqtga tushadi.",
-  "currentRate": "Soatlik narx: {{price}}",
-  "rateTitle": "Xizmat narxi",
-  "rateLabel": "Bir soat ish narxi (soʻm)",
-  "rateHint": "Xizmat buyurtmalari shu narx boʻyicha hisoblanadi. Boʻsh qoldirsangiz, xizmat buyurtmasi qabul qilinmaydi.",
-  "rateSaved": "Narx saqlandi.",
+  "intro": "Qaysi kun va soatlarda boʻshligingizni belgilang. Buyurtmalar faqat shu vaqtga tushadi.",
   "quick": "Tez tanlash",
   "slots": {
     "morning": "Ertalab",

@@ -75,4 +75,21 @@ describe('commission on the order page', () => {
     expect(await screen.findByText('Platforma komissiyasi (5%)')).toBeInTheDocument();
     expect(screen.getByText('− 7 125 soʻm')).toBeInTheDocument();
   });
+
+  it('shows a free service request without prices, totals or commission', async () => {
+    renderOrder({
+      ...order(0.02, 0, 0),
+      type: 'service',
+      status: 'new',
+      total: 0,
+      paymentStatus: null,
+      startTime: '2030-03-04T05:00:00.000Z',
+      endTime: '2030-03-04T06:00:00.000Z',
+      description: 'Koʻylak tikish',
+    });
+    expect(await screen.findByText('10:00–11:00')).toBeInTheDocument();
+    expect(screen.queryByText(/Platforma komissiyasi/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/soʻm/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/pul qaytariladi/)).not.toBeInTheDocument();
+  });
 });

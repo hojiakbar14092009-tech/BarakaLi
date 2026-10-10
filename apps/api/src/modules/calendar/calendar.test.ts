@@ -11,11 +11,10 @@ import {
   type Session,
   type TestApp,
 } from '../../testing/helpers.js';
-import { expireUnpaidOrders, refundUnacceptedOrders } from '../jobs/order-expiry.js';
+import { refundUnacceptedOrders } from '../jobs/order-expiry.js';
 
 const HOUR_MS = 60 * 60 * 1000;
 const DAY_MS = 24 * HOUR_MS;
-const CARD = { cardNumber: '4242 4242 4242 4242', expiry: '12/40', cvc: '123' };
 
 let t: TestApp;
 let worker: Awaited<ReturnType<typeof makeWorker>>;
@@ -54,17 +53,11 @@ async function bookService(who: Session, start: Date, hours = 1, extra: object =
     });
 }
 
-async function pay(who: Session, orderId: string) {
-  await request(t.app).post(`/api/orders/${orderId}/payment`).set(bearer(who));
-  return request(t.app).post(`/api/orders/${orderId}/payment/confirm`).set(bearer(who)).send(CARD);
-}
-
 beforeAll(async () => {
   t = await createTestApp();
   worker = await makeWorker(t, 'Tikuvchi');
   customer = await login(t.app, undefined, 'Mijoz');
   otherCustomer = await login(t.app, undefined, 'Boshqa mijoz');
-  await request(t.app).put('/api/my/hourly-rate').set(bearer(worker)).send({ hourlyRate: 40_000 });
 });
 afterAll(() => t.close());
 
@@ -77,7 +70,7 @@ describe('availability windows', () => {
 
     const mine = await request(t.app).get('/api/my/availability').set(bearer(worker));
     expect(mine.body.windows).toHaveLength(1);
-    expect(mine.body.hourlyRate).toBe(40_000);
+    expect(mine.body.hourlyRate).toBeUndefined();
 
     const publicView = await request(t.app).get(`/api/workers/${worker.workerId}/availability`);
     expect(publicView.status).toBe(200);
@@ -118,7 +111,7 @@ describe('availability windows', () => {
 });
 
 describe('service orders and slot clashes', () => {
-  it('prices by hourly rate, splits commission and holds the slot', async () => {
+  it('creates a free request for the worker to accept and holds the slot', async () => {
     const start = futureHour(20, 5);
     await addWindow(worker, start, 6);
     const res = await bookService(customer, start, 3, { deadline: '2030-01-01' });
@@ -126,16 +119,17 @@ describe('service orders and slot clashes', () => {
     const order = res.body as OrderDto;
     expect(order).toMatchObject({
       type: 'service',
-      status: 'awaiting_payment',
-      total: 120_000,
-      commission: 2_400,
-      commissionRate: 0.02,
-      workerAmount: 117_600,
+      status: 'new',
+      total: 0,
+      commission: 0,
+      workerAmount: 0,
+      paymentStatus: null,
+      description: 'Koylak tikib berish',
       deadline: '2030-01-01',
       startTime: start.toISOString(),
       endTime: new Date(start.getTime() + 3 * HOUR_MS).toISOString(),
     });
-    expect(order.items).toHaveLength(1);
+    expect(order.items).toHaveLength(0);
 
     const view = await request(t.app).get(`/api/workers/${worker.workerId}/availability`);
     expect((view.body as AvailabilityDto).booked).toContainEqual({
@@ -195,7 +189,7 @@ describe('service orders and slot clashes', () => {
     await expect(t.db.insertInto('orders').values(base).execute()).resolves.toBeDefined();
   });
 
-  it('refuses slots outside the published windows, in the past, or for own/unpriced services', async () => {
+  it('refuses slots outside the published windows, in the past, or or for own services', async () => {
     const start = futureHour(25, 5);
     await addWindow(worker, start, 2);
     const outside = await bookService(customer, new Date(start.getTime() + HOUR_MS), 2);
@@ -209,15 +203,6 @@ describe('service orders and slot clashes', () => {
       hours: 1,
     });
     expect(own.body.error.code).toBe('OWN_SERVICE');
-
-    const unpriced = await makeWorker(t, 'Narxsiz');
-    const noRate = await request(t.app).post('/api/orders/service').set(bearer(customer)).send({
-      workerId: unpriced.workerId,
-      description: 'Tikish',
-      startTime: start.toISOString(),
-      hours: 1,
-    });
-    expect(noRate.body.error.code).toBe('SERVICE_RATE_MISSING');
   });
 
   it('requires sign-in and validates the body', async () => {
@@ -262,42 +247,73 @@ describe('reference photos', () => {
   });
 });
 
-describe('payment, expiry and automatic refund', () => {
+describe('free service requests: no payment, worker answer and 24 hour expiry', () => {
   const config = loadConfig({ NODE_ENV: 'test' });
+  const act = (id: string, action: string) =>
+    request(t.app).post(`/api/orders/${id}/actions`).set(bearer(worker)).send({ action });
 
-  it('pays a service order without touching product stock and lets the worker run it', async () => {
+  it('takes no money: there is nothing to pay and no earnings are recorded', async () => {
     const start = futureHour(35, 5);
     await addWindow(worker, start, 4);
     const order = (await bookService(customer, start, 2)).body as OrderDto;
-    const paid = await pay(customer, order.id);
-    expect(paid.status).toBe(200);
-    expect(paid.body.status).toBe('new');
+    expect(order.status).toBe('new');
+
+    const payment = await request(t.app)
+      .post(`/api/orders/${order.id}/payment`)
+      .set(bearer(customer));
+    expect(payment.status).toBe(409);
+    expect(payment.body.error.code).toBe('ORDER_NOT_PAYABLE');
+    const rows = await t.db
+      .selectFrom('payments')
+      .select('id')
+      .where('order_id', '=', order.id)
+      .execute();
+    expect(rows).toHaveLength(0);
 
     for (const action of ['accept', 'start', 'ready', 'deliver']) {
-      const step = await request(t.app)
-        .post(`/api/orders/${order.id}/actions`)
-        .set(bearer(worker))
-        .send({ action });
-      expect(step.status).toBe(200);
+      expect((await act(order.id, action)).status).toBe(200);
     }
     const earnings = await t.db
       .selectFrom('earnings')
-      .select(['amount', 'commission'])
+      .select('id')
       .where('order_id', '=', order.id)
-      .executeTakeFirstOrThrow();
-    expect(Number(earnings.amount) + Number(earnings.commission)).toBe(80_000);
+      .execute();
+    expect(earnings).toHaveLength(0);
+    const delivered = await request(t.app).get(`/api/orders/${order.id}`).set(bearer(customer));
+    expect(delivered.body).toMatchObject({ status: 'delivered', total: 0, paymentStatus: null });
   });
 
-  it('cancels an unpaid order after 15 minutes and frees the slot', async () => {
+  it('shows the customer the worker phone only after the worker accepts', async () => {
+    const start = futureHour(37, 5);
+    await addWindow(worker, start, 2);
+    const order = (await bookService(customer, start, 1)).body as OrderDto;
+    const before = await request(t.app).get(`/api/orders/${order.id}`).set(bearer(customer));
+    expect(before.body.counterpart.phone).toBeNull();
+    await act(order.id, 'accept');
+    const after = await request(t.app).get(`/api/orders/${order.id}`).set(bearer(customer));
+    expect(after.body.counterpart.phone).toBe(worker.phone);
+  });
+
+  it('cancels (not refunds) a rejected request and frees the slot', async () => {
     const start = futureHour(36, 5);
     await addWindow(worker, start, 2);
     const order = (await bookService(customer, start, 1)).body as OrderDto;
-    await request(t.app).post(`/api/orders/${order.id}/payment`).set(bearer(customer));
+    const rejected = await act(order.id, 'reject');
+    expect(rejected.status).toBe(200);
+    expect(rejected.body.status).toBe('cancelled');
+    expect((await bookService(otherCustomer, start, 1)).status).toBe(201);
+  });
 
-    const soon = new Date(Date.now() + 14 * 60 * 1000);
-    expect(await expireUnpaidOrders(t.db, soon)).toBe(0);
-    const later = new Date(Date.now() + 16 * 60 * 1000);
-    expect(await expireUnpaidOrders(t.db, later)).toBeGreaterThanOrEqual(1);
+  it('cancels a request the worker ignored for 24 hours, but not before', async () => {
+    const start = futureHour(40, 5);
+    await addWindow(worker, start, 2);
+    const order = (await bookService(customer, start, 1)).body as OrderDto;
+    const ctx = buildContext({ db: t.db, config });
+
+    expect(await refundUnacceptedOrders(ctx, new Date(Date.now() + 23 * HOUR_MS))).toBe(0);
+    expect(
+      await refundUnacceptedOrders(ctx, new Date(Date.now() + 25 * HOUR_MS)),
+    ).toBeGreaterThanOrEqual(1);
 
     const row = await t.db
       .selectFrom('orders')
@@ -305,56 +321,31 @@ describe('payment, expiry and automatic refund', () => {
       .where('id', '=', order.id)
       .executeTakeFirstOrThrow();
     expect(row.status).toBe('cancelled');
-    const payment = await t.db
-      .selectFrom('payments')
-      .select('status')
-      .where('order_id', '=', order.id)
-      .executeTakeFirstOrThrow();
-    expect(payment.status).toBe('failed');
-    // The same slot can be booked again straight away.
-    expect((await bookService(otherCustomer, start, 1)).status).toBe(201);
-    // And the cancelled order can no longer be paid.
-    const late = await pay(customer, order.id);
-    expect(late.status).toBe(409);
-  });
-
-  it('refunds a paid order the worker ignored for 24 hours, but not before', async () => {
-    const start = futureHour(40, 5);
-    await addWindow(worker, start, 2);
-    const order = (await bookService(customer, start, 1)).body as OrderDto;
-    await pay(customer, order.id);
-    const ctx = buildContext({ db: t.db, config });
-
-    expect(await refundUnacceptedOrders(ctx, new Date(Date.now() + 23 * HOUR_MS))).toBe(0);
-    expect(await refundUnacceptedOrders(ctx, new Date(Date.now() + 25 * HOUR_MS))).toBe(1);
-
-    const row = await t.db
-      .selectFrom('orders')
-      .select('status')
-      .where('id', '=', order.id)
-      .executeTakeFirstOrThrow();
-    expect(row.status).toBe('refunded');
-    const payment = await t.db
-      .selectFrom('payments')
-      .select('status')
-      .where('order_id', '=', order.id)
-      .executeTakeFirstOrThrow();
-    expect(payment.status).toBe('refunded');
     // Running again changes nothing, and the slot is free once more.
     expect(await refundUnacceptedOrders(ctx, new Date(Date.now() + 26 * HOUR_MS))).toBe(0);
     expect((await bookService(otherCustomer, start, 1)).status).toBe(201);
   });
 
-  it('does not refund an order the worker already accepted', async () => {
+  it('does not cancel a request the worker already accepted', async () => {
     const start = futureHour(41, 5);
     await addWindow(worker, start, 2);
     const order = (await bookService(customer, start, 1)).body as OrderDto;
-    await pay(customer, order.id);
-    await request(t.app)
-      .post(`/api/orders/${order.id}/actions`)
-      .set(bearer(worker))
-      .send({ action: 'accept' });
+    await act(order.id, 'accept');
     const ctx = buildContext({ db: t.db, config });
-    expect(await refundUnacceptedOrders(ctx, new Date(Date.now() + 48 * HOUR_MS))).toBe(0);
+    await refundUnacceptedOrders(ctx, new Date(Date.now() + 48 * HOUR_MS));
+    const row = await t.db
+      .selectFrom('orders')
+      .select('status')
+      .where('id', '=', order.id)
+      .executeTakeFirstOrThrow();
+    expect(row.status).toBe('accepted');
+  });
+
+  it('keeps a worker from rejecting a request that is already in progress', async () => {
+    const start = futureHour(42, 5);
+    await addWindow(worker, start, 2);
+    const order = (await bookService(customer, start, 1)).body as OrderDto;
+    await act(order.id, 'accept');
+    expect((await act(order.id, 'reject')).status).toBe(409);
   });
 });

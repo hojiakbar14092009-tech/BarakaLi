@@ -13,10 +13,9 @@ import {
 } from '@barakali/shared';
 import { Button } from '../../components/Button';
 import { Field, SelectField, TextAreaField } from '../../components/Field';
-import { EmptyState, ErrorState, LoadingState } from '../../components/StateViews';
+import { ErrorState, LoadingState } from '../../components/StateViews';
 import { dayOf, formatDay } from '../../lib/dates';
 import { errorMessage } from '../../lib/errors';
-import { formatPrice } from '../../lib/format';
 import { resizeImage } from '../../lib/resizeImage';
 import { useWorker } from '../catalog/api';
 import { useCreateServiceOrder, useUploadOrderImage, useWorkerAvailability } from '../calendar/api';
@@ -66,15 +65,7 @@ export default function NewServiceOrderPage() {
   if (worker.isError || !worker.data) {
     return <ErrorState message={t('catalog.workerNotFound')} />;
   }
-  const rate = worker.data.hourlyRate;
-  if (rate === null) {
-    return (
-      <EmptyState title={t('serviceOrder.noService')} hint={t('serviceOrder.noServiceHint')} />
-    );
-  }
 
-  const currency = t('common.currency');
-  const total = rate * hours;
   const today = tashkentDay(new Date());
   const draft = {
     workerId,
@@ -98,7 +89,7 @@ export default function NewServiceOrderPage() {
   const submit = () => {
     if (!parsed.success) return;
     create.mutate(parsed.data, {
-      onSuccess: (order) => void navigate(`/tolov/${order.id}`),
+      onSuccess: (order) => void navigate(`/buyurtmalar/${order.id}`),
     });
   };
 
@@ -106,10 +97,7 @@ export default function NewServiceOrderPage() {
     <div className="mx-auto max-w-2xl space-y-5 pb-6">
       <header className="space-y-1">
         <h1 className="text-3xl font-bold">{t('serviceOrder.title')}</h1>
-        <p className="text-mocha">
-          {t('serviceOrder.with', { name: worker.data.displayName })} ·{' '}
-          {t('serviceOrder.rate', { price: formatPrice(rate, currency) })}
-        </p>
+        <p className="text-mocha">{t('serviceOrder.with', { name: worker.data.displayName })}</p>
       </header>
 
       <section
@@ -247,10 +235,7 @@ export default function NewServiceOrderPage() {
       </section>
 
       <section className="space-y-3 rounded-card bg-bisque/60 p-4">
-        <dl className="flex items-baseline justify-between text-lg font-bold">
-          <dt>{t('serviceOrder.total')}</dt>
-          <dd>{formatPrice(total, currency)}</dd>
-        </dl>
+        <p>{t('serviceOrder.noPayment')}</p>
         <Button size="lg" className="w-full" disabled={!canSubmit} onClick={submit}>
           {t('serviceOrder.submit')}
         </Button>

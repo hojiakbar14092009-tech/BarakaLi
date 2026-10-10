@@ -23,6 +23,7 @@ function OrderRow({ order }: { order: OrderDto }) {
     },
   );
   const amount = order.viewerRole === 'worker' ? order.workerAmount : order.total;
+  const hasMoney = order.type === 'product' || order.total > 0;
   return (
     <li>
       <Link
@@ -46,7 +47,9 @@ function OrderRow({ order }: { order: OrderDto }) {
         </p>
         <div className="flex items-center justify-between">
           <span className="text-sm text-mocha">{date}</span>
-          <span className="text-lg font-bold">{formatPrice(amount, t('common.currency'))}</span>
+          {hasMoney && (
+            <span className="text-lg font-bold">{formatPrice(amount, t('common.currency'))}</span>
+          )}
         </div>
       </Link>
     </li>

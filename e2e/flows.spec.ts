@@ -5,7 +5,6 @@ import {
   becomeWorker,
   createPublishedProduct,
   freshPhone,
-  setHourlyRate,
   signIn,
   signInAgain,
 } from './helpers';
@@ -107,12 +106,14 @@ for (const language of ['uz', 'ru'] as const) {
 test.describe('service order flow (uz)', () => {
   const t = translator('uz');
 
-  test('book a free slot from the worker profile and pay', async ({ page, browser }) => {
+  test('book a free slot from the worker profile; no payment, the worker accepts', async ({
+    page,
+    browser,
+  }) => {
     test.setTimeout(120_000);
     const workerContext = await browser.newContext();
     const worker = await signIn(workerContext, 'Tikuvchi Zulfiya');
     const workerId = await becomeWorker(workerContext.request, worker, 'Tikuvchi Zulfiya');
-    await setHourlyRate(workerContext.request, worker, 50_000);
     await addWindow(workerContext.request, worker, 5, 6);
 
     const customer = await signIn(page.context(), 'Mijoz Anvar');
@@ -125,9 +126,18 @@ test.describe('service order flow (uz)', () => {
     await slots.first().click();
     await page.getByLabel(t('serviceOrder.description')).fill('Atlasdan koʻylak tikib bering');
     await page.getByRole('button', { name: t('serviceOrder.submit') }).click();
-    await expect(page).toHaveURL(/\/tolov\//);
-    await payWithCard(page, 'uz');
-    await expect(page.getByRole('heading', { name: t('payment.success') })).toBeVisible();
+    // No payment step: the request lands on the order page and waits for the worker.
+    await expect(page).toHaveURL(/\/buyurtmalar\//);
+    await expect(page.getByText(t('orders.waitingWorker'))).toBeVisible();
+    await expect(page.getByText(/soʻm/)).toHaveCount(0);
+    const orderPath = new URL(page.url()).pathname;
+
+    const workerPage = await workerContext.newPage();
+    await workerPage.goto(orderPath);
+    await workerPage.getByRole('button', { name: t('orders.actions.accept') }).click();
+    await expect(workerPage.getByText(t('orders.status.accepted')).first()).toBeVisible();
+    await page.reload();
+    await expect(page.getByRole('link', { name: new RegExp(t('orders.phone')) })).toBeVisible();
 
     // The booked hour disappears from what the next customer can pick.
     const other = await browser.newContext();

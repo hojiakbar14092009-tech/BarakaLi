@@ -12,7 +12,6 @@ import { expireUnpaidOrders } from '../jobs/order-expiry.js';
 import { OrderRepository } from './order.repository.js';
 
 const HOUR_MS = 60 * 60 * 1000;
-const TITLE_SNAPSHOT_LENGTH = 120;
 const IMAGE_CONTENT_TYPE = 'image/webp';
 
 export class ServiceOrderService {
@@ -26,9 +25,10 @@ export class ServiceOrderService {
   }
 
   /**
-   * Books a slot, prices it by the worker's hourly rate and stores the order, its line and its
-   * photos in one transaction. A clash with another booking is rejected by the database
-   * constraint itself, so two simultaneous customers cannot both get the slot.
+   * Books a slot and stores the request with its photos in one transaction. A service order carries
+   * no money: it goes straight to `new` for the worker to accept, and the two sides agree the work
+   * and its price by phone once the order is accepted. A clash with another booking is rejected by
+   * the database constraint itself, so two simultaneous customers cannot both get the slot.
    */
   async create(customerId: string, input: CreateServiceOrderInput): Promise<OrderDto> {
     const now = this.now();
@@ -39,17 +39,15 @@ export class ServiceOrderService {
     await expireUnpaidOrders(this.ctx.db, now);
     const worker = await this.ctx.db
       .selectFrom('workers')
-      .select(['id', 'user_id', 'hourly_rate'])
+      .select(['id', 'user_id'])
       .where('id', '=', input.workerId)
       .executeTakeFirst();
     if (!worker) throw AppError.notFound();
     if (worker.user_id === customerId) throw AppError.badRequest('OWN_SERVICE');
-    if (worker.hourly_rate === null) throw AppError.badRequest('SERVICE_RATE_MISSING');
     await this.assertInsideAvailability(worker.id, start, end);
     await this.assertImagesStored(input.imageUrls);
 
-    const rate = Number(worker.hourly_rate);
-    const split = splitOrderAmount(rate * input.hours);
+    const split = splitOrderAmount(0);
     try {
       const orderId = await this.ctx.db.transaction().execute(async (trx) => {
         const order = await trx
@@ -58,6 +56,7 @@ export class ServiceOrderService {
             type: 'service',
             customer_id: customerId,
             worker_id: worker.id,
+            status: 'new',
             total: split.total,
             commission_amount: split.commission,
             commission_rate: split.commissionRate,
@@ -72,17 +71,6 @@ export class ServiceOrderService {
           })
           .returning('id')
           .executeTakeFirstOrThrow();
-        await trx
-          .insertInto('order_items')
-          .values({
-            order_id: order.id,
-            product_id: null,
-            title_snapshot: input.description.slice(0, TITLE_SNAPSHOT_LENGTH),
-            unit_price: rate,
-            quantity: input.hours,
-            price_type: 'retail',
-          })
-          .execute();
         if (input.imageUrls.length > 0) {
           await trx
             .insertInto('order_images')

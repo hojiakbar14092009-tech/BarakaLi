@@ -64,9 +64,8 @@ Brifdagi noaniqliklar bo'yicha qabul qilingan qarorlar. Yangi qaror oxiriga qo's
 
 ## Kalendar va xizmat buyurtmalari
 
-- **Xizmat narxi:** alohida xizmatlar jadvali yoʻq; hunarmand bir soatlik narxni (`workers.hourly_rate`)
-  belgilaydi, xizmat buyurtmasi summasi = narx × soat. Narx boʻsh boʻlsa, xizmat buyurtmasi qabul
-  qilinmaydi (`SERVICE_RATE_MISSING`). Buyurtma qatori `order_items` da saqlanadi (miqdor = soat).
+- **Xizmat narxi:** _(bekor qilingan, pastdagi "Xizmat buyurtmasi to'lovsiz" bo'limiga qarang)_ dastlab
+  hunarmand soatlik narxni belgilagan edi.
 - **Boʻsh vaqt:** `availability` jadvali, bir hunarmandning oraliqlari bir-biri bilan kesishmaydi
   (exclusion constraint). Oraliq kelajakda, 16 soatgacha va 60 kun ichida boʻlishi shart.
   Tez tugmalar: Ertalab 08–12, Tushlik 12–15, Kechqurun 17–21 (`QUICK_SLOTS`).
@@ -85,6 +84,21 @@ Brifdagi noaniqliklar bo'yicha qabul qilingan qarorlar. Yangi qaror oxiriga qo's
   tozalanadi.
 - **24 soatlik qaytarish:** `new` holatida 24 soatdan oshgan buyurtma avtomatik `refunded` boʻladi,
   toʻlov provayder orqali qaytariladi va zaxira tiklanadi (bitta tranzaksiya).
+
+## Xizmat buyurtmasi to'lovsiz (2026-10-10)
+
+- **Soatlik narx olib tashlandi:** `workers.hourly_rate` ustuni (migratsiya `1760000500000`), `PUT
+/my/hourly-rate`, `hourlyRate` maydonlari, `SERVICE_RATE_MISSING` kodi va kalendardagi narx formasi
+  yoʻq. Kalendar faqat boʻsh vaqtni (kun, dan, gacha) belgilaydi.
+- **Pul yechilmaydi:** xizmat buyurtmasi `new` holatda yaratiladi (`total = 0`, komissiya 0, `order_items`
+  va `payments` yozuvi yoʻq). Slot yaratilgan zahoti band boʻladi (exclusion constraint `new` ni ham
+  qamraydi). Buyurtma faqat vaqt va aloqa uchun: hunarmand qabul qilgach telefon ochiladi, ish va narx
+  telefon orqali kelishiladi.
+- **Holatlar:** `new → accepted → in_progress → ready → delivered` oʻzgarmadi. Hunarmand rad etsa yoki
+  24 soatda javob bermasa xizmat buyurtmasi `cancelled` boʻladi (qaytariladigan pul yoʻq, slot boʻshaydi);
+  mahsulot buyurtmalari avvalgidek `refunded`. Topshirilganda daromad yozuvi yaratilmaydi.
+- **Eski ma'lumotlar:** narx bilan yaratilgan xizmat buyurtmalari oʻz summasi, toʻlovi va daromadi bilan
+  oʻzgarmasdan qoladi (toʻlangan eski buyurtma muddati oʻtsa hamon qaytariladi).
 
 ## Brauzer testlari va moslashuvchanlik
 

@@ -6,7 +6,6 @@ import {
   becomeWorker,
   hasHorizontalScroll,
   publishedProductId,
-  setHourlyRate,
   signIn,
 } from './helpers';
 
@@ -65,7 +64,6 @@ for (const viewport of VIEWPORTS) {
     }) => {
       const worker = await signIn(context, 'Mahsus Usta');
       const workerId = await becomeWorker(context.request, worker, 'Mahsus Usta');
-      await setHourlyRate(context.request, worker, 40_000);
       await addWindow(context.request, worker, 4);
 
       for (const route of [

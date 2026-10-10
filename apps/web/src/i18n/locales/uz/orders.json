@@ -73,7 +73,7 @@
     }
   },
   "payWithin": "Buyurtma {{minutes}} daqiqa ichida toʻlanmasa, tanlangan vaqt boʻshatiladi.",
-  "cancelledNote": "Buyurtma {{minutes}} daqiqa ichida toʻlanmagani uchun bekor qilindi. Kerak boʻlsa, qaytadan buyurtma bering.",
+  "cancelledNote": "Buyurtma bekor qilindi: unga javob berilmadi yoki toʻlov muddati oʻtdi. Kerak boʻlsa, qaytadan buyurtma bering.",
   "refundedNote": "Buyurtma bajarilmadi, toʻlov qaytarildi. Hunarmand {{hours}} soat ichida qabul qilmagan yoki rad etgan boʻlishi mumkin.",
   "service": {
     "title": "Xizmat tafsilotlari",

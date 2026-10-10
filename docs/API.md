@@ -91,7 +91,6 @@ interface WorkerSummaryDto {
   rating: number;
   reviewsCount: number;
   isVerified: boolean;
-  hourlyRate: number | null; // xizmat buyurtmasi narxi (soatiga), null — xizmat qabul qilinmaydi
   minPrice: number | null;
   productsCount: number;
 }
@@ -159,14 +158,15 @@ faqat ruxsat etilgan kengaytmalar. Xato kodlari: `MODEL_TOO_LARGE`, `MODEL_INVAL
 `MODEL_INVALID_CONTENT`, `MODEL_LIMIT_EXCEEDED`; rasm: `IMAGE_TOO_LARGE`, `IMAGE_INVALID_FORMAT`,
 `IMAGE_LIMIT_REACHED`.
 
-## Hunarmand: kalendar va xizmat narxi
+## Hunarmand: kalendar
 
-| Yo'l                          | So'rov                           | Javob                                              |
-| ----------------------------- | -------------------------------- | -------------------------------------------------- |
-| `GET /my/availability`        | —                                | `AvailabilityDto & { hourlyRate: number \| null }` |
-| `POST /my/availability`       | `{ startTime, endTime }` (ISO)   | 201 `{ id, startTime, endTime }`                   |
-| `DELETE /my/availability/:id` | —                                | 204 (mavjud buyurtmalarga ta'sir qilmaydi)         |
-| `PUT /my/hourly-rate`         | `{ hourlyRate: number \| null }` | `{ hourlyRate }`                                   |
+Kalendar faqat bo'sh vaqtni (kun, dan, gacha) belgilaydi; xizmat narxi yo'q.
+
+| Yo'l                          | So'rov                         | Javob                                      |
+| ----------------------------- | ------------------------------ | ------------------------------------------ |
+| `GET /my/availability`        | —                              | `AvailabilityDto`                          |
+| `POST /my/availability`       | `{ startTime, endTime }` (ISO) | 201 `{ id, startTime, endTime }`           |
+| `DELETE /my/availability/:id` | —                              | 204 (mavjud buyurtmalarga ta'sir qilmaydi) |
 
 Oraliq kelajakda, ≤ 16 soat, ≤ 60 kun ichida bo'lishi shart (`AVAILABILITY_INVALID`); bir hunarmandning
 oraliqlari kesishmaydi (409 `AVAILABILITY_OVERLAP`, DB exclusion constraint).
@@ -280,7 +280,7 @@ loglanmaydi. To'lanmagan buyurtma 15 daqiqada `cancelled`; hunarmand 24 soatda q
 qaytarish (`refunded`).
 
 **Xizmat buyurtmasi xatolari.** `ORDER_SLOT_TAKEN` (409, DB constraint), `SLOT_OUTSIDE_AVAILABILITY` (409),
-`SLOT_IN_PAST` (400), `SERVICE_RATE_MISSING` (400), `OWN_SERVICE` (400), `ORDER_IMAGE_INVALID` (400).
+`SLOT_IN_PAST` (400), `OWN_SERVICE` (400), `ORDER_IMAGE_INVALID` (400).
 
 ## Hunarmand: materiallar va jamg'arma
 

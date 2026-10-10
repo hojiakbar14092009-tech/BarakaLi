@@ -53,8 +53,6 @@ export interface WorkerSummaryDto {
   rating: number;
   reviewsCount: number;
   isVerified: boolean;
-  /** Price of one hour of service work; null while the worker takes no service orders. */
-  hourlyRate: number | null;
   minPrice: number | null;
   productsCount: number;
 }

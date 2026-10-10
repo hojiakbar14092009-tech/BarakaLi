@@ -8,16 +8,12 @@ import type {
 } from '@barakali/shared';
 import { apiRequest } from '../../lib/api';
 
-export interface MyAvailabilityDto extends AvailabilityDto {
-  hourlyRate: number | null;
-}
-
 const MY_AVAILABILITY = ['my-availability'] as const;
 
 export function useMyAvailability() {
   return useQuery({
     queryKey: MY_AVAILABILITY,
-    queryFn: () => apiRequest<MyAvailabilityDto>('/my/availability', { auth: true }),
+    queryFn: () => apiRequest<AvailabilityDto>('/my/availability', { auth: true }),
   });
 }
 
@@ -49,23 +45,6 @@ export function useRemoveWindow() {
     mutationFn: (id: string) =>
       apiRequest<void>(`/my/availability/${id}`, { method: 'DELETE', auth: true }),
     onSuccess: () => client.invalidateQueries({ queryKey: MY_AVAILABILITY }),
-  });
-}
-
-export function useSetHourlyRate() {
-  const client = useQueryClient();
-  return useMutation({
-    mutationFn: (hourlyRate: number | null) =>
-      apiRequest<{ hourlyRate: number | null }>('/my/hourly-rate', {
-        method: 'PUT',
-        body: { hourlyRate },
-        auth: true,
-      }),
-    onSuccess: () => {
-      void client.invalidateQueries({ queryKey: MY_AVAILABILITY });
-      void client.invalidateQueries({ queryKey: ['worker'] });
-      void client.invalidateQueries({ queryKey: ['workers'] });
-    },
   });
 }
 

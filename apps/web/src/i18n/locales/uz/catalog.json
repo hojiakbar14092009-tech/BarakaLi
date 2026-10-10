@@ -19,7 +19,7 @@
   "productsCount": "Ishlar soni: {{count}}",
   "wholesaleFrom": "{{qty}} dona: {{price}}",
   "inStock": "Zaxirada: {{count}}",
-  "orderService": "Xizmatga buyurtma berish",
+  "orderService": "Vaqtni band qilish",
   "reviewsTitle": "Sharhlar ({{count}})",
   "customer": "Buyurtmachi"
 }

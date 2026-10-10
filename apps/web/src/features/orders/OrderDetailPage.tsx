@@ -80,7 +80,7 @@ function WorkerActions({ order }: { order: OrderDto }) {
           >
             {t('orders.actions.reject')}
           </Button>
-          <p className="text-sm text-mocha">{t('orders.rejectHint')}</p>
+          {order.total > 0 && <p className="text-sm text-mocha">{t('orders.rejectHint')}</p>}
         </>
       )}
       {mutation.isError && (
@@ -106,6 +106,8 @@ export default function OrderDetailPage() {
   const order = query.data;
   const currency = t('common.currency');
   const isWorker = order.viewerRole === 'worker';
+  // Service requests carry no price, so the items and totals block would only show zeros.
+  const hasMoney = order.type === 'product' || order.total > 0;
   const date = new Date(order.createdAt).toLocaleString(
     i18n.language === 'ru' ? 'ru-RU' : 'uz-UZ',
     {
@@ -136,9 +138,7 @@ export default function OrderDetailPage() {
         </div>
       )}
       {order.status === 'cancelled' && (
-        <p className="rounded-field bg-bisque px-4 py-3">
-          {t('orders.cancelledNote', { minutes: UNPAID_ORDER_TTL_MINUTES })}
-        </p>
+        <p className="rounded-field bg-bisque px-4 py-3">{t('orders.cancelledNote')}</p>
       )}
       {order.status === 'refunded' && (
         <p className="rounded-field bg-bisque px-4 py-3">
@@ -152,50 +152,52 @@ export default function OrderDetailPage() {
 
       <ServiceDetails order={order} />
 
-      <section
-        aria-labelledby="order-items"
-        className="space-y-2 rounded-card border border-bisque bg-white/60 p-4"
-      >
-        <h2 id="order-items" className="font-bold">
-          {t('orders.items')}
-        </h2>
-        <ul className="divide-y divide-bisque">
-          {order.items.map((item) => (
-            <li key={item.id} className="flex items-start justify-between gap-3 py-2">
-              <div>
-                <p className="font-medium">{item.title}</p>
-                <p className="text-sm text-mocha">
-                  {formatPrice(item.unitPrice, currency)} × {item.quantity} (
-                  {t(`orders.priceType.${item.priceType}`)})
+      {hasMoney && (
+        <section
+          aria-labelledby="order-items"
+          className="space-y-2 rounded-card border border-bisque bg-white/60 p-4"
+        >
+          <h2 id="order-items" className="font-bold">
+            {t('orders.items')}
+          </h2>
+          <ul className="divide-y divide-bisque">
+            {order.items.map((item) => (
+              <li key={item.id} className="flex items-start justify-between gap-3 py-2">
+                <div>
+                  <p className="font-medium">{item.title}</p>
+                  <p className="text-sm text-mocha">
+                    {formatPrice(item.unitPrice, currency)} × {item.quantity} (
+                    {t(`orders.priceType.${item.priceType}`)})
+                  </p>
+                </div>
+                <p className="shrink-0 font-semibold">
+                  {formatPrice(item.unitPrice * item.quantity, currency)}
                 </p>
-              </div>
-              <p className="shrink-0 font-semibold">
-                {formatPrice(item.unitPrice * item.quantity, currency)}
-              </p>
-            </li>
-          ))}
-        </ul>
-        <dl className="space-y-1 border-t border-bisque pt-3">
-          <div className="flex justify-between text-lg font-bold">
-            <dt>{t('orders.total')}</dt>
-            <dd>{formatPrice(order.total, currency)}</dd>
-          </div>
-          {isWorker && (
-            <>
-              <div className="flex justify-between text-mocha">
-                <dt>
-                  {t('orders.commission', { percent: commissionPercent(order.commissionRate) })}
-                </dt>
-                <dd>− {formatPrice(order.commission, currency)}</dd>
-              </div>
-              <div className="flex justify-between font-semibold">
-                <dt>{t('orders.youReceive')}</dt>
-                <dd>{formatPrice(order.workerAmount, currency)}</dd>
-              </div>
-            </>
-          )}
-        </dl>
-      </section>
+              </li>
+            ))}
+          </ul>
+          <dl className="space-y-1 border-t border-bisque pt-3">
+            <div className="flex justify-between text-lg font-bold">
+              <dt>{t('orders.total')}</dt>
+              <dd>{formatPrice(order.total, currency)}</dd>
+            </div>
+            {isWorker && (
+              <>
+                <div className="flex justify-between text-mocha">
+                  <dt>
+                    {t('orders.commission', { percent: commissionPercent(order.commissionRate) })}
+                  </dt>
+                  <dd>− {formatPrice(order.commission, currency)}</dd>
+                </div>
+                <div className="flex justify-between font-semibold">
+                  <dt>{t('orders.youReceive')}</dt>
+                  <dd>{formatPrice(order.workerAmount, currency)}</dd>
+                </div>
+              </>
+            )}
+          </dl>
+        </section>
+      )}
 
       <section
         aria-labelledby="order-contact"
