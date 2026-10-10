@@ -1,6 +1,7 @@
 import { CateringHero } from './CateringHero';
 import { MotionRoot } from './motion';
 import { useHashScroll } from './sectionScroll';
+import { ServiceTypesGrid } from './ServiceTypesGrid';
 import { WhyBarakaLi } from './WhyBarakaLi';
 
 /** The catering story, shown on desktop only: first on `/` and on its own at `/catering`. */
@@ -12,6 +13,7 @@ export default function CateringLanding() {
       <div className="flex flex-col gap-32">
         <CateringHero />
         <WhyBarakaLi />
+        <ServiceTypesGrid />
       </div>
     </MotionRoot>
   );

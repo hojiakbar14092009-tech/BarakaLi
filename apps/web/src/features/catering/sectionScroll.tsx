@@ -19,16 +19,26 @@ export function scrollToSection(id: string): boolean {
 interface SectionLinkProps {
   sectionId: string;
   className?: string;
+  ariaLabel?: string;
+  /** Runs before scrolling or navigating, e.g. to remember what was picked. */
+  onNavigate?: () => void;
   children: ReactNode;
 }
 
 /** Scrolls in place when the section is on this page, otherwise opens it on the home page. */
-export function SectionLink({ sectionId, className, children }: SectionLinkProps) {
+export function SectionLink({
+  sectionId,
+  className,
+  ariaLabel,
+  onNavigate,
+  children,
+}: SectionLinkProps) {
   const onClick = (event: MouseEvent<HTMLAnchorElement>) => {
+    onNavigate?.();
     if (scrollToSection(sectionId)) event.preventDefault();
   };
   return (
-    <Link to={`/#${sectionId}`} onClick={onClick} className={className}>
+    <Link to={`/#${sectionId}`} onClick={onClick} aria-label={ariaLabel} className={className}>
       {children}
     </Link>
   );

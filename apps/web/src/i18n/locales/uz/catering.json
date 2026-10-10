@@ -43,5 +43,12 @@
       "rating": "Sharhlar va reyting orqali ishonch qurish.",
       "verified": "Admin tasdiqlagandan keyin «Tasdiqlangan» belgisi."
     }
+  },
+  "services": {
+    "eyebrow": "Xizmat turlari",
+    "title": "Toʻrt yoʻnalish, bitta platforma",
+    "lead": "Yoʻnalishni tanlang va soʻrov yuboring. Tafsilotlar va narx jamoa siz bilan bogʻlangach kelishiladi.",
+    "cta": "Soʻrov yuborish",
+    "ctaLabel": "{{service}}: soʻrov yuborish"
   }
 }
