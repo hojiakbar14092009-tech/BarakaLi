@@ -1,11 +1,15 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type {
   CardPaymentInput,
+  ComplaintDto,
+  ComplaintInput,
   CreateOrdersInput,
   EarningsDto,
   OrderAction,
   OrderDto,
   PaymentSessionDto,
+  ReviewDto,
+  ReviewInput,
 } from '@barakali/shared';
 import { apiRequest } from '../../lib/api';
 import { useAuthStore } from '../../stores/auth';
@@ -82,5 +86,39 @@ export function useEarnings() {
   return useQuery({
     queryKey: ['earnings'],
     queryFn: () => apiRequest<EarningsDto>('/earnings', { auth: true }),
+  });
+}
+
+export function useCreateReview(orderId: string) {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: (input: ReviewInput) =>
+      apiRequest<ReviewDto>(`/orders/${orderId}/review`, {
+        method: 'POST',
+        body: input,
+        auth: true,
+      }),
+    onSuccess: () => {
+      void client.invalidateQueries({ queryKey: ['order', orderId] });
+      void client.invalidateQueries({ queryKey: ['orders'] });
+      // The worker's rating changed, so cached profiles and listings are stale.
+      void client.invalidateQueries({ queryKey: ['worker'] });
+      void client.invalidateQueries({ queryKey: ['workers'] });
+    },
+  });
+}
+
+export function useCreateComplaint(orderId: string) {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: (input: ComplaintInput) =>
+      apiRequest<ComplaintDto>(`/orders/${orderId}/complaint`, {
+        method: 'POST',
+        body: input,
+        auth: true,
+      }),
+    onSuccess: () => {
+      void client.invalidateQueries({ queryKey: ['order', orderId] });
+    },
   });
 }

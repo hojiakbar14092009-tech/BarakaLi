@@ -1,10 +1,12 @@
 import type { Selectable } from 'kysely';
 import {
   PHONE_VISIBLE_STATUSES,
+  type ComplaintDto,
   type OrderDto,
   type OrderItemDto,
   type OrderStatus,
   type PaymentStatus,
+  type ReviewDto,
 } from '@barakali/shared';
 import type { Db } from '../../db/client.js';
 import type { OrdersTable } from '../../db/schema.js';
@@ -45,7 +47,7 @@ export class OrderRepository {
   /** One order query, one items query (IN) and one payments query (IN) for any number of orders. */
   async findDtos(ids: string[], viewer: OrderViewer): Promise<OrderDto[]> {
     if (ids.length === 0) return [];
-    const [orders, items, payments] = await Promise.all([
+    const [orders, items, payments, reviews, complaints] = await Promise.all([
       this.db
         .selectFrom('orders as o')
         .innerJoin('workers as w', 'w.id', 'o.worker_id')
@@ -77,7 +79,39 @@ export class OrderRepository {
         .where('order_id', 'in', ids)
         .orderBy('created_at')
         .execute(),
+      this.db.selectFrom('reviews').selectAll().where('order_id', 'in', ids).execute(),
+      this.db
+        .selectFrom('complaints')
+        .selectAll()
+        .where('order_id', 'in', ids)
+        .where('user_id', '=', viewer.userId)
+        .orderBy('created_at', 'desc')
+        .execute(),
     ]);
+    const reviewByOrder = new Map<string, ReviewDto>(
+      reviews.map((row) => [
+        row.order_id,
+        {
+          id: row.id,
+          orderId: row.order_id,
+          rating: row.rating,
+          comment: row.comment,
+          status: row.status,
+          createdAt: row.created_at.toISOString(),
+        },
+      ]),
+    );
+    const complaintByOrder = new Map<string, ComplaintDto>();
+    for (const row of complaints) {
+      if (complaintByOrder.has(row.order_id)) continue;
+      complaintByOrder.set(row.order_id, {
+        id: row.id,
+        orderId: row.order_id,
+        reason: row.reason,
+        status: row.status,
+        createdAt: row.created_at.toISOString(),
+      });
+    }
     const itemsByOrder = new Map<string, OrderItemDto[]>();
     for (const item of items) {
       const list = itemsByOrder.get(item.order_id) ?? [];
@@ -114,6 +148,8 @@ export class OrderRepository {
           items: itemsByOrder.get(row.id) ?? [],
           counterpart: { name: counterpart.name, phone: phoneVisible ? counterpart.phone : null },
           paymentStatus: paymentStatus.get(row.id) ?? null,
+          review: reviewByOrder.get(row.id) ?? null,
+          complaint: complaintByOrder.get(row.id) ?? null,
           createdAt: row.created_at.toISOString(),
         };
         return [row.id, dto] as const;

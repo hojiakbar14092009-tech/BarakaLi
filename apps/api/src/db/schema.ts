@@ -138,6 +138,26 @@ export interface FilesTable {
   created_at: CreatedAt;
 }
 
+export interface ReviewsTable {
+  id: Generated<string>;
+  order_id: string;
+  customer_id: string;
+  worker_id: string;
+  rating: number;
+  comment: string | null;
+  status: Generated<'visible' | 'hidden'>;
+  created_at: CreatedAt;
+}
+
+export interface ComplaintsTable {
+  id: Generated<string>;
+  order_id: string;
+  user_id: string;
+  reason: string;
+  status: Generated<'open' | 'resolved' | 'dismissed'>;
+  created_at: CreatedAt;
+}
+
 export interface Database {
   categories: CategoriesTable;
   users: UsersTable;
@@ -151,5 +171,7 @@ export interface Database {
   earnings: EarningsTable;
   sms_codes: SmsCodesTable;
   refresh_tokens: RefreshTokensTable;
+  reviews: ReviewsTable;
+  complaints: ComplaintsTable;
   files: FilesTable;
 }

@@ -7,7 +7,9 @@ import { ErrorState, LoadingState } from '../../components/StateViews';
 import { errorMessage } from '../../lib/errors';
 import { formatPrice } from '../../lib/format';
 import { useOrder, useOrderAction } from './api';
+import { ComplaintSection } from './ComplaintSection';
 import { shortId } from './OrdersPage';
+import { ReviewSection } from './ReviewSection';
 import { StatusBadge } from './StatusBadge';
 
 const STEPS: OrderStatus[] = ['new', 'accepted', 'in_progress', 'ready', 'delivered'];
@@ -191,6 +193,9 @@ export default function OrderDetailPage() {
           {order.deliveryAddress ? `: ${order.deliveryAddress}` : ''}
         </p>
       </section>
+
+      <ReviewSection order={order} />
+      <ComplaintSection order={order} />
     </div>
   );
 }

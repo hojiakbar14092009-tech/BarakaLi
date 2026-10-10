@@ -26,6 +26,9 @@ export const ERROR_CODES = [
   'PAYMENT_DECLINED',
   'PAYMENT_ALREADY_PAID',
   'OWN_PRODUCT',
+  'ORDER_NOT_REVIEWABLE',
+  'REVIEW_ALREADY_EXISTS',
+  'COMPLAINT_ALREADY_OPEN',
 ] as const;
 export type ErrorCode = (typeof ERROR_CODES)[number];
 

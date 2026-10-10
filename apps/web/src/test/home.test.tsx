@@ -6,6 +6,14 @@ import '../i18n';
 import { Logo } from '../components/Logo';
 import HomePage from '../features/home/HomePage';
 
+// The entry animation loads its features lazily; it is not under test, and a late import must not
+// outlive the test environment.
+vi.mock('../components/MotionFade', () => ({
+  MotionFade: ({ children, className }: { children: React.ReactNode; className?: string }) => (
+    <div className={className}>{children}</div>
+  ),
+}));
+
 vi.stubGlobal(
   'fetch',
   vi.fn(() => Promise.resolve(new Response(JSON.stringify([]), { status: 200 }))),

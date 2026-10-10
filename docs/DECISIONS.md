@@ -38,6 +38,18 @@ Brifdagi noaniqliklar bo'yicha qabul qilingan qarorlar. Yangi qaror oxiriga qo's
 - **Mahsulot yaratish:** doim qoralama; chop etish uchun kamida bitta rasm kerak (forma shu tartibda ishlaydi).
 - **CSRF:** refresh cookie `SameSite=Strict`; yozuvchi so'rovlarda `Origin` tekshiriladi.
 
+## Sharh va shikoyat
+
+- **Sharh:** faqat buyurtmachi, faqat `delivered` dan keyin, buyurtmaga bir marta (DB'da unique `order_id`
+  va buyurtma qatori qulflanadi, shuning uchun ikki parallel so'rovdan faqat bittasi o'tadi).
+- **Reyting:** `workers.rating` va `reviews_count` sharh bilan **bir tranzaksiyada** yangilanadi:
+  `(joriy reyting × soni + yangi baho) / (soni + 1)`, 2 xonagacha yaxlitlanadi. Hunarmand qatori
+  qulflanadi. Qayta hisoblash emas, o'sish usuli tanlandi: shunda mavjud reyting asosi saqlanadi.
+- **Shikoyat:** buyurtmaning ikkala tomoni yoza oladi, boshqalarga 404. Holati `open`; bitta foydalanuvchi
+  bitta buyurtmada faqat bitta ochiq shikoyat qoldira oladi (qisman unique indeks). Shikoyatni faqat
+  yozgan odam o'z buyurtmasida ko'radi.
+- **Ochiq qolgani:** sharhni yashirish (moderatsiya) va shikoyatni hal qilish admin paneliga bog'liq (TODO.md).
+
 ## Mahsulot qarorlari
 
 - **Hunarmand tasdig'i:** admin paneli yo'q, shuning uchun MVP'da har bir hunarmand darhol

@@ -114,3 +114,33 @@ export async function makeProduct(
     .send({ status: 'published' });
   return published.body as ProductDto;
 }
+
+const TEST_CARD = { cardNumber: '4242424242424242', expiry: '12/40', cvc: '123' };
+
+/** Buys one product and pays for it; resolves with the new order id (status `new`). */
+export async function placePaidOrder(
+  t: TestApp,
+  buyer: Session,
+  productId: string,
+  quantity = 1,
+): Promise<string> {
+  const auth = { Authorization: `Bearer ${buyer.token}` };
+  const created = await request(t.app)
+    .post('/api/orders')
+    .set(auth)
+    .send({ items: [{ productId, quantity }], fulfillment: 'pickup' });
+  const orderId = (created.body as { id: string }[])[0]?.id ?? '';
+  await request(t.app).post(`/api/orders/${orderId}/payment`).set(auth);
+  await request(t.app).post(`/api/orders/${orderId}/payment/confirm`).set(auth).send(TEST_CARD);
+  return orderId;
+}
+
+/** Walks an order through the worker's actions up to `delivered`. */
+export async function deliverOrder(t: TestApp, seller: Session, orderId: string): Promise<void> {
+  for (const action of ['accept', 'start', 'ready', 'deliver']) {
+    await request(t.app)
+      .post(`/api/orders/${orderId}/actions`)
+      .set({ Authorization: `Bearer ${seller.token}` })
+      .send({ action });
+  }
+}

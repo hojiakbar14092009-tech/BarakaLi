@@ -26,5 +26,8 @@
   "ORDER_NOT_PAYABLE": "Bu buyurtmani toʻlab boʻlmaydi.",
   "PAYMENT_DECLINED": "Karta maʼlumotlari qabul qilinmadi. Tekshirib, qayta urinib koʻring.",
   "PAYMENT_ALREADY_PAID": "Bu buyurtma allaqachon toʻlangan.",
-  "OWN_PRODUCT": "Oʻz mahsulotingizni sotib ololmaysiz."
+  "OWN_PRODUCT": "Oʻz mahsulotingizni sotib ololmaysiz.",
+  "ORDER_NOT_REVIEWABLE": "Buyurtmani faqat topshirilgandan keyin baholash mumkin.",
+  "REVIEW_ALREADY_EXISTS": "Bu buyurtma allaqachon baholangan.",
+  "COMPLAINT_ALREADY_OPEN": "Bu buyurtma boʻyicha shikoyatingiz allaqachon ochiq."
 }

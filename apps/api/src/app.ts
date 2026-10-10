@@ -14,6 +14,7 @@ import { originGuard } from './middleware/origin.js';
 import { generalLimiter } from './middleware/rate-limit.js';
 import { createAuthRouter } from './modules/auth/auth.routes.js';
 import { createCatalogRouter } from './modules/catalog/catalog.routes.js';
+import { createFeedbackRouter } from './modules/feedback/feedback.routes.js';
 import { createFilesRouter } from './modules/files/files.routes.js';
 import { createOrderRouter } from './modules/orders/order.routes.js';
 import { createPaymentProvider } from './modules/payments/provider-factory.js';
@@ -76,6 +77,7 @@ export function createApp(options: AppOptions): Express {
   api.use(createCatalogRouter(ctx));
   api.use(createProductRouter(ctx));
   api.use(createOrderRouter(ctx));
+  api.use(createFeedbackRouter(ctx));
   api.use(createFilesRouter(ctx));
   app.use('/api', api);
 

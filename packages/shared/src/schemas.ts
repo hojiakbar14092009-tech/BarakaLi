@@ -6,7 +6,12 @@ import {
   MAX_DESCRIPTION_LENGTH,
   MAX_ITEM_QUANTITY,
   MAX_NAME_LENGTH,
+  MAX_COMPLAINT_REASON_LENGTH,
   MAX_PAGE_SIZE,
+  MAX_REVIEW_COMMENT_LENGTH,
+  MAX_REVIEW_RATING,
+  MIN_COMPLAINT_REASON_LENGTH,
+  MIN_REVIEW_RATING,
   MAX_PRICE_SOM,
   MAX_TITLE_LENGTH,
   MIN_NAME_LENGTH,
@@ -125,6 +130,17 @@ export const cardPaymentSchema = z.object({
   cvc: z.string().regex(/^\d{3}$/, 'INVALID_CVC'),
 });
 export type CardPaymentInput = z.infer<typeof cardPaymentSchema>;
+
+export const reviewInputSchema = z.object({
+  rating: z.number().int().min(MIN_REVIEW_RATING).max(MAX_REVIEW_RATING),
+  comment: z.string().trim().max(MAX_REVIEW_COMMENT_LENGTH).optional(),
+});
+export type ReviewInput = z.infer<typeof reviewInputSchema>;
+
+export const complaintInputSchema = z.object({
+  reason: z.string().trim().min(MIN_COMPLAINT_REASON_LENGTH).max(MAX_COMPLAINT_REASON_LENGTH),
+});
+export type ComplaintInput = z.infer<typeof complaintInputSchema>;
 
 export const orderActionSchema = z.object({
   action: z.enum(['accept', 'reject', 'start', 'ready', 'deliver']),

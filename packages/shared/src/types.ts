@@ -1,9 +1,11 @@
 import type {
+  ComplaintStatus,
   FulfillmentType,
   OrderType,
   PaymentStatus,
   PriceType,
   ProductStatus,
+  ReviewStatus,
   UserRole,
 } from './constants.js';
 import type { OrderStatus } from './order-status.js';
@@ -92,6 +94,23 @@ export interface OrderItemDto {
   priceType: PriceType;
 }
 
+export interface ReviewDto {
+  id: string;
+  orderId: string;
+  rating: number;
+  comment: string | null;
+  status: ReviewStatus;
+  createdAt: string;
+}
+
+export interface ComplaintDto {
+  id: string;
+  orderId: string;
+  reason: string;
+  status: ComplaintStatus;
+  createdAt: string;
+}
+
 export interface OrderDto {
   id: string;
   type: OrderType;
@@ -106,6 +125,10 @@ export interface OrderDto {
   items: OrderItemDto[];
   counterpart: { name: string | null; phone: string | null };
   paymentStatus: PaymentStatus | null;
+  /** The customer's review, once written. */
+  review: ReviewDto | null;
+  /** The requesting user's own most recent complaint on this order. */
+  complaint: ComplaintDto | null;
   createdAt: string;
 }
 

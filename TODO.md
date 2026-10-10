@@ -12,7 +12,9 @@ Bu ro'yxat `CLAUDE.md` dagi bosqichlardan MVP'ga kirmagan qismlarni o'z ichiga o
 ## 9-bosqich: admin, sharh, shikoyat, materiallar, jamg'arma, darslar
 
 - [ ] `/admin`: hunarmandlarni tasdiqlash, buyurtmalar, sharh moderatsiyasi, statistika
-- [ ] `reviews` (`order_id` unique, reyting yangilash bir tranzaksiyada), `complaints`
+- [x] `reviews` va `complaints`: yozish API'si va buyurtma sahifasidagi forma/tugma (tayyor)
+- [ ] Sharhni yashirish (`hidden`, reytingni qayta hisoblash) va shikoyatlarni ko'rib chiqish: admin paneli bilan birga
+- [ ] Hunarmand profilida sharhlar ro'yxati (hozir faqat umumiy reyting ko'rinadi)
 - [ ] Materiallar do'koni (`materials`, `material_orders`, `material_order_items`), `/materiallar`
 - [ ] `/daromad` da jamg'arma maqsadi (`savings_goals`), `/darslar` kontenti
 - [ ] 24 soat ichida qabul qilinmagan to'langan buyurtmani avtomatik qaytarish (13.11)

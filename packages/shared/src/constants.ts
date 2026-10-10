@@ -58,6 +58,17 @@ export const REFRESH_TOKEN_TTL_DAYS = 30;
 export const UNPAID_ORDER_TTL_MINUTES = 15;
 export const WORKER_ACCEPT_TTL_HOURS = 24;
 
+export const REVIEW_STATUSES = ['visible', 'hidden'] as const;
+export type ReviewStatus = (typeof REVIEW_STATUSES)[number];
+export const MIN_REVIEW_RATING = 1;
+export const MAX_REVIEW_RATING = 5;
+export const MAX_REVIEW_COMMENT_LENGTH = 1000;
+
+export const COMPLAINT_STATUSES = ['open', 'resolved', 'dismissed'] as const;
+export type ComplaintStatus = (typeof COMPLAINT_STATUSES)[number];
+export const MIN_COMPLAINT_REASON_LENGTH = 5;
+export const MAX_COMPLAINT_REASON_LENGTH = 1000;
+
 export const MIN_NAME_LENGTH = 2;
 export const MAX_NAME_LENGTH = 80;
 export const MAX_TITLE_LENGTH = 120;

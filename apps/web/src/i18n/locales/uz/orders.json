@@ -46,5 +46,30 @@
   },
   "rejectHint": "Rad etsangiz, buyurtmachiga pul qaytariladi.",
   "waitingWorker": "Hunarmand buyurtmani tez orada qabul qiladi.",
-  "created": "Yaratilgan: {{date}}"
+  "created": "Yaratilgan: {{date}}",
+  "review": {
+    "title": "Buyurtmani baholang",
+    "yourReview": "Sizning bahoingiz",
+    "ratingLabel": "Baho (1 dan 5 gacha)",
+    "stars": "{{count}} yulduz",
+    "commentLabel": "Izoh (ixtiyoriy)",
+    "commentPlaceholder": "Buyurtma qanday boʻldi?",
+    "submit": "Bahoni yuborish",
+    "thanks": "Rahmat! Bahoyingiz hunarmand profiliga qoʻshildi."
+  },
+  "complaint": {
+    "title": "Muammo bormi?",
+    "button": "Shikoyat qilish",
+    "reasonLabel": "Shikoyat matni",
+    "reasonPlaceholder": "Nima boʻlganini qisqacha yozing",
+    "hint": "Kamida 5 ta belgi. Telefon raqamini yozish shart emas.",
+    "submit": "Shikoyatni yuborish",
+    "sent": "Shikoyatingiz qabul qilindi.",
+    "statusLabel": "Holati",
+    "status": {
+      "open": "Ochiq",
+      "resolved": "Hal qilingan",
+      "dismissed": "Rad etilgan"
+    }
+  }
 }
