@@ -2,10 +2,10 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { lazy, useEffect } from 'react';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { RequireAuth } from './features/auth/RequireAuth';
+import { HomePage } from './features/home/HomePage';
 import { AppLayout } from './layout/AppLayout';
 import { useAuthStore } from './stores/auth';
 
-const HomePage = lazy(() => import('./features/home/HomePage'));
 const CategoryPage = lazy(() => import('./features/catalog/CategoryPage'));
 const WorkerPage = lazy(() => import('./features/workers/WorkerPage'));
 const ProductPage = lazy(() => import('./features/products/ProductPage'));

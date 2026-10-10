@@ -108,3 +108,67 @@ export async function hasHorizontalScroll(page: Page): Promise<boolean> {
     () => document.documentElement.scrollWidth > document.documentElement.clientWidth,
   );
 }
+
+// 1x1 PNG: enough for the server's image pipeline to accept a photo.
+const TINY_PNG = Buffer.from(
+  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
+  'base64',
+);
+
+export interface ProductSeed {
+  title: string;
+  retailPrice: number;
+  stock: number;
+  wholesalePrice?: number;
+  wholesaleMinQty?: number;
+}
+
+/** Creates a product with one photo and publishes it through the worker's own API. */
+export async function createPublishedProduct(
+  request: APIRequestContext,
+  worker: Account,
+  seed: ProductSeed,
+): Promise<string> {
+  const headers = auth(worker);
+  const created = await request.post('/api/my/products', {
+    headers,
+    data: {
+      title: seed.title,
+      categoryId: await firstCategoryId(request),
+      retailPrice: seed.retailPrice,
+      wholesalePrice: seed.wholesalePrice ?? null,
+      wholesaleMinQty: seed.wholesaleMinQty ?? null,
+      stock: seed.stock,
+    },
+  });
+  expect(created.ok()).toBe(true);
+  const id = ((await created.json()) as { id: string }).id;
+  const image = await request.post(`/api/my/products/${id}/images`, {
+    headers,
+    multipart: { image: { name: 'photo.png', mimeType: 'image/png', buffer: TINY_PNG } },
+  });
+  expect(image.ok()).toBe(true);
+  const published = await request.patch(`/api/my/products/${id}/status`, {
+    headers,
+    data: { status: 'published' },
+  });
+  expect(published.ok()).toBe(true);
+  return id;
+}
+
+/** Product from the sample data that carries a 3D model. */
+export async function productWithModelId(request: APIRequestContext): Promise<string> {
+  const res = await request.get('/api/products?pageSize=20');
+  const page = (await res.json()) as { items: { id: string; model: unknown }[] };
+  const found = page.items.find((item) => item.model);
+  expect(found, 'sample data should include a product with a 3D model').toBeTruthy();
+  return (found as { id: string }).id;
+}
+
+/** Signs an existing account in again from a fresh browser context (new refresh cookie). */
+export async function signInAgain(context: BrowserContext, phone: string): Promise<void> {
+  const codeRes = await context.request.post('/api/auth/request-code', { data: { phone } });
+  const { code } = (await codeRes.json()) as { code: string };
+  const verify = await context.request.post('/api/auth/verify', { data: { phone, code } });
+  expect(verify.ok()).toBe(true);
+}

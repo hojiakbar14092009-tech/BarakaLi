@@ -225,6 +225,7 @@ export default function NewServiceOrderPage() {
               <input
                 ref={photoInput}
                 id="order-photo-input"
+                aria-label={t('serviceOrder.addPhoto')}
                 type="file"
                 accept="image/jpeg,image/png,image/webp"
                 multiple

@@ -1,5 +1,15 @@
 @import 'tailwindcss';
 
+/* Metric-matched stand-in so text does not reflow (layout shift) when Inter finishes loading. */
+@font-face {
+  font-family: 'Inter Fallback';
+  src: local('Arial'), local('Helvetica'), local('Liberation Sans');
+  size-adjust: 107.4%;
+  ascent-override: 90.2%;
+  descent-override: 22.5%;
+  line-gap-override: 0%;
+}
+
 @theme {
   --color-sugar: #fcf8f0;
   --color-bisque: #e2d9cd;
@@ -8,7 +18,8 @@
   --color-mocha: #6b5b4d;
   --color-espresso: #392e26;
 
-  --font-sans: 'Inter Variable', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-sans:
+    'Inter Variable', 'Inter Fallback', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 
   --radius-card: 1.25rem;
   --radius-field: 1rem;

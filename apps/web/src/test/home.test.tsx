@@ -4,7 +4,7 @@ import { MemoryRouter } from 'react-router-dom';
 import { describe, expect, it, vi } from 'vitest';
 import '../i18n';
 import { Logo } from '../components/Logo';
-import HomePage from '../features/home/HomePage';
+import { HomePage } from '../features/home/HomePage';
 
 // The entry animation loads its features lazily; it is not under test, and a late import must not
 // outlive the test environment.

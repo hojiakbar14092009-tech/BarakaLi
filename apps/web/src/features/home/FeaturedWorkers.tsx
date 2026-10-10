@@ -9,7 +9,7 @@ import { useFeaturedWorkers } from '../workers/api';
 function WorkerCard({ worker }: { worker: WorkerSummaryDto }) {
   const { t } = useTranslation();
   return (
-    <li className="flex flex-col gap-3 rounded-card border border-bisque bg-white/60 p-4 shadow-soft">
+    <li className="flex min-h-56 flex-col gap-3 rounded-card border border-bisque bg-white/60 p-4 shadow-soft">
       <div className="flex items-center gap-3">
         <span
           aria-hidden="true"
@@ -55,7 +55,14 @@ export function FeaturedWorkers() {
       <h2 id="home-featured" className="text-xl font-bold">
         {t('home.featuredTitle')}
       </h2>
-      {isPending && <div className="h-40 animate-pulse rounded-card bg-bisque/60" aria-hidden />}
+      {isPending && (
+        // Same grid and card height as the loaded list, so the page below does not jump.
+        <ul aria-hidden="true" className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {[0, 1, 2, 3].map((slot) => (
+            <li key={slot} className="min-h-56 animate-pulse rounded-card bg-bisque/60" />
+          ))}
+        </ul>
+      )}
       {isError && <p className="text-mocha">{t('home.featuredError')}</p>}
       {data && data.length === 0 && <p className="text-mocha">{t('home.featuredEmpty')}</p>}
       {data && data.length > 0 && (

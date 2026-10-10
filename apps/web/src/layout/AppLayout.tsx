@@ -84,7 +84,9 @@ export function AppLayout() {
         <div className={`flex min-w-0 flex-1 flex-col ${hasNav ? 'pb-20 sm:pb-0' : ''}`}>
           <main id="content" className="w-full flex-1 px-4 pt-6">
             <Suspense
-              fallback={<p className="py-12 text-center text-mocha">{t('common.loading')}</p>}
+              fallback={
+                <p className="min-h-dvh py-12 text-center text-mocha">{t('common.loading')}</p>
+              }
             >
               <Outlet />
             </Suspense>

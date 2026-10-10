@@ -36,6 +36,6 @@ Bu ro'yxat `CLAUDE.md` dagi bosqichlardan MVP'ga kirmagan qismlarni o'z ichiga o
 
 ## Sifat (10–11-bosqich)
 
-- [ ] Playwright e2e (uz va ru, 360 / 768 / 1280 px), axe tekshiruvi, Lighthouse (mobil)
-- [ ] `docs/API.md` ni to'liq sxemalar bilan kengaytirish; `docs/DEPLOY.md` ga mamlakat ichidagi hosting variantini yozish (13.17-band)
-- [ ] Husky pre-commit tezlashtirish (faqat o'zgargan paketlarni tekshirish)
+- [x] Playwright e2e (uz va ru, 360 / 768 / 1280 px), axe tekshiruvi, Lighthouse (mobil), WebGL yoʻq holat testi (10-bosqich)
+- [ ] `docs/API.md` ni toʻliq sxemalar bilan kengaytirish; `docs/DEPLOY.md` ga mamlakat ichidagi hosting variantini yozish (13.17-band)
+- [ ] Husky pre-commit tezlashtirish (faqat oʻzgargan paketlarni tekshirish)

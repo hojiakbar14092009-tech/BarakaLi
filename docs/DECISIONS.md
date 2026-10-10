@@ -123,3 +123,22 @@ Brifdagi noaniqliklar bo'yicha qabul qilingan qarorlar. Yangi qaror oxiriga qo's
   boshlangʻich sanani saqlaydi; olib tashlab qayta qoʻyish progressni nolga tushiradi.
 - **Darslar:** `/darslar` kontenti `lessons.json` (uz/ru) dan, 4 dars; keyin CMS bilan almashtiriladi.
 - **Hunarmand sharhlari:** profilda faqat `visible` sharhlar, muallifning ismining birinchi soʻzi bilan.
+
+## Sifat tekshiruvlari (10-bosqich)
+
+- **E2E:** `e2e/flows.spec.ts` — uz va ru da: SMS kod bilan kirish (haqiqiy forma), mahsulot → savat
+  → toʻlov → hunarmand holatlarni oʻtkazadi → haridor sharh va shikoyat qoldiradi → hunarmand
+  daromadi (5% ayirilgan); xizmat buyurtmasi: slot tanlash, toʻlov, band soat boshqa mijozga
+  koʻrinmasligi. Test matnlari ilovaning oʻz tarjima fayllaridan olinadi.
+- **Axe:** `e2e/accessibility-3d.spec.ts` — WCAG 2.1 A/AA qoidalari bilan 360/768/1280 px da ommaviy
+  sahifalar, kirilgan hunarmand/mijoz/admin sahifalari. Topilgan kamchilik (yashirin fayl maydoniga
+  yorliq yoʻq) tuzatildi.
+- **3D:** headless Chromium'da `--use-gl=swiftshader` bilan haqiqiy WebGL canvas ochiladi (tekshirildi);
+  alohida test `getContext('webgl')` ni `null` qilib, rasmlarga qaytishni va sahifa buzilmasligini
+  tekshiradi; 3D kodi tab ochilmaguncha tarmoqqa chiqmasligi ham tekshiriladi.
+- **Lighthouse:** `e2e/lighthouse.spec.ts` (mobil, simulyatsiya qilingan Slow 4G, 4x CPU): bosh
+  sahifa FCP ≈ 2.0 s, LCP ≈ 2.4 s (<3 s), CLS 0.003, performance ≈ 96, accessibility 100, boshlangʻich
+  JS ≈ 161 KB gzip (byudjet 200 KB). Bu laboratoriya taxminlari, real foydalanuvchi oʻlchovi emas.
+  Tuzatishlar: yuklanayotgan marshrut fallback'i balandligi (footer sakrashi, CLS 0.19 → 0.003),
+  hunarmandlar skeleti haqiqiy kartochka balandligida, bosh sahifa asosiy bundle'ga olindi (qoʻshimcha
+  chunk soʻrovi yoʻq), Inter uchun oʻlchamga mos zaxira shrift.

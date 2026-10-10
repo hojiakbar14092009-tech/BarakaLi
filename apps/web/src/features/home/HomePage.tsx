@@ -8,7 +8,8 @@ import { HowItWorks } from './HowItWorks';
 import { Lessons } from './Lessons';
 import { SearchBar } from './SearchBar';
 
-export default function HomePage() {
+/** Part of the main bundle on purpose: it is the first screen, so no extra chunk round trip. */
+export function HomePage() {
   const { t } = useTranslation();
   return (
     <div className="space-y-10">
