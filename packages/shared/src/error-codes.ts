@@ -42,6 +42,7 @@ export const ERROR_CODES = [
   'MATERIAL_ORDER_NOT_PAYABLE',
   'ORDER_NOT_REFUNDABLE',
   'COMPLAINT_NOT_OPEN',
+  'INVALID_TELEGRAM_USERNAME',
 ] as const;
 export type ErrorCode = (typeof ERROR_CODES)[number];
 

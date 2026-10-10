@@ -16,6 +16,7 @@ const base: UserDto = {
   workerName: 'Usta',
   workerStatus: 'pending',
   workerRejectReason: null,
+  workerTelegramUsername: null,
 };
 
 function renderStatus(user: UserDto) {

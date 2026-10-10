@@ -34,6 +34,15 @@ function toDto(row: WorkerRow): WorkerSummaryDto {
 export class WorkersRepository {
   constructor(private readonly db: Db) {}
 
+  async setTelegramUsername(userId: string, telegramUsername: string | null): Promise<boolean> {
+    const result = await this.db
+      .updateTable('workers')
+      .set({ telegram_username: telegramUsername })
+      .where('user_id', '=', userId)
+      .executeTakeFirst();
+    return Number(result.numUpdatedRows) === 1;
+  }
+
   async findIdByUser(userId: string): Promise<string | undefined> {
     const row = await this.db
       .selectFrom('workers')

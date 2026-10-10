@@ -37,6 +37,8 @@ export interface UserDto {
   /** Application state of the worker profile this account owns; null for non-workers. */
   workerStatus: WorkerStatus | null;
   workerRejectReason: string | null;
+  /** Own worker profile's Telegram handle (no leading '@'), null if not set or not a worker. */
+  workerTelegramUsername: string | null;
 }
 
 export interface NotificationDto {
@@ -150,7 +152,9 @@ export interface OrderDto {
   fulfillment: FulfillmentType;
   deliveryAddress: string | null;
   items: OrderItemDto[];
-  counterpart: { name: string | null; phone: string | null };
+  /** phone/telegramUsername are null until the order is accepted, and telegramUsername is only
+   *  ever set for the worker side (customers have no Telegram field on their profile). */
+  counterpart: { name: string | null; phone: string | null; telegramUsername: string | null };
   paymentStatus: PaymentStatus | null;
   /** The customer's review, once written. */
   review: ReviewDto | null;

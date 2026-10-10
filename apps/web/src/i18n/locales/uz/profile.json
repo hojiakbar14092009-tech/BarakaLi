@@ -14,5 +14,7 @@
   "becomeWorkerText": "Oʻz ishlaringizni joylab, buyurtma qabul qilishni xohlaysizmi?",
   "becomeWorker": "Hunarmand boʻlish",
   "openCabinet": "Hunarmand kabineti",
-  "roleLabel": "Rol"
+  "roleLabel": "Rol",
+  "telegramLabel": "Telegram foydalanuvchi nomi",
+  "telegramHint": "Ixtiyoriy. Buyurtma qabul qilingach, buyurtmachi sizga shu orqali yozishi mumkin."
 }

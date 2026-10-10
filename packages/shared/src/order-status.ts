@@ -33,7 +33,7 @@ export const WORKER_ACTIONABLE_STATUSES: readonly OrderStatus[] = [
   'ready',
 ];
 
-/** Statuses after which the counterpart phone number may be shown. */
+/** Statuses after which the counterpart's phone and Telegram handle may be shown. */
 export const PHONE_VISIBLE_STATUSES: readonly OrderStatus[] = [
   'accepted',
   'in_progress',

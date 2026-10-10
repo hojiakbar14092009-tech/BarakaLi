@@ -45,6 +45,7 @@ beforeEach(() => {
       workerName: 'Usta',
       workerStatus: 'approved',
       workerRejectReason: null,
+      workerTelegramUsername: null,
     },
   });
 });

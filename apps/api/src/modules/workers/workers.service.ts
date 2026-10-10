@@ -36,4 +36,10 @@ export class WorkersService {
     if (!worker) throw AppError.notFound();
     return worker;
   }
+
+  async setTelegramUsername(userId: string, telegramUsername: string | null): Promise<void> {
+    if (!(await this.repo.setTelegramUsername(userId, telegramUsername))) {
+      throw new AppError('WORKER_REQUIRED', 403);
+    }
+  }
 }

@@ -15,6 +15,7 @@ interface UserRow {
   worker_name: string | null;
   worker_status: UserDto['workerStatus'];
   reject_reason: string | null;
+  worker_telegram_username: string | null;
 }
 
 function toUserDto(row: UserRow): UserDto {
@@ -28,6 +29,7 @@ function toUserDto(row: UserRow): UserDto {
     workerName: row.worker_name,
     workerStatus: row.worker_status,
     workerRejectReason: row.worker_status === 'rejected' ? row.reject_reason : null,
+    workerTelegramUsername: row.worker_telegram_username,
   };
 }
 
@@ -172,6 +174,7 @@ export class AuthRepository {
         'w.display_name as worker_name',
         'w.status as worker_status',
         'w.reject_reason',
+        'w.telegram_username as worker_telegram_username',
       ]);
   }
 }

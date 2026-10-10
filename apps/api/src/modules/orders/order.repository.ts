@@ -72,6 +72,7 @@ export class OrderRepository {
           'o.worker_id',
           'w.display_name as worker_name',
           'wu.phone as worker_phone',
+          'w.telegram_username as worker_telegram_username',
           'cu.name as customer_name',
           'cu.phone as customer_phone',
         ])
@@ -147,9 +148,14 @@ export class OrderRepository {
       orders.map((row) => {
         const asWorker = viewer.workerId !== undefined && viewer.workerId === row.worker_id;
         const phoneVisible = PHONE_VISIBLE_STATUSES.includes(row.status as OrderStatus);
+        // Only the worker side ever has a Telegram handle; a customer counterpart has none.
         const counterpart = asWorker
-          ? { name: row.customer_name, phone: row.customer_phone }
-          : { name: row.worker_name, phone: row.worker_phone };
+          ? { name: row.customer_name, phone: row.customer_phone, telegramUsername: null }
+          : {
+              name: row.worker_name,
+              phone: row.worker_phone,
+              telegramUsername: row.worker_telegram_username,
+            };
         const dto: OrderDto = {
           id: row.id,
           type: row.type,
@@ -162,7 +168,11 @@ export class OrderRepository {
           fulfillment: row.fulfillment,
           deliveryAddress: row.delivery_address,
           items: itemsByOrder.get(row.id) ?? [],
-          counterpart: { name: counterpart.name, phone: phoneVisible ? counterpart.phone : null },
+          counterpart: {
+            name: counterpart.name,
+            phone: phoneVisible ? counterpart.phone : null,
+            telegramUsername: phoneVisible ? counterpart.telegramUsername : null,
+          },
           paymentStatus: paymentStatus.get(row.id) ?? null,
           review: reviewByOrder.get(row.id) ?? null,
           complaint: complaintByOrder.get(row.id) ?? null,

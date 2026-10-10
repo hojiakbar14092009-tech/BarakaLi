@@ -2,12 +2,58 @@ import { useMutation } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
+import { telegramUsernameSchema } from '@barakali/shared';
 import { Button, buttonClasses } from '../../components/Button';
 import { Field } from '../../components/Field';
 import { LanguageSwitch } from '../../components/LanguageSwitch';
 import { errorMessage } from '../../lib/errors';
 import { useAuthStore } from '../../stores/auth';
-import { updateProfile } from '../auth/api';
+import { updateProfile, updateWorkerProfile } from '../auth/api';
+
+function TelegramField({ current }: { current: string | null }) {
+  const { t } = useTranslation();
+  const setUser = useAuthStore((s) => s.setUser);
+  const [value, setValue] = useState(current ?? '');
+  const mutation = useMutation({ mutationFn: updateWorkerProfile, onSuccess: setUser });
+  const trimmed = value.trim();
+  const parsed =
+    trimmed === ''
+      ? { success: true as const, data: null }
+      : telegramUsernameSchema.safeParse(value);
+
+  return (
+    <form
+      className="space-y-3 rounded-card border border-bisque p-4"
+      onSubmit={(event) => {
+        event.preventDefault();
+        if (parsed.success) mutation.mutate({ telegramUsername: parsed.data });
+      }}
+    >
+      <Field
+        label={t('profile.telegramLabel')}
+        hint={t('profile.telegramHint')}
+        placeholder="@username"
+        value={value}
+        onChange={(event) => setValue(event.target.value)}
+        error={!parsed.success ? t('validation.INVALID_TELEGRAM_USERNAME') : undefined}
+      />
+      {mutation.isError && (
+        <p role="alert" className="font-medium">
+          {errorMessage(mutation.error, t)}
+        </p>
+      )}
+      {mutation.isSuccess && <p role="status">{t('profile.saved')}</p>}
+      <Button
+        type="submit"
+        variant="secondary"
+        className="w-full"
+        disabled={!parsed.success || mutation.isPending}
+      >
+        {t('profile.save')}
+      </Button>
+    </form>
+  );
+}
 
 export default function ProfilePage() {
   const { t } = useTranslation();
@@ -65,9 +111,12 @@ export default function ProfilePage() {
       </div>
 
       {user.workerId ? (
-        <Link to="/hunarmand/panel" className={buttonClasses('secondary', 'md', 'w-full')}>
-          {t('profile.openCabinet')}
-        </Link>
+        <>
+          <TelegramField current={user.workerTelegramUsername} />
+          <Link to="/hunarmand/panel" className={buttonClasses('secondary', 'md', 'w-full')}>
+            {t('profile.openCabinet')}
+          </Link>
+        </>
       ) : (
         <div className="space-y-2 rounded-card border border-bisque p-4">
           <p>{t('profile.becomeWorkerText')}</p>

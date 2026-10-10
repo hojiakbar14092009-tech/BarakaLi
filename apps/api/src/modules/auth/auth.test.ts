@@ -198,3 +198,73 @@ describe('profile and roles', () => {
     expect(second.body.error.code).toBe('ALREADY_WORKER');
   });
 });
+
+describe('worker Telegram handle', () => {
+  async function workerToken(): Promise<string> {
+    const phone = nextPhone();
+    const code = await requestCode(phone);
+    const verify = await request(t.app)
+      .post('/api/auth/verify')
+      .send({ phone, code, name: 'Hunarmand' });
+    const token = verify.body.accessToken as string;
+    const category = await t.db.selectFrom('categories').select('id').executeTakeFirstOrThrow();
+    await request(t.app)
+      .post('/api/me/worker')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ displayName: 'Hunarmand', categoryId: category.id });
+    return token;
+  }
+
+  it('accepts a valid handle, strips a leading @, and clears it with null', async () => {
+    const token = await workerToken();
+    const auth = { Authorization: `Bearer ${token}` };
+    const set = await request(t.app)
+      .patch('/api/me/worker')
+      .set(auth)
+      .send({ telegramUsername: '@usta_tikuvchi' });
+    expect(set.status).toBe(200);
+    expect(set.body.workerTelegramUsername).toBe('usta_tikuvchi');
+
+    const me = await request(t.app).get('/api/me').set(auth);
+    expect(me.body.workerTelegramUsername).toBe('usta_tikuvchi');
+
+    const cleared = await request(t.app)
+      .patch('/api/me/worker')
+      .set(auth)
+      .send({ telegramUsername: null });
+    expect(cleared.status).toBe(200);
+    expect(cleared.body.workerTelegramUsername).toBeNull();
+  });
+
+  it('rejects a handle that is too short, too long, or has invalid characters', async () => {
+    const token = await workerToken();
+    const auth = { Authorization: `Bearer ${token}` };
+    for (const value of ['abcd', 'a'.repeat(33), 'bad-name', 'has space', '']) {
+      const res = await request(t.app)
+        .patch('/api/me/worker')
+        .set(auth)
+        .send({ telegramUsername: value });
+      expect(res.status).toBe(400);
+      expect(res.body.error.code).toBe('VALIDATION_ERROR');
+    }
+  });
+
+  it('is rejected for a signed-in user with no worker profile', async () => {
+    const phone = nextPhone();
+    const code = await requestCode(phone);
+    const verify = await request(t.app).post('/api/auth/verify').send({ phone, code });
+    const res = await request(t.app)
+      .patch('/api/me/worker')
+      .set('Authorization', `Bearer ${verify.body.accessToken}`)
+      .send({ telegramUsername: 'anyvalidname' });
+    expect(res.status).toBe(403);
+    expect(res.body.error.code).toBe('WORKER_REQUIRED');
+  });
+
+  it('requires sign-in', async () => {
+    const res = await request(t.app)
+      .patch('/api/me/worker')
+      .send({ telegramUsername: 'anyvalidname' });
+    expect(res.status).toBe(401);
+  });
+});

@@ -16,7 +16,7 @@ const serviceOrder: OrderDto = {
   fulfillment: 'pickup',
   deliveryAddress: null,
   items: [],
-  counterpart: { name: 'Dilfuza', phone: null },
+  counterpart: { name: 'Dilfuza', phone: null, telegramUsername: null },
   paymentStatus: 'paid',
   review: null,
   complaint: null,

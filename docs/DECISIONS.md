@@ -221,3 +221,19 @@ Brifdagi noaniqliklar bo'yicha qabul qilingan qarorlar. Yangi qaror oxiriga qo's
 - API `OrderDto.commissionRate` qaytaradi; buyurtma sahifasi foizni shu maydondan koʻrsatadi (eski buyurtma
   5%, yangisi 2%). Kabinet, daromad va admin statistikasidagi umumiy yozuvlar joriy konstantadan oladi.
 - Materiallar doʻkonidan komissiya avvalgidek olinmaydi.
+
+## Hunarmand va buyurtmachi aloqasi (2026-10-10)
+
+- Hunarmandning telefoni alohida ustun emas: `users.phone` (kirish raqami, `+998XXXXXXXXX`,
+  har doim bor) aloqa uchun ishlatiladi — bu allaqachon shunday edi.
+- `workers.telegram_username` (ixtiyoriy): `@` belgisiz saqlanadi, DB CHECK va umumiy zod sxemasi
+  bilan 5–32 belgi, faqat `A-Za-z0-9_`. `PATCH /me/worker` orqali hunarmand oʻzi belgilaydi
+  (`@` yozsa avtomatik olib tashlanadi); faqat ommaviy profilda emas, faqat shu endpoint orqali.
+- Kontakt (telefon **va** telegram) faqat `PHONE_VISIBLE_STATUSES` (accepted/in_progress/ready/
+  delivered) holatda `OrderDto.counterpart` da qaytadi — serverda, API javobining oʻzida; UI
+  yashirish emas. Undan oldin ikkalasi ham `null`, javob matnida ham umuman koʻrinmaydi (test
+  bilan tekshirilgan: `JSON.stringify` natijasida handle/telefon yoʻqligi).
+- `telegramUsername` faqat hunarmand tomoni uchun bor: buyurtmachi profilida bu maydon yoʻq,
+  shuning uchun hunarmand `counterpart.telegramUsername` doim `null` koʻradi.
+- Buyurtma sahifasida: telefon `tel:` havolasi (avvalgidek), handle boʻlsa yonida "Telegramda
+  yozish" tugmasi `https://t.me/<username>` ga ochiladi; boʻlmasa tugma koʻrinmaydi.

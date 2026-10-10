@@ -1,4 +1,4 @@
-import { Check } from 'lucide-react';
+import { Check, Send } from 'lucide-react';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useParams } from 'react-router-dom';
@@ -216,12 +216,25 @@ export default function OrderDetailPage() {
         </h2>
         <p>{order.counterpart.name}</p>
         {order.counterpart.phone ? (
-          <a
-            href={`tel:${order.counterpart.phone}`}
-            className="inline-flex min-h-12 items-center font-semibold underline"
-          >
-            {t('orders.phone')}: {order.counterpart.phone}
-          </a>
+          <div className="flex flex-wrap items-center gap-3">
+            <a
+              href={`tel:${order.counterpart.phone}`}
+              className="inline-flex min-h-12 items-center font-semibold underline"
+            >
+              {t('orders.phone')}: {order.counterpart.phone}
+            </a>
+            {order.counterpart.telegramUsername && (
+              <a
+                href={`https://t.me/${order.counterpart.telegramUsername}`}
+                target="_blank"
+                rel="noreferrer"
+                className={buttonClasses('secondary', 'md', 'gap-2')}
+              >
+                <Send className="size-4" aria-hidden="true" />
+                {t('orders.telegram')}
+              </a>
+            )}
+          </div>
         ) : (
           <p className="text-mocha">{t('orders.phoneHidden')}</p>
         )}

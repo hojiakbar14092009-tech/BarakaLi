@@ -20,7 +20,7 @@ const order = (commissionRate: number, commission: number, workerAmount: number)
   fulfillment: 'pickup',
   deliveryAddress: null,
   items: [],
-  counterpart: { name: 'Mijoz', phone: '+998901234567' },
+  counterpart: { name: 'Mijoz', phone: '+998901234567', telegramUsername: null },
   paymentStatus: 'paid',
   review: null,
   complaint: null,

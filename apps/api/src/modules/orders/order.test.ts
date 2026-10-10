@@ -359,6 +359,38 @@ describe('visibility', () => {
     expect(forWorker.body.counterpart.phone).toBe(buyer.phone);
   });
 
+  it("shows the worker's Telegram handle only after acceptance, and never to the worker side", async () => {
+    const telegram = await request(t.app)
+      .patch('/api/me/worker')
+      .set(bearer(seller.token))
+      .send({ telegramUsername: '@tikuvchi_usta' });
+    expect(telegram.status).toBe(200);
+    expect(telegram.body.workerTelegramUsername).toBe('tikuvchi_usta');
+
+    const product = await makeProduct(t, seller, { stock: 5 });
+    const order = await paidOrder(product);
+    const before = await request(t.app).get(`/api/orders/${order.id}`).set(bearer(buyer.token));
+    expect(before.body.counterpart.telegramUsername).toBeNull();
+    expect(JSON.stringify(before.body)).not.toContain('tikuvchi_usta');
+
+    await act(seller, order.id, 'accept');
+    const after = await request(t.app).get(`/api/orders/${order.id}`).set(bearer(buyer.token));
+    expect(after.body.counterpart.telegramUsername).toBe('tikuvchi_usta');
+
+    // The worker's own counterpart is the customer, who has no Telegram field at all.
+    const forWorker = await request(t.app).get(`/api/orders/${order.id}`).set(bearer(seller.token));
+    expect(forWorker.body.counterpart.telegramUsername).toBeNull();
+  });
+
+  it('is null when the worker never set a Telegram handle', async () => {
+    const product = await makeProduct(t, rival, { stock: 5 });
+    const order = await paidOrder(product);
+    await act(rival, order.id, 'accept');
+    const after = await request(t.app).get(`/api/orders/${order.id}`).set(bearer(buyer.token));
+    expect(after.body.counterpart.telegramUsername).toBeNull();
+    expect(after.body.counterpart.phone).toBe(rival.phone);
+  });
+
   it("prevents reading or listing other people's orders", async () => {
     const product = await makeProduct(t, seller, { stock: 5 });
     const order = await paidOrder(product);

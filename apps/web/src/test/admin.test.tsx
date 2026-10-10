@@ -68,6 +68,7 @@ describe('admin route guard', () => {
     workerName: null,
     workerStatus: null,
     workerRejectReason: null,
+    workerTelegramUsername: null,
   });
 
   it('sends anonymous visitors to sign in and non-admins home', () => {

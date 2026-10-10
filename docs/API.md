@@ -32,15 +32,16 @@ Yozuvchi so'rovlarda `Origin` boshqa domendan bo'lsa 403.
 
 ## Kirish
 
-| Yo'l                      | Kim    | So'rov                                                                 | Javob                                      |
-| ------------------------- | ------ | ---------------------------------------------------------------------- | ------------------------------------------ |
-| `POST /auth/request-code` | hamma  | `{ phone }` — `+998XXXXXXXXX`, `90 123 45 67` kabi variantlar          | `{ expiresInSeconds, code? }` ¹            |
-| `POST /auth/verify`       | hamma  | `{ phone, code (6 raqam), role?: 'customer'\|'worker', name? (2–80) }` | `AuthResponse`, refresh cookie o'rnatiladi |
-| `POST /auth/refresh`      | cookie | —                                                                      | `AuthResponse`, yangi refresh cookie       |
-| `POST /auth/logout`       | cookie | —                                                                      | 204                                        |
-| `GET /me`                 | kirgan | —                                                                      | `UserDto`                                  |
-| `PATCH /me`               | kirgan | `{ name (2–80), language?: 'uz'\|'ru' }`                               | `UserDto`                                  |
-| `POST /me/worker`         | kirgan | `{ displayName (2–80), categoryId (uuid), bio? (≤2000) }`              | 201 `UserDto` (`workerId` to'ldirilgan)    |
+| Yo'l                      | Kim       | So'rov                                                                                         | Javob                                      |
+| ------------------------- | --------- | ---------------------------------------------------------------------------------------------- | ------------------------------------------ |
+| `POST /auth/request-code` | hamma     | `{ phone }` — `+998XXXXXXXXX`, `90 123 45 67` kabi variantlar                                  | `{ expiresInSeconds, code? }` ¹            |
+| `POST /auth/verify`       | hamma     | `{ phone, code (6 raqam), role?: 'customer'\|'worker', name? (2–80) }`                         | `AuthResponse`, refresh cookie o'rnatiladi |
+| `POST /auth/refresh`      | cookie    | —                                                                                              | `AuthResponse`, yangi refresh cookie       |
+| `POST /auth/logout`       | cookie    | —                                                                                              | 204                                        |
+| `GET /me`                 | kirgan    | —                                                                                              | `UserDto`                                  |
+| `PATCH /me`               | kirgan    | `{ name (2–80), language?: 'uz'\|'ru' }`                                                       | `UserDto`                                  |
+| `POST /me/worker`         | kirgan    | `{ displayName (2–80), categoryId (uuid), bio? (≤2000) }`                                      | 201 `UserDto` (`workerId` to'ldirilgan)    |
+| `PATCH /me/worker`        | hunarmand | `{ telegramUsername: string \| null }` — `@` olib tashlanadi, 5–32 belgi, faqat harf/raqam/`_` | `UserDto`                                  |
 
 ¹ `code` faqat `EXPOSE_SMS_CODE=true` bo'lsa va raqam `ADMIN_PHONES` da bo'lmasa qaytadi. Kod 5 daqiqa
 amal qiladi, 5 noto'g'ri urinishdan keyin bloklanadi, bazada hash holida saqlanadi.
@@ -57,9 +58,10 @@ interface UserDto {
   role: 'customer' | 'worker' | 'admin';
   language: 'uz' | 'ru';
   workerId: string | null;
-  workerName: string | null;
+  workerName: string | null; // hunarmand profilining ommaviy nomi (PATCH /me nomni unga ham yozadi)
   workerStatus: 'pending' | 'approved' | 'rejected' | null; // o'z arizasi holati
-  workerRejectReason: string | null; // hunarmand profilining ommaviy nomi (PATCH /me nomni unga ham yozadi)
+  workerRejectReason: string | null;
+  workerTelegramUsername: string | null; // o'z profilining Telegram nomi (PATCH /me/worker bilan)
 }
 ```
 
@@ -231,7 +233,9 @@ interface OrderDto {
     quantity: number;
     priceType: 'retail' | 'wholesale';
   }[];
-  counterpart: { name: string | null; phone: string | null }; // phone: accepted/in_progress/ready/delivered da
+  // phone va telegramUsername faqat accepted/in_progress/ready/delivered holatda; telegramUsername
+  // faqat hunarmand tomoni uchun (buyurtmachida bu maydon yo'q)
+  counterpart: { name: string | null; phone: string | null; telegramUsername: string | null };
   paymentStatus: 'pending' | 'paid' | 'refunded' | 'failed' | null;
   review: ReviewDto | null;
   complaint: ComplaintDto | null;

@@ -42,5 +42,6 @@
   "ORDER_NOT_REFUNDABLE": "Bu buyurtma uchun pulni qaytarib boʻlmaydi.",
   "COMPLAINT_NOT_OPEN": "Bu shikoyat allaqachon koʻrib chiqilgan.",
   "ORDER_WORKER_MISMATCH": "Savatdagi mahsulot egasi mos kelmadi. Savatni yangilab, qayta urinib koʻring.",
-  "WORKER_NOT_APPROVED": "Profilingiz hali tasdiqlanmagan, shuning uchun buyurtmani qabul qila olmaysiz."
+  "WORKER_NOT_APPROVED": "Profilingiz hali tasdiqlanmagan, shuning uchun buyurtmani qabul qila olmaysiz.",
+  "INVALID_TELEGRAM_USERNAME": "Telegram foydalanuvchi nomi notoʻgʻri: 5–32 belgi, faqat harf, raqam va pastki chiziq (_)."
 }

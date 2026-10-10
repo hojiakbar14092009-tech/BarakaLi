@@ -78,6 +78,8 @@ export const MAX_COMPLAINT_REASON_LENGTH = 1000;
 
 export const MIN_NAME_LENGTH = 2;
 export const MAX_NAME_LENGTH = 80;
+export const MIN_TELEGRAM_USERNAME_LENGTH = 5;
+export const MAX_TELEGRAM_USERNAME_LENGTH = 32;
 export const MAX_TITLE_LENGTH = 120;
 export const MAX_DESCRIPTION_LENGTH = 2000;
 export const MAX_ADDRESS_LENGTH = 300;

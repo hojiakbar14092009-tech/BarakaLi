@@ -20,7 +20,9 @@ import {
   DEFAULT_PAGE_SIZE,
   MAX_DISCOUNT_PERCENT,
   MAX_REJECT_REASON_LENGTH,
+  MAX_TELEGRAM_USERNAME_LENGTH,
   MIN_REJECT_REASON_LENGTH,
+  MIN_TELEGRAM_USERNAME_LENGTH,
   MAX_MATERIAL_NAME_LENGTH,
   MAX_ORDER_DESCRIPTION_LENGTH,
   MAX_ORDER_IMAGES,
@@ -67,6 +69,22 @@ export const becomeWorkerSchema = z.object({
   bio: z.string().trim().max(MAX_DESCRIPTION_LENGTH).optional(),
 });
 export type BecomeWorkerInput = z.infer<typeof becomeWorkerSchema>;
+
+const TELEGRAM_USERNAME_PATTERN = new RegExp(
+  `^[A-Za-z0-9_]{${MIN_TELEGRAM_USERNAME_LENGTH},${MAX_TELEGRAM_USERNAME_LENGTH}}$`,
+);
+
+/** Strips one leading '@' (how people are used to typing a Telegram handle) before validating. */
+export const telegramUsernameSchema = z
+  .string()
+  .trim()
+  .transform((value) => (value.startsWith('@') ? value.slice(1) : value))
+  .pipe(z.string().regex(TELEGRAM_USERNAME_PATTERN, 'INVALID_TELEGRAM_USERNAME'));
+
+export const workerProfileSchema = z.object({
+  telegramUsername: telegramUsernameSchema.nullable(),
+});
+export type WorkerProfileInput = z.infer<typeof workerProfileSchema>;
 
 export const productInputSchema = z
   .object({

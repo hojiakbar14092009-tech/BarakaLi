@@ -35,6 +35,7 @@
   "counterpartCustomer": "Покупатель",
   "phone": "Телефон",
   "phoneHidden": "Номер телефона откроется после принятия заказа.",
+  "telegram": "Написать в Telegram",
   "payNow": "Оплатить",
   "progress": "Статус заказа",
   "actions": {

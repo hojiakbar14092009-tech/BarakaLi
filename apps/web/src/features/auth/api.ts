@@ -4,6 +4,7 @@ import type {
   RequestCodeResponse,
   UserDto,
   VerifyCodeInput,
+  WorkerProfileInput,
 } from '@barakali/shared';
 import { apiRequest } from '../../lib/api';
 
@@ -18,3 +19,6 @@ export const becomeWorker = (input: BecomeWorkerInput) =>
 
 export const updateProfile = (input: { name: string; language?: 'uz' | 'ru' }) =>
   apiRequest<UserDto>('/me', { method: 'PATCH', body: input, auth: true });
+
+export const updateWorkerProfile = (input: WorkerProfileInput) =>
+  apiRequest<UserDto>('/me/worker', { method: 'PATCH', body: input, auth: true });

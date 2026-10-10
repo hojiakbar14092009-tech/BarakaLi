@@ -109,7 +109,8 @@
     "INVALID_CVC": "CVC 3 ta raqamdan iborat.",
     "IMAGE_REQUIRED": "Chop etish uchun kamida bitta rasm qoʻshing.",
     "NOT_FOUND": "Tanlangan qiymat topilmadi.",
-    "INVALID_DATE": "Sanani toʻgʻri kiriting."
+    "INVALID_DATE": "Sanani toʻgʻri kiriting.",
+    "INVALID_TELEGRAM_USERNAME": "Telegram foydalanuvchi nomi notoʻgʻri: 5–32 belgi, faqat harf, raqam va pastki chiziq (_)."
   },
   "application": {
     "title": "Ariza holati",

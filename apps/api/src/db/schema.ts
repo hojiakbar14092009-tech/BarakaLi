@@ -33,6 +33,7 @@ export interface WorkersTable {
   reviewed_by: string | null;
   reviewed_at: Date | null;
   reject_reason: string | null;
+  telegram_username: string | null;
   created_at: CreatedAt;
 }
 

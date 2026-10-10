@@ -4,6 +4,7 @@ import {
   requestCodeSchema,
   updateProfileSchema,
   verifyCodeSchema,
+  workerProfileSchema,
 } from '@barakali/shared';
 import type { AppContext } from '../../context.js';
 import { createAuthMiddleware } from '../../middleware/auth.js';
@@ -28,7 +29,7 @@ export function createAuthRouter(ctx: AppContext): Router {
   const router = Router();
   const auth = new AuthService(ctx);
   const workers = new WorkersService(ctx);
-  const { requireAuth } = createAuthMiddleware(ctx);
+  const { requireAuth, requireWorker } = createAuthMiddleware(ctx);
   const limited = ctx.config.nodeEnv !== 'test';
 
   router.post('/auth/request-code', smsLimiter(limited), async (req, res) => {
@@ -67,6 +68,12 @@ export function createAuthRouter(ctx: AppContext): Router {
     const input = becomeWorkerSchema.parse(req.body);
     await workers.becomeWorker(req.auth?.userId ?? '', input);
     res.status(201).json(await auth.getUser(req.auth?.userId ?? ''));
+  });
+
+  router.patch('/me/worker', requireWorker, async (req, res) => {
+    const input = workerProfileSchema.parse(req.body);
+    await workers.setTelegramUsername(req.auth?.userId ?? '', input.telegramUsername);
+    res.json(await auth.getUser(req.auth?.userId ?? ''));
   });
 
   return router;
