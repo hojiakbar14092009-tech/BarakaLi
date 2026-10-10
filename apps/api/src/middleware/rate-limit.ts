@@ -32,9 +32,3 @@ export const smsLimiter = (enabled: boolean): RequestHandler =>
         return `${ipKeyGenerator(req.ip ?? '')}|${phone.replace(/\D/g, '')}`;
       })
     : (_req, _res, next) => next();
-
-/** Public catering enquiry form: a handful per IP is plenty for a person, too few for a flood. */
-export const CATERING_REQUESTS_PER_WINDOW = 5;
-
-export const cateringLimiter = (enabled: boolean): RequestHandler =>
-  enabled ? limiter(CATERING_REQUESTS_PER_WINDOW) : (_req, _res, next) => next();

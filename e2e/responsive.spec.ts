@@ -21,7 +21,6 @@ for (const viewport of VIEWPORTS) {
       }[];
       const routes = [
         '/',
-        '/catering',
         '/xizmatlar/tikuvchilik',
         `/mahsulot/${productId}`,
         `/hunarmand/${workers[0]?.id ?? ''}`,

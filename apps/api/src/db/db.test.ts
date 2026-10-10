@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { sql } from 'kysely';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createTestDb } from '../testing/test-db.js';
@@ -84,32 +85,32 @@ describe('database', () => {
     ).rejects.toThrow();
   });
 
-  it('stores catering requests and enforces guests and service type at the database level', async () => {
-    const base = {
-      name: 'Malika',
-      phone: '+998901234567',
-      service_type_id: 'pishiriq',
-      event_date: '2030-05-01',
-      guests_count: 30,
-    };
-    const saved = await db
-      .insertInto('catering_requests')
-      .values(base)
-      .returning(['status', 'note'])
-      .executeTakeFirstOrThrow();
-    expect(saved).toEqual({ status: 'new', note: '' });
-    await expect(
-      db
-        .insertInto('catering_requests')
-        .values({ ...base, guests_count: 0 })
-        .execute(),
-    ).rejects.toThrow();
-    await expect(
-      db
-        .insertInto('catering_requests')
-        .values({ ...base, service_type_id: 'masofaviy-ishlar' })
-        .execute(),
-    ).rejects.toThrow();
+  it('drops the empty catering requests table through the migration', async () => {
+    const result = await sql<{
+      name: string | null;
+    }>`select to_regclass('public.catering_requests')::text as name`.execute(db);
+    expect(result.rows[0]?.name).toBeNull();
+  });
+
+  it('keeps a catering requests table that still holds rows', async () => {
+    const file = new URL(
+      '../../migrations/1760001100000_drop_catering_requests.sql',
+      import.meta.url,
+    );
+    const { up } = parseMigration('drop', readFileSync(file, 'utf8'));
+    await sql`create table catering_requests (id int)`.execute(db);
+    await sql`insert into catering_requests values (1)`.execute(db);
+    await sql.raw(up).execute(db);
+    const kept = await sql<{ n: number }>`select count(*)::int as n from catering_requests`.execute(
+      db,
+    );
+    expect(kept.rows[0]?.n).toBe(1);
+    await sql`delete from catering_requests`.execute(db);
+    await sql.raw(up).execute(db);
+    const gone = await sql<{
+      name: string | null;
+    }>`select to_regclass('public.catering_requests')::text as name`.execute(db);
+    expect(gone.rows[0]?.name).toBeNull();
   });
 
   it('parses migrations and requires the up marker', () => {

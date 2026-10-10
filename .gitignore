@@ -15,7 +15,3 @@ coverage/
 playwright-report/
 test-results/
 
-# Raw catering photos (may contain third-party marks); only the generated WebP files are committed.
-apps/web/public/catering/*.jpg
-apps/web/public/catering/*.jpeg
-apps/web/public/catering/*.png

@@ -6,7 +6,6 @@ import { HomePage } from './features/home/HomePage';
 import { AppLayout } from './layout/AppLayout';
 import { useAuthStore } from './stores/auth';
 
-const CateringPage = lazy(() => import('./features/catering/CateringPage'));
 const CategoryPage = lazy(() => import('./features/catalog/CategoryPage'));
 const WorkerPage = lazy(() => import('./features/workers/WorkerPage'));
 const ProductPage = lazy(() => import('./features/products/ProductPage'));
@@ -38,7 +37,6 @@ const router = createBrowserRouter([
     element: <AppLayout />,
     children: [
       { path: '/', element: <HomePage /> },
-      { path: '/catering', element: <CateringPage /> },
       { path: '/xizmatlar/:kategoriya', element: <CategoryPage /> },
       { path: '/mahsulot/:id', element: <ProductPage /> },
       { path: '/savat', element: <CartPage /> },

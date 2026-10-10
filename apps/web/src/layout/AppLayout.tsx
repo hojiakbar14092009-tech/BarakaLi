@@ -1,7 +1,7 @@
-import { ShoppingBasket, UtensilsCrossed } from 'lucide-react';
+import { ShoppingBasket } from 'lucide-react';
 import { Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link, NavLink, Outlet } from 'react-router-dom';
+import { Link, Outlet } from 'react-router-dom';
 import { buttonClasses } from '../components/Button';
 import { LanguageSwitch } from '../components/LanguageSwitch';
 import { Logo } from '../components/Logo';
@@ -39,16 +39,6 @@ function Header() {
           <Logo />
         </Link>
         <div className="flex items-center gap-1">
-          {/* Catering is a desktop-only page (see docs/DECISIONS.md). */}
-          <NavLink
-            to="/catering"
-            className={({ isActive }) =>
-              `hidden min-h-12 items-center gap-2 rounded-field px-3 font-semibold hover:bg-bisque/60 lg:inline-flex ${isActive ? 'bg-bisque/60 text-espresso' : 'text-mocha'}`
-            }
-          >
-            <UtensilsCrossed className="size-5" strokeWidth={1.5} aria-hidden="true" />
-            {t('header.catering')}
-          </NavLink>
           <LanguageSwitch />
           <CartLink />
           {status === 'ready' && !user && (

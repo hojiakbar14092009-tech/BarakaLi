@@ -6,5 +6,3 @@ export * from './phone.js';
 export * from './schemas.js';
 export * from './slots.js';
 export * from './types.js';
-export * from './catering/request.js';
-export * from './catering/service-types.js';

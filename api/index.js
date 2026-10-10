@@ -21472,11 +21472,11 @@ var require_router = __commonJS({
     var slice = Array.prototype.slice;
     var flatten = Array.prototype.flat;
     var methods = METHODS.map((method) => method.toLowerCase());
-    module2.exports = Router13;
+    module2.exports = Router12;
     module2.exports.Route = Route;
-    function Router13(options) {
-      if (!(this instanceof Router13)) {
-        return new Router13(options);
+    function Router12(options) {
+      if (!(this instanceof Router12)) {
+        return new Router12(options);
       }
       const opts = options || {};
       function router(req, res, next) {
@@ -21490,9 +21490,9 @@ var require_router = __commonJS({
       router.stack = [];
       return router;
     }
-    Router13.prototype = function() {
+    Router12.prototype = function() {
     };
-    Router13.prototype.param = function param(name, fn) {
+    Router12.prototype.param = function param(name, fn) {
       if (!name) {
         throw new TypeError("argument name is required");
       }
@@ -21512,7 +21512,7 @@ var require_router = __commonJS({
       params.push(fn);
       return this;
     };
-    Router13.prototype.handle = function handle(req, res, callback) {
+    Router12.prototype.handle = function handle(req, res, callback) {
       if (!callback) {
         throw new TypeError("argument callback is required");
       }
@@ -21639,7 +21639,7 @@ var require_router = __commonJS({
         }
       }
     };
-    Router13.prototype.use = function use(handler) {
+    Router12.prototype.use = function use(handler) {
       let offset = 0;
       let path = "/";
       if (typeof handler !== "function") {
@@ -21672,7 +21672,7 @@ var require_router = __commonJS({
       }
       return this;
     };
-    Router13.prototype.route = function route(path) {
+    Router12.prototype.route = function route(path) {
       const route2 = new Route(path);
       const layer = new Layer(path, {
         sensitive: this.caseSensitive,
@@ -21687,7 +21687,7 @@ var require_router = __commonJS({
       return route2;
     };
     methods.concat("all").forEach(function(method) {
-      Router13.prototype[method] = function(path) {
+      Router12.prototype[method] = function(path) {
         const route = this.route(path);
         route[method].apply(route, slice.call(arguments, 1));
         return this;
@@ -21870,7 +21870,7 @@ var require_application = __commonJS({
     var compileTrust = require_utils3().compileTrust;
     var resolve = require("node:path").resolve;
     var once = require_once();
-    var Router13 = require_router();
+    var Router12 = require_router();
     var slice = Array.prototype.slice;
     var flatten = Array.prototype.flat;
     var app = exports2 = module2.exports = {};
@@ -21886,7 +21886,7 @@ var require_application = __commonJS({
         enumerable: true,
         get: function getrouter() {
           if (router === null) {
-            router = new Router13({
+            router = new Router12({
               caseSensitive: this.enabled("case sensitive routing"),
               strict: this.enabled("strict routing")
             });
@@ -24240,7 +24240,7 @@ var require_express = __commonJS({
     var EventEmitter = require("node:events").EventEmitter;
     var mixin = require_merge_descriptors();
     var proto = require_application();
-    var Router13 = require_router();
+    var Router12 = require_router();
     var req = require_request();
     var res = require_response();
     exports2 = module2.exports = createApplication;
@@ -24262,8 +24262,8 @@ var require_express = __commonJS({
     exports2.application = proto;
     exports2.request = req;
     exports2.response = res;
-    exports2.Route = Router13.Route;
-    exports2.Router = Router13;
+    exports2.Route = Router12.Route;
+    exports2.Router = Router12;
     exports2.json = bodyParser.json;
     exports2.raw = bodyParser.raw;
     exports2.static = require_serve_static();
@@ -66688,12 +66688,12 @@ var migrations_default = [{ "name": "1760000000000_core.sql", "up": "CREATE EXTE
 -- chosen for new workers or products.
 ALTER TABLE categories ADD COLUMN is_active boolean NOT NULL DEFAULT true;
 
-UPDATE categories SET is_active = false WHERE slug = 'masofaviy-ishlar';` }, { "name": "1760001000000_catering_requests.sql", "up": "-- Catering enquiries from the landing page. Not an order: no price, no payment; the team calls back.\n-- service_type_id mirrors CATERING_SERVICE_IDS in packages/shared.\nCREATE TABLE catering_requests (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  name text NOT NULL,\n  phone text NOT NULL,\n  service_type_id text NOT NULL\n    CHECK (service_type_id IN ('tikuvchilik', 'pishiriq', 'qolmehnat', 'dizayn', 'boshqa')),\n  event_date date NOT NULL,\n  guests_count integer NOT NULL CHECK (guests_count >= 1),\n  note text NOT NULL DEFAULT '',\n  status text NOT NULL DEFAULT 'new' CHECK (status IN ('new', 'contacted', 'closed')),\n  created_at timestamptz NOT NULL DEFAULT now()\n);\n\nCREATE INDEX catering_requests_status_created_idx ON catering_requests (status, created_at DESC);" }];
+UPDATE categories SET is_active = false WHERE slug = 'masofaviy-ishlar';` }, { "name": "1760001000000_catering_requests.sql", "up": "-- Catering enquiries from the landing page. Not an order: no price, no payment; the team calls back.\n-- service_type_id mirrors CATERING_SERVICE_IDS in packages/shared.\nCREATE TABLE catering_requests (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  name text NOT NULL,\n  phone text NOT NULL,\n  service_type_id text NOT NULL\n    CHECK (service_type_id IN ('tikuvchilik', 'pishiriq', 'qolmehnat', 'dizayn', 'boshqa')),\n  event_date date NOT NULL,\n  guests_count integer NOT NULL CHECK (guests_count >= 1),\n  note text NOT NULL DEFAULT '',\n  status text NOT NULL DEFAULT 'new' CHECK (status IN ('new', 'contacted', 'closed')),\n  created_at timestamptz NOT NULL DEFAULT now()\n);\n\nCREATE INDEX catering_requests_status_created_idx ON catering_requests (status, created_at DESC);" }, { "name": "1760001100000_drop_catering_requests.sql", "up": "-- The catering section was removed. The table is dropped only when it holds no rows; if enquiries\n-- exist they are left untouched for the team to export first (nothing in the app reads them).\nDO $$\nBEGIN\n  IF to_regclass('public.catering_requests') IS NOT NULL THEN\n    IF (SELECT count(*) FROM catering_requests) = 0 THEN\n      DROP TABLE catering_requests;\n    ELSE\n      RAISE NOTICE 'catering_requests has rows; table kept';\n    END IF;\n  END IF;\nEND\n$$;" }];
 
 // src/app.ts
 var import_cookie_parser = __toESM(require_cookie_parser(), 1);
 var import_cors = __toESM(require_lib(), 1);
-var import_express13 = __toESM(require_express2(), 1);
+var import_express12 = __toESM(require_express2(), 1);
 
 // ../../node_modules/.pnpm/helmet@8.3.0/node_modules/helmet/index.mjs
 var dashify = (str) => str.replace(/[A-Z]/g, (capitalLetter) => "-" + capitalLetter.toLowerCase());
@@ -72543,8 +72543,6 @@ var smsLimiter = (enabled) => enabled ? limiter(8, (req) => {
   const phone = typeof req.body?.phone === "string" ? req.body.phone : "";
   return `${ipKeyGenerator(req.ip ?? "")}|${phone.replace(/\D/g, "")}`;
 }) : (_req, _res, next) => next();
-var CATERING_REQUESTS_PER_WINDOW = 5;
-var cateringLimiter = (enabled) => enabled ? limiter(CATERING_REQUESTS_PER_WINDOW) : (_req, _res, next) => next();
 
 // src/modules/auth/auth.routes.ts
 var import_express = __toESM(require_express2(), 1);
@@ -72835,38 +72833,6 @@ var OFFSET_MS = TASHKENT_UTC_OFFSET_HOURS * HOUR_MS;
 function rangeContains(outer, inner) {
   return outer.start <= inner.start && inner.end <= outer.end;
 }
-
-// ../../packages/shared/src/catering/service-types.ts
-var CATERING_OTHER_SERVICE_ID = "boshqa";
-var CATERING_SERVICE_IDS = [
-  "tikuvchilik",
-  "pishiriq",
-  "qolmehnat",
-  "dizayn",
-  CATERING_OTHER_SERVICE_ID
-];
-
-// ../../packages/shared/src/catering/request.ts
-var CATERING_MIN_GUESTS = 1;
-var CATERING_MAX_GUESTS = 5e3;
-var CATERING_MAX_NOTE_LENGTH = 1e3;
-var HOUR_MS2 = 36e5;
-function tashkentToday(now = /* @__PURE__ */ new Date()) {
-  return new Date(now.getTime() + TASHKENT_UTC_OFFSET_HOURS * HOUR_MS2).toISOString().slice(0, 10);
-}
-function isFutureEventDate(date, now = /* @__PURE__ */ new Date()) {
-  const parsed = /* @__PURE__ */ new Date(`${date}T00:00:00Z`);
-  if (Number.isNaN(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== date) return false;
-  return date > tashkentToday(now);
-}
-var cateringRequestSchema = external_exports.object({
-  name: external_exports.string().trim().min(MIN_NAME_LENGTH).max(MAX_NAME_LENGTH),
-  phone: phoneSchema,
-  serviceTypeId: external_exports.enum(CATERING_SERVICE_IDS),
-  eventDate: external_exports.string().regex(/^\d{4}-\d{2}-\d{2}$/, "INVALID_DATE").refine((value) => isFutureEventDate(value), "DATE_NOT_IN_FUTURE"),
-  guestsCount: external_exports.number().int().min(CATERING_MIN_GUESTS).max(CATERING_MAX_GUESTS),
-  note: external_exports.string().trim().max(CATERING_MAX_NOTE_LENGTH).default("")
-});
 
 // src/modules/auth/tokens.ts
 var import_node_crypto2 = require("node:crypto");
@@ -74238,7 +74204,7 @@ var isExclusionViolation = (error) => hasCode(error, EXCLUSION_VIOLATION);
 
 // src/modules/jobs/order-expiry.ts
 var MINUTE_MS2 = 60 * 1e3;
-var HOUR_MS3 = 60 * MINUTE_MS2;
+var HOUR_MS2 = 60 * MINUTE_MS2;
 var REFUND_BATCH = 50;
 async function expireUnpaidOrders(db2, now) {
   const cutoff = new Date(now.getTime() - UNPAID_ORDER_TTL_MINUTES * MINUTE_MS2);
@@ -74254,7 +74220,7 @@ async function expireUnpaidOrders(db2, now) {
   });
 }
 async function refundUnacceptedOrders(ctx, now) {
-  const cutoff = new Date(now.getTime() - WORKER_ACCEPT_TTL_HOURS * HOUR_MS3);
+  const cutoff = new Date(now.getTime() - WORKER_ACCEPT_TTL_HOURS * HOUR_MS2);
   const stale = await ctx.db.selectFrom("orders").select("id").where("status", "=", "new").where("updated_at", "<", cutoff).orderBy("updated_at").limit(REFUND_BATCH).execute();
   let refunded = 0;
   for (const { id } of stale) {
@@ -74294,8 +74260,8 @@ async function expireUnpaidMaterialOrders(db2, now) {
 }
 
 // src/modules/calendar/availability.service.ts
-var HOUR_MS4 = 60 * 60 * 1e3;
-var DAY_MS2 = 24 * HOUR_MS4;
+var HOUR_MS3 = 60 * 60 * 1e3;
+var DAY_MS2 = 24 * HOUR_MS3;
 var AvailabilityService = class {
   constructor(ctx, now = () => /* @__PURE__ */ new Date()) {
     this.ctx = ctx;
@@ -74332,7 +74298,7 @@ var AvailabilityService = class {
     const now = this.now();
     const length2 = end.getTime() - start.getTime();
     const horizon = now.getTime() + AVAILABILITY_HORIZON_DAYS * DAY_MS2;
-    if (length2 <= 0 || length2 > MAX_AVAILABILITY_HOURS * HOUR_MS4 || start <= now) {
+    if (length2 <= 0 || length2 > MAX_AVAILABILITY_HOURS * HOUR_MS3 || start <= now) {
       throw AppError.badRequest("AVAILABILITY_INVALID");
     }
     if (start.getTime() > horizon) throw AppError.badRequest("AVAILABILITY_INVALID");
@@ -74694,42 +74660,8 @@ function createCatalogRouter(ctx) {
   return router;
 }
 
-// src/modules/catering/catering.routes.ts
-var import_express5 = __toESM(require_express2(), 1);
-
-// src/modules/catering/catering.service.ts
-var CateringService = class {
-  db;
-  constructor(ctx) {
-    this.db = ctx.db;
-  }
-  /** Stores an enquiry for the team to call back; nothing is ordered or paid at this point. */
-  async createRequest(input) {
-    return this.db.insertInto("catering_requests").values({
-      name: input.name,
-      phone: input.phone,
-      service_type_id: input.serviceTypeId,
-      event_date: input.eventDate,
-      guests_count: input.guestsCount,
-      note: input.note
-    }).returning("id").executeTakeFirstOrThrow();
-  }
-};
-
-// src/modules/catering/catering.routes.ts
-function createCateringRouter(ctx) {
-  const router = (0, import_express5.Router)();
-  const catering = new CateringService(ctx);
-  const limited = ctx.config.nodeEnv !== "test";
-  router.post("/catering-requests", cateringLimiter(limited), async (req, res) => {
-    const input = cateringRequestSchema.parse(req.body);
-    res.status(201).json(await catering.createRequest(input));
-  });
-  return router;
-}
-
 // src/modules/feedback/feedback.routes.ts
-var import_express6 = __toESM(require_express2(), 1);
+var import_express5 = __toESM(require_express2(), 1);
 var idSchema = external_exports.string().uuid();
 function orderId(req) {
   const parsed = idSchema.safeParse(req.params.id);
@@ -74737,7 +74669,7 @@ function orderId(req) {
   return parsed.data;
 }
 function createFeedbackRouter(ctx) {
-  const router = (0, import_express6.Router)();
+  const router = (0, import_express5.Router)();
   const feedback = new FeedbackService(ctx);
   const { requireAuth } = createAuthMiddleware(ctx);
   router.post("/orders/:id/review", requireAuth, async (req, res) => {
@@ -74752,11 +74684,11 @@ function createFeedbackRouter(ctx) {
 }
 
 // src/modules/files/files.routes.ts
-var import_express7 = __toESM(require_express2(), 1);
+var import_express6 = __toESM(require_express2(), 1);
 var FILE_NAME_PATTERN = /^[a-f0-9-]{36}\.(webp|glb)$/;
 var ONE_YEAR_SECONDS = 31536e3;
 function createFilesRouter(ctx) {
-  const router = (0, import_express7.Router)();
+  const router = (0, import_express6.Router)();
   router.get("/files/:name", async (req, res) => {
     const name = req.params.name ?? "";
     if (!FILE_NAME_PATTERN.test(name)) throw AppError.notFound();
@@ -74772,7 +74704,7 @@ function createFilesRouter(ctx) {
 }
 
 // src/modules/notifications/notification.routes.ts
-var import_express8 = __toESM(require_express2(), 1);
+var import_express7 = __toESM(require_express2(), 1);
 var UUID_PATTERN4 = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 function orderIdParam(req) {
   const value = req.params.orderId;
@@ -74780,7 +74712,7 @@ function orderIdParam(req) {
   return value;
 }
 function createNotificationRouter(ctx) {
-  const router = (0, import_express8.Router)();
+  const router = (0, import_express7.Router)();
   const service = new NotificationService(ctx);
   const { requireAuth } = createAuthMiddleware(ctx);
   const userId = (req) => req.auth?.userId ?? "";
@@ -74799,7 +74731,7 @@ function createNotificationRouter(ctx) {
 }
 
 // src/modules/materials/material.routes.ts
-var import_express9 = __toESM(require_express2(), 1);
+var import_express8 = __toESM(require_express2(), 1);
 var UUID_PATTERN5 = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 function idParam3(req) {
   const value = req.params.id;
@@ -74807,7 +74739,7 @@ function idParam3(req) {
   return value;
 }
 function createMaterialRouter(ctx) {
-  const router = (0, import_express9.Router)();
+  const router = (0, import_express8.Router)();
   const service = new MaterialService(ctx);
   const { requireWorker } = createAuthMiddleware(ctx);
   const workerId = (req) => req.workerId ?? "";
@@ -74835,7 +74767,7 @@ function createMaterialRouter(ctx) {
 }
 
 // src/modules/savings/savings.routes.ts
-var import_express10 = __toESM(require_express2(), 1);
+var import_express9 = __toESM(require_express2(), 1);
 
 // src/modules/savings/savings.service.ts
 var SavingsService = class {
@@ -74866,7 +74798,7 @@ var SavingsService = class {
 
 // src/modules/savings/savings.routes.ts
 function createSavingsRouter(ctx) {
-  const router = (0, import_express10.Router)();
+  const router = (0, import_express9.Router)();
   const service = new SavingsService(ctx);
   const { requireWorker } = createAuthMiddleware(ctx);
   const workerId = (req) => req.workerId ?? "";
@@ -74886,7 +74818,7 @@ function createSavingsRouter(ctx) {
 
 // src/modules/orders/order.routes.ts
 var import_node_crypto4 = require("node:crypto");
-var import_express11 = __toESM(require_express2(), 1);
+var import_express10 = __toESM(require_express2(), 1);
 
 // src/middleware/upload.ts
 var import_multer = __toESM(require_multer(), 1);
@@ -75127,7 +75059,7 @@ var OrderService = class {
 };
 
 // src/modules/orders/service-order.service.ts
-var HOUR_MS5 = 60 * 60 * 1e3;
+var HOUR_MS4 = 60 * 60 * 1e3;
 var NEW_REQUEST_SMS = "BarakaLi: yangi buyurtma / \u043D\u043E\u0432\u044B\u0439 \u0437\u0430\u043A\u0430\u0437";
 var IMAGE_CONTENT_TYPE = "image/webp";
 var ServiceOrderService = class {
@@ -75146,7 +75078,7 @@ var ServiceOrderService = class {
   async create(customerId, input) {
     const now = this.now();
     const start = new Date(input.startTime);
-    const end = new Date(start.getTime() + input.hours * HOUR_MS5);
+    const end = new Date(start.getTime() + input.hours * HOUR_MS4);
     if (start <= now) throw AppError.badRequest("SLOT_IN_PAST");
     await expireUnpaidOrders(this.ctx.db, now);
     const worker = await this.ctx.db.selectFrom("workers").select(["id", "user_id", "status"]).where("id", "=", input.workerId).executeTakeFirst();
@@ -75227,7 +75159,7 @@ function orderId2(req) {
   return parsed.data;
 }
 function createOrderRouter(ctx) {
-  const router = (0, import_express11.Router)();
+  const router = (0, import_express10.Router)();
   const orders = new OrderService(ctx);
   const serviceOrders = new ServiceOrderService(ctx);
   const payments = new PaymentService(ctx);
@@ -75398,7 +75330,7 @@ function createPaymentProvider(config2) {
 }
 
 // src/modules/products/product.routes.ts
-var import_express12 = __toESM(require_express2(), 1);
+var import_express11 = __toESM(require_express2(), 1);
 
 // src/modules/products/product.service.ts
 var import_node_crypto6 = require("node:crypto");
@@ -80558,7 +80490,7 @@ function idParam4(req, name = "id") {
   return value;
 }
 function createProductRouter(ctx) {
-  const router = (0, import_express12.Router)();
+  const router = (0, import_express11.Router)();
   const service = new ProductService(ctx);
   const { requireWorker } = createAuthMiddleware(ctx);
   const workerId = (req) => req.workerId ?? "";
@@ -80633,15 +80565,15 @@ function createApp(options) {
   if (config2.isProduction && ctx.payments.name === "internal") {
     logger.warn("Real payment provider is not connected: PAYMENT_PROVIDER=internal");
   }
-  const app = (0, import_express13.default)();
+  const app = (0, import_express12.default)();
   app.set("trust proxy", 1);
   app.disable("x-powered-by");
   app.use(helmet({ crossOriginResourcePolicy: { policy: "same-site" } }));
   app.use((0, import_cors.default)({ origin: config2.allowedOrigins, credentials: true }));
   app.use(originGuard(config2.allowedOrigins));
-  app.use(import_express13.default.json({ limit: "100kb" }));
+  app.use(import_express12.default.json({ limit: "100kb" }));
   app.use((0, import_cookie_parser.default)());
-  const api = import_express13.default.Router();
+  const api = import_express12.default.Router();
   api.get("/health", (_req, res) => {
     res.json({ status: "ok" });
   });
@@ -80650,7 +80582,6 @@ function createApp(options) {
   api.use(createAuthRouter(ctx));
   if (options.requestDrivenJobs) api.use(requestDrivenMaintenance(ctx));
   api.use(createCatalogRouter(ctx));
-  api.use(createCateringRouter(ctx));
   api.use(createCalendarRouter(ctx));
   api.use(createProductRouter(ctx));
   api.use(createOrderRouter(ctx));

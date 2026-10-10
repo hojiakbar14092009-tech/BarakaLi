@@ -458,28 +458,6 @@ interface AdminComplaintDto {
 }
 ```
 
-## Catering so'rovi
-
-`POST /catering-requests` (ommaviy, kirish shart emas; IP bo'yicha 15 daqiqada 5 ta). Bu buyurtma
-emas: narx va to'lov yo'q, jamoa qo'ng'iroq qiladi.
-
-```ts
-// so'rov (CateringRequestRaw)
-{
-  name: string;            // 2–80 belgi
-  phone: string;           // O'zbekiston raqami, +998XXXXXXXXX ga keltiriladi
-  serviceTypeId: 'tikuvchilik' | 'pishiriq' | 'qolmehnat' | 'dizayn' | 'boshqa';
-  eventDate: string;       // YYYY-MM-DD, Toshkent bo'yicha bugundan keyin
-  guestsCount: number;     // 1–5000
-  note?: string;           // 1000 belgigacha
-}
-// javob 201
-{ id: string }
-```
-
-Xatolar: 400 `VALIDATION_ERROR` (`details`: `INVALID_PHONE`, `DATE_NOT_IN_FUTURE`, `INVALID_DATE` va
-zod xabarlari), 429 `RATE_LIMITED`. Telefon javobda qaytmaydi va logga yozilmaydi.
-
 ## Salomatlik
 
 `GET /health` → `{ "status": "ok" }` (migratsiyani kutmaydi).
