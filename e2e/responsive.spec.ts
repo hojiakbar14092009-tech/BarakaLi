@@ -72,14 +72,22 @@ for (const viewport of VIEWPORTS) {
       await request.dispose();
     });
 
-    test('admin panel tabs stay within the screen', async ({ page, context }) => {
+    test('admin sections stay within the screen', async ({ page, context }) => {
       await loginAsAdmin(context);
       await page.goto('/admin');
       await page.waitForLoadState('networkidle');
-      for (const tab of ['Hunarmandlar', 'Buyurtmalar', 'Sharhlar', 'Shikoyatlar', 'Materiallar']) {
-        await page.getByRole('tab', { name: tab }).click();
+      expect(await hasHorizontalScroll(page)).toBe(false);
+      for (const path of [
+        '/admin/hunarmandlar',
+        '/admin/buyurtmalar',
+        '/admin/sharhlar',
+        '/admin/materiallar',
+        '/admin/audit',
+      ]) {
+        await page.goto(path);
         await page.waitForLoadState('networkidle');
-        expect(await hasHorizontalScroll(page)).toBe(false);
+        expect(await hasHorizontalScroll(page), path).toBe(false);
+        expect(await smallTouchTargets(page), path).toEqual([]);
       }
     });
   });

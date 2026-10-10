@@ -1,15 +1,6 @@
 {
   "title": "Boshqaruv paneli",
-  "sections": "Boʻlimlar",
   "filter": "Filtr",
-  "tabs": {
-    "stats": "Statistika",
-    "workers": "Hunarmandlar",
-    "orders": "Buyurtmalar",
-    "reviews": "Sharhlar",
-    "complaints": "Shikoyatlar",
-    "materials": "Materiallar"
-  },
   "stats": {
     "users": "Foydalanuvchilar",
     "workers": "Hunarmandlar",
@@ -94,5 +85,58 @@
     "orders": "Hunarmandlarning buyurtmalari",
     "noOrders": "Hozircha buyurtma yoʻq.",
     "deliver": "Topshirildi"
+  },
+  "nav": {
+    "label": "Boshqaruv boʻlimlari",
+    "menu": "Boʻlimlar",
+    "dashboard": "Boshqaruv paneli",
+    "workers": "Hunarmandlar",
+    "products": "Mahsulotlar",
+    "orders": "Buyurtmalar",
+    "users": "Foydalanuvchilar",
+    "moderation": "Sharhlar va shikoyatlar",
+    "categories": "Xizmat turlari",
+    "materials": "Materiallar",
+    "settings": "Sozlamalar",
+    "audit": "Audit jurnali"
+  },
+  "dashboard": {
+    "pending": "Kutilayotgan arizalar",
+    "review": "Arizalarni koʻrish",
+    "ordersToday": "Bugungi buyurtmalar",
+    "openOrders": "Buyurtmalarga oʻtish",
+    "turnover": "Jami buyurtma hajmi",
+    "commission": "Komissiya jami ({{percent}}%)",
+    "commissionNote": "Stavka kod konstantasi, sozlamalarda koʻrinadi",
+    "complaints": "Ochiq shikoyatlar",
+    "openComplaints": "Shikoyatlarni koʻrish",
+    "emptyTitle": "Hozircha maʼlumot yoʻq",
+    "emptyHint": "Birinchi hunarmand ariza topshirgach u shu yerda koʻrinadi. Avval sozlamalarda arizalar qabul qilinishini tekshiring."
+  },
+  "audit": {
+    "intro": "Har bir administrator amali: kim, nima va qachon. Telefon raqamlari bu yerda saqlanmaydi.",
+    "emptyTitle": "Hali yozuv yoʻq",
+    "emptyHint": "Birinchi tasdiqlash yoki rad etish shu yerda koʻrinadi.",
+    "unknownAdmin": "Administrator",
+    "actions": {
+      "worker.approve": "Hunarmand tasdiqlandi",
+      "worker.reject": "Hunarmand rad etildi",
+      "review.hide": "Sharh yashirildi",
+      "review.show": "Sharh qayta koʻrsatildi",
+      "complaint.resolve": "Shikoyat hal qilindi",
+      "complaint.dismiss": "Shikoyat rad etildi",
+      "order.refund": "Buyurtma puli qaytarildi",
+      "material.create": "Material qoʻshildi",
+      "material.update": "Material yangilandi",
+      "material_order.deliver": "Material buyurtmasi topshirildi"
+    }
+  },
+  "notReady": {
+    "title": "Bu boʻlim hali tayyor emas",
+    "hint": "Keyingi yangilanishda qoʻshiladi."
+  },
+  "moderation": {
+    "reviews": "Sharhlar",
+    "complaints": "Shikoyatlar"
   }
 }

@@ -1,4 +1,5 @@
 import { sql } from 'kysely';
+import { TASHKENT_UTC_OFFSET_HOURS } from '@barakali/shared';
 import {
   ADMIN_PAGE_SIZE,
   WORKER_STATUSES,
@@ -23,6 +24,14 @@ import { writeAudit } from './audit.js';
 
 const RATING_DECIMALS = 100;
 const FEATURED_CACHE_KEY = 'workers:featured';
+const HOUR_MS = 3_600_000;
+
+/** Midnight of the current Tashkent day (fixed UTC+5, no DST) as a UTC instant. */
+export function tashkentDayStart(now: Date): Date {
+  const shifted = new Date(now.getTime() + TASHKENT_UTC_OFFSET_HOURS * HOUR_MS);
+  shifted.setUTCHours(0, 0, 0, 0);
+  return new Date(shifted.getTime() - TASHKENT_UTC_OFFSET_HOURS * HOUR_MS);
+}
 
 /** Rating after one rating is taken out; the inverse of `nextRating`, 0 when none remain. */
 export function ratingWithout(current: number, count: number, removed: number): number {
@@ -45,7 +54,7 @@ export class AdminService {
     const db = this.ctx.db;
     const count = async (query: { executeTakeFirstOrThrow(): Promise<{ n: unknown }> }) =>
       Number((await query.executeTakeFirstOrThrow()).n);
-    const [users, workerCounts, statuses, money, complaints, hidden] = await Promise.all([
+    const [users, workerCounts, statuses, money, complaints, hidden, today] = await Promise.all([
       count(db.selectFrom('users').select((eb) => eb.fn.countAll().as('n'))),
       db
         .selectFrom('workers')
@@ -76,6 +85,12 @@ export class AdminService {
           .select((eb) => eb.fn.countAll().as('n'))
           .where('status', '=', 'hidden'),
       ),
+      count(
+        db
+          .selectFrom('orders')
+          .select((eb) => eb.fn.countAll().as('n'))
+          .where('created_at', '>=', tashkentDayStart(this.now())),
+      ),
     ]);
     const commission = Number(money.commission);
     const byStatus = (status: string) =>
@@ -87,6 +102,7 @@ export class AdminService {
       pendingWorkers: byStatus('pending'),
       rejectedWorkers: byStatus('rejected'),
       ordersByStatus: Object.fromEntries(statuses.map((row) => [row.status, Number(row.n)])),
+      ordersToday: today,
       turnover: Number(money.worker) + commission,
       commission,
       openComplaints: complaints,

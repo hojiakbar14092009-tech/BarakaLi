@@ -21,8 +21,19 @@ const NewServiceOrderPage = lazy(() => import('./features/orders/NewServiceOrder
 const MaterialsPage = lazy(() => import('./features/materials/MaterialsPage'));
 const MaterialPaymentPage = lazy(() => import('./features/materials/MaterialPaymentPage'));
 const LessonsPage = lazy(() => import('./features/lessons/LessonsPage'));
-const AdminPage = lazy(() => import('./features/admin/AdminPage'));
-const AdminWorkersPage = lazy(() => import('./features/admin/AdminWorkersPage'));
+const AdminLayout = lazy(() => import('./features/admin/AdminLayout'));
+const DashboardPage = lazy(() => import('./features/admin/DashboardPage'));
+const AuditPage = lazy(() => import('./features/admin/AuditPage'));
+const adminSection = (name: keyof typeof import('./features/admin/sectionPages')) =>
+  lazy(() => import('./features/admin/sectionPages').then((m) => ({ default: m[name] })));
+const AdminWorkersPage = adminSection('AdminWorkersPage');
+const AdminProductsPage = adminSection('AdminProductsPage');
+const AdminOrdersPage = adminSection('AdminOrdersPage');
+const AdminUsersPage = adminSection('AdminUsersPage');
+const AdminModerationPage = adminSection('AdminModerationPage');
+const AdminCategoriesPage = adminSection('AdminCategoriesPage');
+const AdminMaterialsPage = adminSection('AdminMaterialsPage');
+const AdminSettingsPage = adminSection('AdminSettingsPage');
 const ProfilePage = lazy(() => import('./features/profile/ProfilePage'));
 const AuthPage = lazy(() => import('./features/auth/AuthPage'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
@@ -58,8 +69,22 @@ const router = createBrowserRouter([
       {
         element: <RequireAuth role="admin" />,
         children: [
-          { path: '/admin', element: <AdminPage /> },
-          { path: '/admin/hunarmandlar', element: <AdminWorkersPage /> },
+          {
+            path: '/admin',
+            element: <AdminLayout />,
+            children: [
+              { index: true, element: <DashboardPage /> },
+              { path: 'hunarmandlar', element: <AdminWorkersPage /> },
+              { path: 'mahsulotlar', element: <AdminProductsPage /> },
+              { path: 'buyurtmalar', element: <AdminOrdersPage /> },
+              { path: 'foydalanuvchilar', element: <AdminUsersPage /> },
+              { path: 'sharhlar', element: <AdminModerationPage /> },
+              { path: 'xizmat-turlari', element: <AdminCategoriesPage /> },
+              { path: 'materiallar', element: <AdminMaterialsPage /> },
+              { path: 'sozlamalar', element: <AdminSettingsPage /> },
+              { path: 'audit', element: <AuditPage /> },
+            ],
+          },
         ],
       },
       {

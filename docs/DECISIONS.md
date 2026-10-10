@@ -264,3 +264,16 @@ Brifdagi noaniqliklar bo'yicha qabul qilingan qarorlar. Yangi qaror oxiriga qo's
   tekshiruvdan oʻtadi.
 - Oddiy foydalanuvchi `/admin` ga kirsa 403 sahifasi va "Bosh sahifaga qaytish" tugmasi; admin kirgach
   `next` boʻlmasa `/admin` ga yoʻnaltiriladi. Haqiqiy himoya serverda (`requireAdmin`, `/api/admin/*`).
+
+## Admin qobigʻi (2026-10-10)
+
+- `/admin` endi tablar emas, alohida sahifalar: kompyuterda chap sidebar, telefon/planshetda yuqoridan
+  ochiladigan drawer (fokus ichkariga oʻtadi, Esc yopadi, fokus tugmaga qaytadi). Joriy sahifa
+  `aria-current="page"`.
+- Sidebarda brifdagi 9 boʻlimdan tashqari **Materiallar** ham bor: materiallar doʻkoni admin boshqaradigan
+  ishlayotgan funksiya, uni yoʻqotmaslik uchun qoldirildi.
+- Boshqaruv paneli kartalari (`/admin/stats`): kutilayotgan arizalar, bugungi buyurtmalar (Toshkent
+  kuni boʻyicha, `ordersToday`), jami buyurtma hajmi, komissiya jami (2%), ochiq shikoyatlar; har
+  kartada tegishli boʻlimga havola. Maʼlumot yoʻq boʻlsa bitta yoʻl-yoʻriqli boʻsh holat.
+- Mahsulotlar, Foydalanuvchilar, Xizmat turlari, Sozlamalar sahifalari hozircha "Bu boʻlim hali tayyor
+  emas" holatini koʻrsatadi (keyingi bosqichlarda toʻldiriladi); havolalar buzilmaydi.

@@ -18,10 +18,7 @@ export function OrdersTab() {
   const locale = i18n.language === 'ru' ? 'ru-RU' : 'uz-UZ';
 
   return (
-    <section aria-labelledby="admin-orders" className="space-y-3">
-      <h2 id="admin-orders" className="sr-only">
-        {t('admin.tabs.orders')}
-      </h2>
+    <div className="space-y-3">
       <SelectField
         label={t('admin.orders.status')}
         value={status}
@@ -75,6 +72,6 @@ export function OrdersTab() {
           onChange={setPage}
         />
       )}
-    </section>
+    </div>
   );
 }

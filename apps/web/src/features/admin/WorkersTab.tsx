@@ -63,10 +63,7 @@ export function WorkersTab() {
   const locale = i18n.language === 'ru' ? 'ru-RU' : 'uz-UZ';
 
   return (
-    <section aria-labelledby="admin-workers" className="space-y-3">
-      <h2 id="admin-workers" className="sr-only">
-        {t('admin.tabs.workers')}
-      </h2>
+    <div className="space-y-3">
       <div role="group" aria-label={t('admin.filter')} className="flex flex-wrap gap-2">
         {FILTERS.map((value) => (
           <button
@@ -161,6 +158,6 @@ export function WorkersTab() {
           onChange={setPage}
         />
       )}
-    </section>
+    </div>
   );
 }

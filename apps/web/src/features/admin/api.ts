@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type {
+  AdminAuditEntryDto,
   AdminComplaintDto,
   AdminMaterialOrderDto,
   AdminOrderDto,
@@ -36,6 +37,13 @@ export const useAdminReviews = (page: number, status?: string) =>
   usePaged<AdminReviewDto>('reviews', '/admin/reviews', page, status);
 export const useAdminComplaints = (page: number, status?: string) =>
   usePaged<AdminComplaintDto>('complaints', '/admin/complaints', page, status);
+
+export const useAdminAudit = (page: number) =>
+  useQuery({
+    queryKey: [...ADMIN, 'audit', page],
+    queryFn: () =>
+      apiRequest<Page<AdminAuditEntryDto>>('/admin/audit', { auth: true, query: { page } }),
+  });
 
 export const useAdminMaterials = () =>
   useQuery({

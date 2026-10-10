@@ -3,7 +3,9 @@ import { fireEvent, render, screen, waitFor, within } from '@testing-library/rea
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import '../i18n';
-import AdminPage from '../features/admin/AdminPage';
+import AdminLayout from '../features/admin/AdminLayout';
+import DashboardPage from '../features/admin/DashboardPage';
+import { AdminModerationPage, AdminWorkersPage } from '../features/admin/sectionPages';
 import { RequireAuth } from '../features/auth/RequireAuth';
 import { SavingsGoal } from '../features/cabinet/SavingsGoal';
 import LessonsPage from '../features/lessons/LessonsPage';
@@ -42,6 +44,16 @@ function renderApp(ui: React.ReactElement, path = '/') {
 }
 
 const emptyPage = { items: [], page: 1, pageSize: 20, total: 0 };
+
+const adminRoutes = (
+  <Routes>
+    <Route path="/admin" element={<AdminLayout />}>
+      <Route index element={<DashboardPage />} />
+      <Route path="hunarmandlar" element={<AdminWorkersPage />} />
+      <Route path="sharhlar" element={<AdminModerationPage />} />
+    </Route>
+  </Routes>
+);
 
 beforeEach(() => {
   useAuthStore.setState({ status: 'ready', user: null, accessToken: null });
@@ -118,6 +130,7 @@ describe('admin panel', () => {
         pendingWorkers: 1,
         rejectedWorkers: 0,
         ordersByStatus: { delivered: 4 },
+        ordersToday: 2,
         turnover: 500_000,
         commission: 10_000,
         openComplaints: 1,
@@ -126,12 +139,23 @@ describe('admin panel', () => {
       'GET /admin/workers': () => ({ ...emptyPage, items: [worker], total: 1 }),
       'POST /admin/workers/w1/approve': () => null,
     });
-    renderApp(<AdminPage />);
+    renderApp(adminRoutes, '/admin');
 
     expect(await screen.findByText('500 000 soʻm')).toBeInTheDocument();
     expect(screen.getByText('10 000 soʻm')).toBeInTheDocument();
+    expect(screen.getByText('Kutilayotgan arizalar').nextElementSibling).toHaveTextContent('1');
+    expect(screen.getByText('Bugungi buyurtmalar').nextElementSibling).toHaveTextContent('2');
+    const sidebar = screen.getByRole('navigation', { name: 'Boshqaruv boʻlimlari' });
+    expect(within(sidebar).getByRole('link', { name: 'Boshqaruv paneli' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    );
 
-    fireEvent.click(screen.getByRole('tab', { name: 'Hunarmandlar' }));
+    fireEvent.click(within(sidebar).getByRole('link', { name: 'Hunarmandlar' }));
+    expect(within(sidebar).getByRole('link', { name: 'Hunarmandlar' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    );
     expect(await screen.findByText('Dilfuza')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Kutilmoqda' })).toHaveAttribute(
       'aria-pressed',
@@ -157,7 +181,7 @@ describe('admin panel', () => {
       'GET /admin/workers': () => ({ ...emptyPage, items: [worker], total: 1 }),
       'POST /admin/workers/w1/reject': () => null,
     });
-    renderApp(<AdminPage initialTab="workers" />);
+    renderApp(adminRoutes, '/admin/hunarmandlar');
     fireEvent.click(await screen.findByRole('button', { name: /^Rad etish: Dilfuza$/ }));
 
     const confirm = screen.getByRole('button', { name: 'Rad etishni tasdiqlash' });
@@ -228,9 +252,8 @@ describe('admin panel', () => {
         ],
       }),
     });
-    renderApp(<AdminPage />);
+    renderApp(adminRoutes, '/admin/sharhlar');
 
-    fireEvent.click(screen.getByRole('tab', { name: 'Sharhlar' }));
     expect(await screen.findByText('Yomon')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Yashirish' }));
     await waitFor(() => {
@@ -238,9 +261,25 @@ describe('admin panel', () => {
       expect(JSON.parse(String((call?.[1] as RequestInit).body))).toEqual({ status: 'hidden' });
     });
 
-    fireEvent.click(screen.getByRole('tab', { name: 'Shikoyatlar' }));
     expect(await screen.findByText('Kech keldi')).toBeInTheDocument();
     expect(screen.getAllByRole('button', { name: 'Pulni qaytarish' })).toHaveLength(1);
+  });
+});
+
+describe('admin drawer (phones and tablets)', () => {
+  it('opens from the menu button, moves focus in, closes on Escape and returns focus', async () => {
+    mockApi({ 'GET /admin/stats': () => ({}) });
+    renderApp(adminRoutes, '/admin');
+    const trigger = screen.getByRole('button', { name: 'Boʻlimlar' });
+    expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    fireEvent.click(trigger);
+    const dialog = screen.getByRole('dialog', { name: 'Boʻlimlar' });
+    await waitFor(() =>
+      expect(within(dialog).getByRole('link', { name: 'Boshqaruv paneli' })).toHaveFocus(),
+    );
+    fireEvent.keyDown(dialog, { key: 'Escape' });
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(trigger).toHaveFocus();
   });
 });
 

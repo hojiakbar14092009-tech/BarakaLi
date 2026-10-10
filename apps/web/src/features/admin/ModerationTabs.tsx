@@ -24,10 +24,7 @@ export function ReviewsTab() {
   const setStatus = useSetReviewStatus();
 
   return (
-    <section aria-labelledby="admin-reviews" className="space-y-3">
-      <h2 id="admin-reviews" className="sr-only">
-        {t('admin.tabs.reviews')}
-      </h2>
+    <div className="space-y-3">
       {reviews.isPending && <LoadingState />}
       {reviews.isError && (
         <ErrorState
@@ -88,7 +85,7 @@ export function ReviewsTab() {
           onChange={setPage}
         />
       )}
-    </section>
+    </div>
   );
 }
 
@@ -102,10 +99,7 @@ export function ComplaintsTab() {
   const failure = resolve.error ?? refund.error;
 
   return (
-    <section aria-labelledby="admin-complaints" className="space-y-3">
-      <h2 id="admin-complaints" className="sr-only">
-        {t('admin.tabs.complaints')}
-      </h2>
+    <div className="space-y-3">
       <div role="group" aria-label={t('admin.filter')} className="flex gap-2">
         {(['open', 'all'] as const).map((value) => (
           <button
@@ -191,6 +185,6 @@ export function ComplaintsTab() {
           onChange={setPage}
         />
       )}
-    </section>
+    </div>
   );
 }

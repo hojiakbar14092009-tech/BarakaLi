@@ -258,6 +258,8 @@ export interface AdminStatsDto {
   pendingWorkers: number;
   rejectedWorkers: number;
   ordersByStatus: Record<string, number>;
+  /** Orders created since midnight in Asia/Tashkent. */
+  ordersToday: number;
   turnover: number;
   commission: number;
   openComplaints: number;
