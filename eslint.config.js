@@ -15,6 +15,8 @@ export default tseslint.config(
       '**/coverage/**',
       '**/playwright-report/**',
       '**/test-results/**',
+      // Separate workspace with its own tooling, kept outside the app lint rules.
+      'tools/**',
     ],
   },
   js.configs.recommended,

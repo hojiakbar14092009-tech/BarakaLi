@@ -19,7 +19,11 @@ for (const viewport of VIEWPORTS) {
         await expect(page.locator('body')).not.toContainText(CATERING_WORD);
         await expect(page.getByRole('link', { name: CATERING_WORD })).toHaveCount(0);
         await expect(page.getByRole('search')).toBeVisible();
-        await expect(page.getByText(t('home.becomeWorkerTitle'), { exact: true })).toBeVisible();
+        if (viewport.width >= 1024) {
+          await expect(page.getByRole('link', { name: t('home.hero.primaryCta') })).toBeVisible();
+        } else {
+          await expect(page.getByText(t('home.becomeWorkerTitle'), { exact: true })).toBeVisible();
+        }
         await expect(page.getByRole('heading', { name: t('home.howTitle') })).toBeVisible();
         await expect(page.getByRole('heading', { name: t('home.featuredTitle') })).toBeVisible();
       });

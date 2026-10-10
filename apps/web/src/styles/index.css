@@ -98,3 +98,19 @@
     transform: none;
   }
 }
+
+/* Home page background glows drift slowly; still under reduced motion. */
+@media (prefers-reduced-motion: no-preference) {
+  .home-glow {
+    animation: home-glow 14s ease-in-out infinite alternate;
+  }
+}
+
+@keyframes home-glow {
+  from {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  to {
+    transform: translate3d(4%, 6%, 0) scale(1.12);
+  }
+}

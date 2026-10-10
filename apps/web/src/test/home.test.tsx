@@ -23,6 +23,46 @@ function renderHome() {
 }
 
 describe('home page', () => {
+  it('on desktop opens with the hero, then the story, then the catalog', async () => {
+    const query = (matches: boolean) => ({
+      matches,
+      addEventListener: () => undefined,
+      removeEventListener: () => undefined,
+      // framer-motion still uses the legacy listener API.
+      addListener: () => undefined,
+      removeListener: () => undefined,
+    });
+    Object.defineProperty(window, 'matchMedia', {
+      configurable: true,
+      value: (q: string) => query(q === '(min-width: 1024px)'),
+    });
+    renderHome();
+    expect(await screen.findByRole('heading', { level: 1 })).toHaveTextContent(
+      'Uyda tayyorlangan pishiriq, qoʻl mehnati va dizayn, bitta joyda',
+    );
+    expect(screen.getByRole('link', { name: /Katalogga oʻtish/ })).toHaveAttribute(
+      'href',
+      '/#katalog',
+    );
+    expect(screen.getByRole('heading', { name: /Nega aynan/ })).toBeInTheDocument();
+    expect(screen.getAllByText('Muammo')).toHaveLength(2);
+    expect(screen.getByText('Yechim')).toBeInTheDocument();
+    const hero = screen.getByRole('heading', { level: 1 }).closest('section');
+    const catalog = document.getElementById('katalog');
+    expect(catalog).not.toBeNull();
+    expect(
+      hero && catalog && hero.compareDocumentPosition(catalog) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    Reflect.deleteProperty(window, 'matchMedia');
+  });
+
+  it('on phones and tablets keeps the plain catalog page without the hero', () => {
+    renderHome();
+    expect(screen.queryByRole('heading', { level: 1 })).not.toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: /Nega aynan/ })).not.toBeInTheDocument();
+    expect(screen.getByText('Hunarmand boʻling')).toBeInTheDocument();
+  });
+
   it('shows search, the four categories and the become-worker call to action', async () => {
     renderHome();
     expect(screen.getByRole('search')).toBeInTheDocument();
@@ -38,7 +78,6 @@ describe('home page', () => {
   it('has no catering content', () => {
     renderHome();
     expect(screen.queryByText(/catering/i)).not.toBeInTheDocument();
-    expect(screen.queryByRole('heading', { level: 1 })).not.toBeInTheDocument();
   });
 });
 

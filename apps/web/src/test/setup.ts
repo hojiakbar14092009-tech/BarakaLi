@@ -7,3 +7,20 @@ configure({ asyncUtilTimeout: 5_000 });
 // jsdom has no WebGL: report "no context" quietly so the 3D fallback path can be tested.
 HTMLCanvasElement.prototype.getContext = (() =>
   null) as typeof HTMLCanvasElement.prototype.getContext;
+
+// jsdom has no IntersectionObserver: scroll reveals treat everything as already in view.
+class InView implements IntersectionObserver {
+  readonly root = null;
+  readonly rootMargin = '';
+  readonly thresholds = [];
+  constructor(private readonly callback: IntersectionObserverCallback) {}
+  observe(target: Element): void {
+    this.callback([{ isIntersecting: true, target } as unknown as IntersectionObserverEntry], this);
+  }
+  unobserve(): void {}
+  disconnect(): void {}
+  takeRecords(): IntersectionObserverEntry[] {
+    return [];
+  }
+}
+Object.defineProperty(globalThis, 'IntersectionObserver', { value: InView, writable: true });

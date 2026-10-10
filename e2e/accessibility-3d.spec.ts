@@ -131,7 +131,8 @@ test.describe('3D viewer', () => {
     const canvas = page.locator('canvas');
     // Software GL is enabled in the test browser, so the model renders on a real canvas.
     await expect(canvas).toBeVisible({ timeout: 30_000 });
-    expect(requested.some((url) => /\.glb|\/api\/files\//.test(url))).toBe(true);
+    // The canvas mounts before the model is fetched inside Suspense, so wait for the request.
+    await expect.poll(() => requested.some((url) => /\.glb|\/api\/files\//.test(url))).toBe(true);
   });
 
   test('without WebGL offers the rotate view instead, with no error', async ({ page, request }) => {

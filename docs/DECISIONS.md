@@ -324,3 +324,16 @@ Brifdagi noaniqliklar bo'yicha qabul qilingan qarorlar. Yangi qaror oxiriga qo's
 - `platform_settings` (bitta qator): arizalarni qabul qilish bayrogʻi va bosh sahifa eʼloni (`uz`/`ru`,
   ixtiyoriy, ≤300). Komissiya bu yerda saqlanmaydi: paneldagi 2% faqat oʻqish uchun, kod konstantasi.
   Ommaviy `GET /settings` 60 soniya keshlanadi; saqlashda kesh tozalanadi.
+
+## Bosh sahifa: hero, hikoya va katalog (2026-10-11)
+
+- Foydalanuvchi qarori: hero, animatsion fon va "Nega aynan BarakaLi" hikoyasi **faqat kompyuterda**
+  (≥ 1024 px, alohida lazy chunk `HomeLanding`). Telefon va planshet avvalgi bosh sahifani oladi (qidiruv,
+  toifalar, "Hunarmand boʻling" kartasi, tavsiya etilgan hunarmandlar); motion kodi ularga yuklanmaydi.
+  Kompyuterda tartib: hero → hikoya (muammo 2 gap, yechim 1 gap) → katalog (`#katalog`) → "Qanday
+  ishlaydi" → "Darslar". CLAUDE.md 7-boʻlimdagi "faqat kompyuterda funksiya yoʻq" qoidasi bu yerda
+  bezak uchun chetlab oʻtildi: katalog va barcha amallar hamma qurilmada bor.
+- Hero rasmlari avvalgi catering bosh sahifasidan qayta tiklandi (`apps/web/public/home/`), catering
+  soʻzlari va soʻrov formasi qaytarilmadi: asosiy tugma "Hunarmand boʻlish", ikkinchisi katalogga oʻtadi.
+- Fon: ikki yumshoq Bisque nur va sekin suzuvchi hunar ikonkalari (lucide, faqat bezak, `aria-hidden`);
+  `prefers-reduced-motion` da harakat yoʻq. Telefonda faqat chekkadagi ikonkalar koʻrinadi, matn ustiga tushmaydi.

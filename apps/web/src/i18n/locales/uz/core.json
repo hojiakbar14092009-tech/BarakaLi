@@ -48,9 +48,6 @@
     "searchLabel": "Nima kerak?",
     "searchPlaceholder": "Nima tikish yoki pishirish kerak?",
     "categoriesTitle": "Toifalar",
-    "becomeWorkerTitle": "Hunarmand boʻling",
-    "becomeWorkerText": "Uyingizdan chiqmasdan ishlang: ishlaringizni joylang, buyurtma qabul qiling, daromadingizni oʻzingiz boshqaring.",
-    "becomeWorkerCta": "Hunarmand boʻlish",
     "featuredTitle": "Tavsiya etilgan hunarmandlar",
     "featuredEmpty": "Hunarmandlar tez orada shu yerda paydo boʻladi.",
     "featuredError": "Hunarmandlarni yuklab boʻlmadi.",
@@ -86,7 +83,38 @@
         "text": "Mijozlarni topish va ular bilan ishonchli aloqa oʻrnatish."
       }
     },
-    "lessonsAll": "Barcha darslar"
+    "lessonsAll": "Barcha darslar",
+    "catalogTitle": "Katalog",
+    "hero": {
+      "eyebrow": "Pishiriq va qoʻl mehnati",
+      "title": "Uyda tayyorlangan pishiriq, qoʻl mehnati va dizayn, bitta joyda",
+      "pointsLabel": "BarakaLi’da",
+      "points": {
+        "workers": "Hunarmandlar",
+        "order": "Dona va ulgurji buyurtma",
+        "view3d": "3D koʻrinish",
+        "safe": "Xavfsiz buyurtma"
+      },
+      "primaryCta": "Hunarmand boʻlish",
+      "catalogCta": "Katalogga oʻtish",
+      "badge": "Har bir hunarmand admin tasdiqlagandan keyin ishlaydi",
+      "images": {
+        "tikuvchilik": "Tikuv mashinasida mato tikayotgan hunarmand ayolning qoʻllari",
+        "pishiriq": "Kumush tagliklarda uyda pishirilgan tort va pishiriqlar"
+      }
+    },
+    "why": {
+      "eyebrow": "Muammo va yechim",
+      "title": "Nega aynan",
+      "problemLabel": "Muammo",
+      "solutionLabel": "Yechim",
+      "problem1": "Koʻp ayollar tikish, pishirish yoki bezak yasashni mukammal biladi, lekin oilaviy sharoit sabab doimiy ishga chiqa olmaydi va mijozni faqat tanish-bilish orqali topadi.",
+      "problem2": "Shu sabab mahorat uyda qolib ketadi, daromad tasodifiy boʻladi, haridor esa sifatli qoʻl mehnatini qayerdan izlashni bilmaydi.",
+      "solution": "hunarmandni haridor bilan toʻgʻridan-toʻgʻri bogʻlaydi: ishlar bitta katalogda, buyurtma va toʻlov saytning oʻzida, ish vaqtini hunarmand oʻzi belgilaydi va har bir hunarmand admin tekshiruvidan oʻtadi."
+    },
+    "becomeWorkerTitle": "Hunarmand boʻling",
+    "becomeWorkerText": "Uyingizdan chiqmasdan ishlang: ishlaringizni joylang, buyurtma qabul qiling, daromadingizni oʻzingiz boshqaring.",
+    "becomeWorkerCta": "Hunarmand boʻlish"
   },
   "footer": {
     "tagline": "Halol mehnat, oila va iqtisodiy mustaqillik.",
