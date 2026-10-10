@@ -3,8 +3,8 @@ export const COMMISSION_RATE_PERCENT = 2;
 export const COMMISSION_RATE = COMMISSION_RATE_PERCENT / 100;
 
 export const MAX_ORDER_IMAGES = 5;
-export const MAX_PRODUCT_IMAGES = 8;
-export const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+export const MAX_PRODUCT_IMAGES = 5;
+export const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
 export const ALLOWED_IMAGE_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'] as const;
 
 export const MAX_MODEL_BYTES = 10 * 1024 * 1024;

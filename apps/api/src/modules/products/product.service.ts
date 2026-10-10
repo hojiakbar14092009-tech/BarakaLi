@@ -80,6 +80,11 @@ export class ProductService {
 
   async removeImage(workerId: string, id: string, imageId: string): Promise<ProductDto> {
     await this.assertOwner(workerId, id);
+    const [product, images] = await Promise.all([this.get(id), this.repo.listImages(id)]);
+    // A published product must always keep at least one photo; hide it first to remove the last.
+    if (product.status === 'published' && images.length === 1) {
+      throw AppError.conflict('IMAGE_LAST_REQUIRED');
+    }
     const url = await this.repo.removeImage(id, imageId);
     if (!url) throw AppError.notFound();
     await this.ctx.storage.delete(url);

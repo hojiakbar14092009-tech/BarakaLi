@@ -132,3 +132,13 @@ pnpm db:audit-orders
       "Aylantirib koʻrish" (perspektiva + soya, WebGL'siz). Model yuklanmasa xatosiz rasmlarga qaytadi
 - Qaror: rasmi yoʻq mahsulotda (hozir "Toʻy taklifnomalari", rasm kutilmoqda) aylantiradigan narsa yoʻq, shuning uchun
   koʻrish tabi chiqmaydi; rasm qoʻshilishi bilan avtomatik paydo boʻladi
+
+## Mahsulot formasi: rasmlar va 3D (2026-10-10)
+
+- [x] Rasm 1–5 ta (majburiy: chop etilgan mahsulotning oxirgi rasmini oʻchirib boʻlmaydi), har biri 8 MB gacha,
+      JPG/PNG/WebP (server kontent boʻyicha tekshiradi); `.glb` ixtiyoriy, 10 MB gacha. Xato matnida yechim bor
+- [x] Formada "Haridor shunday koʻradi" oldindan koʻrinishi: rasm qoʻshilsa "Aylantirib koʻrish", `.glb` qoʻshilsa
+      "3D koʻrinish" oʻzi chiqadi
+- [ ] Vercel funksiyasi soʻrov tanasini ~4.5 MB bilan cheklaydi: brauzer rasmni yuklashdan oldin siqadi (odatda < 1 MB),
+      lekin 4.5–8 MB oraligʻidagi fayl va katta `.glb` Vercel'da oʻtmasligi mumkin. Toʻliq 8/10 MB uchun fayllarni
+      toʻgʻridan-toʻgʻri obyekt xotirasiga (S3-mos, imzolangan URL) yuklash kerak; hozir ulanmagan

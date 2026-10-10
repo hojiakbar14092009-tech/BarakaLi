@@ -14,10 +14,10 @@
   "PRODUCT_NOT_FOUND": "Mahsulot topilmadi.",
   "PRODUCT_UNAVAILABLE": "Mahsulot hozir mavjud emas.",
   "INSUFFICIENT_STOCK": "Zaxirada yetarli mahsulot yoʻq.",
-  "IMAGE_LIMIT_REACHED": "Rasmlar soni chegaraga yetdi (8 tagacha).",
-  "IMAGE_TOO_LARGE": "Rasm 5 MB dan katta.",
-  "IMAGE_INVALID_FORMAT": "Faqat JPEG, PNG yoki WebP rasm yuklash mumkin.",
-  "MODEL_TOO_LARGE": "Fayl 10 MB dan katta.",
+  "IMAGE_LIMIT_REACHED": "Rasmlar soni 5 taga yetdi. Yangisini qoʻshish uchun avval bittasini oʻchiring.",
+  "IMAGE_TOO_LARGE": "Rasm 8 MB dan katta. Kichikroq rasm tanlang yoki telefonda oʻlchamini kichraytirib qayta yuklang.",
+  "IMAGE_INVALID_FORMAT": "Bu fayl rasm emas yoki formati mos emas. JPG, PNG yoki WebP rasm tanlang (iPhone’da: Sozlamalar → Kamera → Formatlar → “Eng mos”).",
+  "MODEL_TOO_LARGE": "Fayl 10 MB dan katta. Skan ilovasida sifatni pasaytirib qayta saqlang.",
   "MODEL_INVALID_FORMAT": "Bu fayl formati mos emas. .glb fayl yuklang.",
   "MODEL_INVALID_CONTENT": "Model fayli buzilgan yoki ruxsat etilmagan maʼlumot bor.",
   "MODEL_LIMIT_EXCEEDED": "Model juda murakkab yoki teksturasi katta (2048×2048 gacha).",
@@ -48,5 +48,6 @@
   "LAST_ADMIN": "Yagona administratorni olib tashlab boʻlmaydi.",
   "USER_BLOCKED": "Bu hisob bloklangan. Savol boʻlsa, platforma maʼmuriyatiga murojaat qiling.",
   "PRODUCT_HAS_ORDERS": "Bu mahsulot buyurtmalarda bor: uni oʻchirib boʻlmaydi, faqat yashirish mumkin.",
-  "APPLICATIONS_CLOSED": "Hozircha yangi hunarmand arizalari qabul qilinmayapti. Keyinroq qayta urinib koʻring."
+  "APPLICATIONS_CLOSED": "Hozircha yangi hunarmand arizalari qabul qilinmayapti. Keyinroq qayta urinib koʻring.",
+  "IMAGE_LAST_REQUIRED": "Chop etilgan mahsulotda kamida 1 ta rasm boʻlishi kerak. Avval yangi rasm qoʻshing yoki mahsulotni yashiring."
 }

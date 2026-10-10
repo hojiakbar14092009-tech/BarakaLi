@@ -106,7 +106,7 @@ test.describe('admin approval -> worker product -> customer order (360px)', () =
     await page
       .locator('#photo-input')
       .setInputFiles({ name: 'photo.png', mimeType: 'image/png', buffer: TINY_PNG });
-    await expect(page.getByRole('img', { name: productTitle })).toBeVisible();
+    await expect(page.getByRole('img', { name: productTitle }).first()).toBeVisible();
 
     await page.getByRole('button', { name: t('cabinet.form.saveAndPublish'), exact: true }).click();
     await expect(page.getByText(t('cabinet.form.saved'))).toBeVisible();

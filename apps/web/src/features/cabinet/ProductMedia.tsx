@@ -1,31 +1,39 @@
 import { Box, Camera, Trash2 } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { MAX_MODEL_BYTES, MAX_PRODUCT_IMAGES, type ProductDto } from '@barakali/shared';
+import {
+  ALLOWED_IMAGE_MIME_TYPES,
+  MAX_MODEL_BYTES,
+  MAX_PRODUCT_IMAGES,
+  type ProductDto,
+} from '@barakali/shared';
 import { Button } from '../../components/Button';
 import { ProductImage } from '../../components/ProductImage';
 import { ApiError } from '../../lib/api';
 import { errorMessage } from '../../lib/errors';
 import { resizeImage } from '../../lib/resizeImage';
+import { ProductGallery } from '../products/ProductGallery';
 import { useDeleteImage, useDeleteModel, useUploadImage, useUploadModel } from './api';
 
 const MB = 1024 * 1024;
+const IMAGE_TYPES: readonly string[] = ALLOWED_IMAGE_MIME_TYPES;
 
 export function ProductMedia({ product }: { product: ProductDto }) {
   const { t } = useTranslation();
   const photoInput = useRef<HTMLInputElement>(null);
   const modelInput = useRef<HTMLInputElement>(null);
   const [modelError, setModelError] = useState<string | null>(null);
+  const [photoError, setPhotoError] = useState<string | null>(null);
   const uploadImage = useUploadImage(product.id);
   const deleteImage = useDeleteImage(product.id);
   const uploadModel = useUploadModel(product.id);
   const deleteModel = useDeleteModel(product.id);
 
   const onPhotos = async (files: FileList | null) => {
-    for (const file of Array.from(files ?? []).slice(
-      0,
-      MAX_PRODUCT_IMAGES - product.images.length,
-    )) {
+    const chosen = Array.from(files ?? []);
+    const photos = chosen.filter((file) => IMAGE_TYPES.includes(file.type));
+    setPhotoError(photos.length < chosen.length ? t('errors.IMAGE_INVALID_FORMAT') : null);
+    for (const file of photos.slice(0, MAX_PRODUCT_IMAGES - product.images.length)) {
       await uploadImage.mutateAsync(await resizeImage(file)).catch(() => undefined);
     }
     if (photoInput.current) photoInput.current.value = '';
@@ -50,6 +58,7 @@ export function ProductMedia({ product }: { product: ProductDto }) {
           {t('cabinet.form.images')}
         </h3>
         <p className="text-sm text-mocha">{t('cabinet.form.imagesHint')}</p>
+        <p className="text-sm font-medium text-espresso">{t('cabinet.form.photoTip')}</p>
         <ul className="grid grid-cols-3 gap-2 sm:grid-cols-4">
           {product.images.map((image) => (
             <li key={image.id} className="relative">
@@ -85,6 +94,11 @@ export function ProductMedia({ product }: { product: ProductDto }) {
               {uploadImage.isPending ? t('cabinet.form.uploading') : t('cabinet.form.addPhoto')}
             </Button>
           </>
+        )}
+        {photoError && (
+          <p role="alert" className="font-medium">
+            {photoError}
+          </p>
         )}
       </section>
 
@@ -134,6 +148,16 @@ export function ProductMedia({ product }: { product: ProductDto }) {
         <p role="alert" className="font-medium">
           {errorMessage(failure instanceof ApiError ? failure : new Error(), t)}
         </p>
+      )}
+
+      {product.images.length > 0 && (
+        <section aria-labelledby="media-preview" className="space-y-3">
+          <h3 id="media-preview" className="font-bold">
+            {t('cabinet.form.preview')}
+          </h3>
+          <p className="text-sm text-mocha">{t('cabinet.form.previewHint')}</p>
+          <ProductGallery product={product} />
+        </section>
       )}
     </div>
   );

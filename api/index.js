@@ -71332,8 +71332,8 @@ var NEVER = INVALID;
 var COMMISSION_RATE_PERCENT = 2;
 var COMMISSION_RATE = COMMISSION_RATE_PERCENT / 100;
 var MAX_ORDER_IMAGES = 5;
-var MAX_PRODUCT_IMAGES = 8;
-var MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+var MAX_PRODUCT_IMAGES = 5;
+var MAX_IMAGE_BYTES = 8 * 1024 * 1024;
 var ALLOWED_IMAGE_MIME_TYPES = ["image/jpeg", "image/png", "image/webp"];
 var MAX_MODEL_BYTES = 10 * 1024 * 1024;
 var MAX_MODEL_TEXTURE_SIZE = 2048;
@@ -81284,6 +81284,10 @@ var ProductService = class {
   }
   async removeImage(workerId, id, imageId) {
     await this.assertOwner(workerId, id);
+    const [product, images] = await Promise.all([this.get(id), this.repo.listImages(id)]);
+    if (product.status === "published" && images.length === 1) {
+      throw AppError.conflict("IMAGE_LAST_REQUIRED");
+    }
     const url = await this.repo.removeImage(id, imageId);
     if (!url) throw AppError.notFound();
     await this.ctx.storage.delete(url);

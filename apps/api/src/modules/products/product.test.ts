@@ -1,6 +1,6 @@
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { MAX_MODEL_BYTES, MAX_PRODUCT_IMAGES } from '@barakali/shared';
+import { MAX_IMAGE_BYTES, MAX_MODEL_BYTES, MAX_PRODUCT_IMAGES } from '@barakali/shared';
 import {
   createTestApp,
   makeProduct,
@@ -172,12 +172,12 @@ describe('image upload', () => {
     expect(res.body.error.code).toBe('IMAGE_INVALID_FORMAT');
   });
 
-  it('rejects files above 5 MB and a missing file', async () => {
+  it('rejects files above 8 MB and a missing file', async () => {
     const product = await makeProduct(t, owner, { publish: false });
     const big = await request(t.app)
       .post(`/api/my/products/${product.id}/images`)
       .set(bearer(owner.token))
-      .attach('image', Buffer.alloc(5 * 1024 * 1024 + 10), 'big.png');
+      .attach('image', Buffer.alloc(MAX_IMAGE_BYTES + 10), 'big.png');
     expect(big.status).toBe(413);
     expect(big.body.error.code).toBe('IMAGE_TOO_LARGE');
     const none = await request(t.app)
@@ -202,6 +202,35 @@ describe('image upload', () => {
       .attach('image', png, 'a.png');
     expect(extra.status).toBe(409);
     expect(extra.body.error.code).toBe('IMAGE_LIMIT_REACHED');
+  });
+
+  it('keeps the last photo of a published product, but lets a draft lose it', async () => {
+    const product = await makeProduct(t, owner, { publish: false });
+    const upload = await request(t.app)
+      .post(`/api/my/products/${product.id}/images`)
+      .set(bearer(owner.token))
+      .attach('image', await pngBuffer(8, 8), 'a.png');
+    const imageId = (upload.body as { images: { id: string }[] }).images[0]?.id ?? '';
+    await request(t.app)
+      .patch(`/api/my/products/${product.id}/status`)
+      .set(bearer(owner.token))
+      .send({ status: 'published' })
+      .expect(200);
+    const blocked = await request(t.app)
+      .delete(`/api/my/products/${product.id}/images/${imageId}`)
+      .set(bearer(owner.token));
+    expect(blocked.status).toBe(409);
+    expect(blocked.body.error.code).toBe('IMAGE_LAST_REQUIRED');
+
+    await request(t.app)
+      .patch(`/api/my/products/${product.id}/status`)
+      .set(bearer(owner.token))
+      .send({ status: 'hidden' })
+      .expect(200);
+    await request(t.app)
+      .delete(`/api/my/products/${product.id}/images/${imageId}`)
+      .set(bearer(owner.token))
+      .expect(200);
   });
 });
 

@@ -48,7 +48,7 @@
     "wholesaleHint": "Haridor shu miqdor va undan koʻp olsa, ulgurji narx avtomatik qoʻllanadi.",
     "stock": "Zaxira (dona)",
     "images": "Rasmlar",
-    "imagesHint": "Kamida 1 ta, koʻpi bilan 8 ta rasm. Telefon kamerasidan ham olish mumkin.",
+    "imagesHint": "1 tadan 5 tagacha rasm (majburiy), har biri 8 MB gacha: JPG, PNG yoki WebP. Telefon kamerasidan ham olish mumkin.",
     "addPhoto": "Rasm qoʻshish",
     "removePhoto": "Rasmni olib tashlash",
     "model": "3D model qoʻshish (ixtiyoriy)",
@@ -60,7 +60,10 @@
     "saveAndPublish": "Saqlash va chop etish",
     "saved": "Saqlandi",
     "uploading": "Yuklanmoqda…",
-    "saveFirst": "Rasm va 3D model qoʻshish uchun avval ishni saqlang."
+    "saveFirst": "Rasm va 3D model qoʻshish uchun avval ishni saqlang.",
+    "photoTip": "Rasm 4:3 nisbatda, och fonda, buyum markazda boʻlsin.",
+    "preview": "Haridor shunday koʻradi",
+    "previewHint": "Rasm qoʻshilishi bilan “Aylantirib koʻrish”, .glb qoʻshilsa “3D koʻrinish” oʻzi paydo boʻladi."
   },
   "earnings": {
     "title": "Daromad",
