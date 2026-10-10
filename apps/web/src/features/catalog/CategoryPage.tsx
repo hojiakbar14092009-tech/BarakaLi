@@ -7,7 +7,7 @@ import { SearchInput } from '../../components/ui/SearchInput';
 import { EmptyState, ErrorState, LoadingState } from '../../components/StateViews';
 import { errorMessage } from '../../lib/errors';
 import { Pagination } from './Pagination';
-import { ProductCard } from './ProductCard';
+import { ProductGrid } from './ProductGrid';
 import { useProducts } from './api';
 import { useCategoryNames } from './useCategoryNames';
 
@@ -123,11 +123,7 @@ function CategoryListing({ kategoriya }: { kategoriya: string }) {
       )}
       {products.data && products.data.items.length > 0 && (
         <>
-          <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 xl:grid-cols-5">
-            {products.data.items.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </ul>
+          <ProductGrid products={products.data.items} />
           <Pagination
             page={products.data.page}
             pageSize={products.data.pageSize}

@@ -81,3 +81,20 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* Desktop-only scroll entry for product cards (see hooks/useReveal); off for reduced motion. */
+@media (min-width: 80rem) and (prefers-reduced-motion: no-preference) {
+  .reveal {
+    opacity: 0;
+    transform: translateY(1rem);
+    transition:
+      opacity 400ms ease-out,
+      transform 400ms ease-out;
+    transition-delay: var(--reveal-delay, 0ms);
+  }
+
+  .reveal[data-revealed] {
+    opacity: 1;
+    transform: none;
+  }
+}

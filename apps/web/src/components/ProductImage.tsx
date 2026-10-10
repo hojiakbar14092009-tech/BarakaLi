@@ -14,8 +14,9 @@ interface ProductImageProps {
 
 const INTRINSIC_SIZE = 800;
 const FRAME = {
-  square: 'aspect-square object-cover',
-  card: 'h-[180px] object-contain lg:h-[220px]',
+  square: 'aspect-square bg-bisque object-cover',
+  // Multiply lets a photo's white backdrop melt into the Bisque frame.
+  card: 'h-[180px] object-contain mix-blend-multiply lg:h-[220px]',
 } as const;
 
 /** Square, lazy-loaded image with fixed dimensions so the layout never jumps. */
@@ -47,7 +48,7 @@ export function ProductImage({
       height={INTRINSIC_SIZE}
       loading={priority ? 'eager' : 'lazy'}
       decoding="async"
-      className={`w-full bg-bisque ${FRAME[variant]} ${className}`}
+      className={`w-full ${FRAME[variant]} ${className}`}
     />
   );
 }

@@ -6,7 +6,7 @@ import { buttonClasses } from '../../components/Button';
 import { EmptyState, ErrorState, LoadingState } from '../../components/StateViews';
 import { errorMessage } from '../../lib/errors';
 import { Pagination } from '../catalog/Pagination';
-import { ProductCard } from '../catalog/ProductCard';
+import { ProductGrid } from '../catalog/ProductGrid';
 import { useProducts, useWorker } from '../catalog/api';
 import { WorkerReviews } from './WorkerReviews';
 
@@ -73,11 +73,7 @@ export default function WorkerPage() {
         )}
         {products.data && products.data.items.length > 0 && (
           <>
-            <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 xl:grid-cols-5">
-              {products.data.items.map((product) => (
-                <ProductCard key={product.id} product={product} />
-              ))}
-            </ul>
+            <ProductGrid products={products.data.items} />
             <Pagination
               page={products.data.page}
               pageSize={products.data.pageSize}

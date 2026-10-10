@@ -34,5 +34,5 @@
     "zoomOut": "Uzoqlashtirish",
     "reset": "Asl holatga qaytarish"
   },
-  "wholesaleCompact": "Ulgurji {{qty}}+ dona: {{price}}"
+  "wholesaleCompact": "Ulgurji {{qty}}+: {{price}}"
 }
