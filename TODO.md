@@ -11,6 +11,25 @@ Bu ro'yxat `CLAUDE.md` dagi bosqichlardan MVP'ga kirmagan qismlarni o'z ichiga o
 - [x] Playwright e2e: admin tasdiqlaydi → mahsulot → buyurtma → qabul → kontakt; raqib hunarmand koʻrmaydi; 360 px da scroll va 48 px tekshiruvi
 - [x] `vercel.json`: `/api/(.*)` → `/api` (SPA fallbackdan oldin), testi `vercel-config.test.ts`
 
+## Catering (faqat kompyuter, 2026-10-10)
+
+- [x] Toifalar 4 ta; "Masofaviy ishlar" olib tashlandi (pastda)
+- [x] Xizmat turlari modeli va `catering_requests` jadvali
+- [x] Rasmlar WebP (≤200 KB), scroll scale effekti, pishiriq rasmidagi brend belgilari xiralashtirildi
+- [x] Hero, "Nima uchun BarakaLi", 4 xizmat turi, platforma imkoniyatlari, soʻrov formasi va API
+- [x] Animatsiyalar (`reducedMotion` hurmat qilinadi), e2e/axe/unit testlar
+- [x] Telefon/planshetda catering koʻrinmaydi va yuklanmaydi (foydalanuvchi qarori, `docs/DECISIONS.md`)
+
+### Ochiq savollar
+
+- [ ] **Admin uchun catering soʻrovlari roʻyxati yoʻq.** Soʻrovlar faqat `catering_requests` jadvalida;
+      "Jamoa siz bilan bogʻlanadi" vaʼdasi uchun jamoa hozircha bazadan oʻqishi kerak. Ishga tushirishdan
+      oldin `/admin` ga roʻyxat va holat (`new → contacted → closed`) qoʻshish kerak.
+- [ ] **Rasm huquqi.** 4 ta rasmning manbasi va litsenziyasi tasdiqlanmagan. `pishiriq` rasmidagi Marchesi
+      belgilari xiralashtirilgan, lekin fotosuratning oʻziga huquq alohida tasdiqlanishi kerak.
+- [ ] Catering soʻrovlaridagi telefon raqamlarini qancha saqlash (saqlash muddati, oʻchirish tartibi).
+- [ ] Catering keyinchalik planshet/telefonga ham kerakmi (hozir ongli ravishda faqat kompyuter).
+
 ## "Masofaviy ishlar" toifasi olib tashlandi (2026-10-10)
 
 - Qaror: `categories` qatori **oʻchirilmadi**. Migratsiya `1760000900000` `categories.is_active` qoʻshdi va

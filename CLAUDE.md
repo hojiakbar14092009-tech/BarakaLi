@@ -296,6 +296,13 @@ Qo'shimcha kirish: "Mening ishlarim" (6-bo'lim).
 18. **Soatlik narx yo'q:** hunarmandning soatlik narxi (`workers.hourly_rate`) olib tashlangan. Xizmat so'rovi bepul va to'lovsiz; narx va to'lov faqat mahsulot buyurtmasida.
 19. **Admin tasdiqlash:** yangi hunarmand arizasi `pending` holatida boshlanadi, profil ommaviy emas va buyurtma qabul qilmaydi. Admin `/admin/hunarmandlar` da `approved` yoki `rejected` qiladi; tekshiruv serverda (`workers.status`).
 20. **Kontakt qoidasi:** hunarmandning telefoni va Telegram nomi (`workers.telegram_username`, ixtiyoriy) faqat buyurtma `accepted` va undan keyingi holatda, faqat shu buyurtmaning buyurtmachisiga, API javobining o'zida qaytadi. Boshqa hunarmand yoki begona foydalanuvchi buyurtmani umuman ko'rmaydi (404).
+21. **Toifalar: 4 ta.** `tikuvchilik`, `pishiriq`, `qol-mehnati`, `dizayn`. "Masofaviy ishlar" olib tashlandi: DB qatori o'chirilmagan, `categories.is_active = false` (katalog, tanlov va tavsiyada ko'rinmaydi, eski `/xizmatlar/masofaviy-ishlar` havolasi "Barcha ishlar" ga yo'naltiriladi).
+22. **Catering (faqat kompyuter, `≥1024px`):** foydalanuvchi qarori bilan 7-bo'limdagi qoidadan istisno. Kompyuterda `/` catering bilan ochiladi (hero → "Nima uchun BarakaLi" → 4 xizmat turi → platforma imkoniyatlari → catering so'rovi formasi), keyin katalog (`#katalog`); `/catering` alohida sahifa. Telefon/planshetda catering yo'q, sarlavhadagi havola yashirin, `/catering` → `/`, kod va rasmlar yuklanmaydi (lazy chunk).
+    - Xizmat turlari: `packages/shared/src/catering/service-types.ts` (tikuvchilik, pishiriq, qolmehnat, dizayn; narx yozilmaydi).
+    - Imkoniyatlar ro'yxati bitta joyda: `apps/web/src/config/capabilities.ts` (faqat ishlayotganlar; to'lov provayderi va SMS yo'q).
+    - So'rov: `POST /api/catering-requests` → `catering_requests`. Bu buyurtma emas, narx va to'lov yo'q; javob faqat `{ id }`, telefon log va URL'da yo'q, IP bo'yicha 15 daqiqada 5 ta.
+    - Rasmlar: `pnpm --filter @barakali/api catering:images <manba>` → `apps/web/public/catering/*.webp` (800/1600, har biri ≤200 KB). Xom JPG/PNG gitga tushmaydi; pishiriq rasmidagi boshqa brend belgilari xiralashtirilgan.
+    - Animatsiya: Framer Motion, faqat opacity/transform (hero rasmida clip-path), `whileInView` bir marta, 80 ms stagger, `reducedMotion="user"`.
 
 ---
 

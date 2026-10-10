@@ -1,7 +1,7 @@
 import { Search } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link, useParams, useSearchParams } from 'react-router-dom';
+import { Link, Navigate, useLocation, useParams, useSearchParams } from 'react-router-dom';
 import { ALL_CATEGORIES_SLUG, CATEGORY_SLUGS, type ListQuery } from '@barakali/shared';
 import { SelectField } from '../../components/Field';
 import { EmptyState, ErrorState, LoadingState } from '../../components/StateViews';
@@ -12,9 +12,22 @@ import { useProducts } from './api';
 
 const SORTS: ListQuery['sort'][] = ['new', 'price_asc', 'price_desc'];
 
+function isKnownCategory(slug: string): boolean {
+  return slug === ALL_CATEGORIES_SLUG || (CATEGORY_SLUGS as readonly string[]).includes(slug);
+}
+
+/** Unknown or retired categories (old links included) open the full catalog instead. */
 export default function CategoryPage() {
-  const { t } = useTranslation();
   const { kategoriya = ALL_CATEGORIES_SLUG } = useParams();
+  const { search } = useLocation();
+  if (!isKnownCategory(kategoriya)) {
+    return <Navigate to={`/xizmatlar/${ALL_CATEGORIES_SLUG}${search}`} replace />;
+  }
+  return <CategoryListing kategoriya={kategoriya} />;
+}
+
+function CategoryListing({ kategoriya }: { kategoriya: string }) {
+  const { t } = useTranslation();
   const [params, setParams] = useSearchParams();
   const q = params.get('q') ?? '';
   const page = Math.max(1, Number(params.get('page')) || 1);
@@ -42,9 +55,7 @@ export default function CategoryPage() {
     update({ q: draft.trim() || undefined, page: undefined });
   };
 
-  const known = (CATEGORY_SLUGS as readonly string[]).includes(kategoriya);
-  const title =
-    known || kategoriya === ALL_CATEGORIES_SLUG ? t(`categories.${kategoriya}`) : kategoriya;
+  const title = t(`categories.${kategoriya}`);
 
   return (
     <div className="space-y-5">

@@ -193,3 +193,22 @@ test.describe('catering request form (desktop)', () => {
     await expect(guests).toHaveAttribute('aria-invalid', 'true');
   });
 });
+
+test.describe('remote work is gone', () => {
+  for (const viewport of [
+    { width: 1280, height: 800 },
+    { width: 360, height: 780 },
+  ]) {
+    test(`no "Masofaviy ish" anywhere in the catalog at ${viewport.width}px`, async ({ page }) => {
+      await page.setViewportSize(viewport);
+      for (const language of ['uz', 'ru'] as const) {
+        await useLanguage(page, language);
+        for (const route of ['/', '/xizmatlar/barchasi', '/xizmatlar/masofaviy-ishlar']) {
+          await page.goto(route);
+          await page.waitForLoadState('networkidle');
+          await expect(page.locator('body')).not.toContainText(/masofaviy|удалённ/i);
+        }
+      }
+    });
+  }
+});
