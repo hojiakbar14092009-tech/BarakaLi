@@ -18,5 +18,29 @@
     "requestCta": "Catering soʻrovi",
     "catalogCta": "Katalogga oʻtish",
     "badge": "Har bir hunarmand admin tasdiqlagandan keyin ishlaydi"
+  },
+  "why": {
+    "title": "Nima uchun",
+    "lead": "Xaridor ham, hunarmand ham oʻziga kerakli narsani bitta joyda topadi.",
+    "tabsLabel": "Kim uchun",
+    "tabs": {
+      "customers": "Mijozlar uchun",
+      "workers": "Hunarmandlar uchun"
+    },
+    "customers": {
+      "handmade": "Uyda tayyorlangan, qoʻl mehnati mahsulotlari, har birida hunarmand nomi.",
+      "cart": "Dona yoki ulgurji buyurtma, bitta savatda.",
+      "view3d": "Mahsulotni 3D koʻrinishda aylantirib koʻrish.",
+      "tracking": "Buyurtma holatini bosqichma-bosqich kuzatish.",
+      "feedback": "Sharh va shikoyat: sifatni baholash mumkin.",
+      "contact": "Qabul qilingan buyurtmadan keyin hunarmand bilan toʻgʻridan-toʻgʻri aloqa."
+    },
+    "workers": {
+      "home": "Oʻz uyidan ishlash, mahsulot narxini oʻzi belgilash.",
+      "commission": "Komissiya atigi {{percent}}%.",
+      "incoming": "Buyurtmalar bitta joyda, «Kelgan buyurtmalar» roʻyxatida.",
+      "rating": "Sharhlar va reyting orqali ishonch qurish.",
+      "verified": "Admin tasdiqlagandan keyin «Tasdiqlangan» belgisi."
+    }
   }
 }

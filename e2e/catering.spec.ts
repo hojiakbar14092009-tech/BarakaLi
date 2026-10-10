@@ -73,3 +73,20 @@ test.describe('catering hero actions', () => {
     await expect(page.locator('#katalog')).toBeInViewport();
   });
 });
+
+test.describe('why BarakaLi', () => {
+  const t = translator('uz');
+  test.use({ viewport: { width: 360, height: 780 } });
+
+  test('switches between the customer and worker tabs with the keyboard', async ({ page }) => {
+    await page.goto('/');
+    const customers = page.getByRole('tab', { name: t('catering.why.tabs.customers') });
+    const workers = page.getByRole('tab', { name: t('catering.why.tabs.workers') });
+    await expect(customers).toHaveAttribute('aria-selected', 'true');
+    await customers.focus();
+    await page.keyboard.press('ArrowRight');
+    await expect(workers).toHaveAttribute('aria-selected', 'true');
+    await expect(workers).toBeFocused();
+    await expect(page.getByRole('tabpanel')).toContainText('2%');
+  });
+});
