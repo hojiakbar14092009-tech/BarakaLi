@@ -201,7 +201,7 @@ async function seedWorker(
       avatar_url: null,
       rating: seed.rating,
       reviews_count: seed.reviews,
-      is_verified: seed.verified,
+      status: 'approved',
     })
     .returning('id')
     .executeTakeFirstOrThrow();

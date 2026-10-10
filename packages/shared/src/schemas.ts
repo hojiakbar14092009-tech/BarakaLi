@@ -19,6 +19,8 @@ import {
   SMS_CODE_LENGTH,
   DEFAULT_PAGE_SIZE,
   MAX_DISCOUNT_PERCENT,
+  MAX_REJECT_REASON_LENGTH,
+  MIN_REJECT_REASON_LENGTH,
   MAX_MATERIAL_NAME_LENGTH,
   MAX_ORDER_DESCRIPTION_LENGTH,
   MAX_ORDER_IMAGES,
@@ -229,7 +231,9 @@ export type MaterialOrderInput = z.infer<typeof materialOrderSchema>;
 export const savingsGoalSchema = z.object({ targetAmount: moneySchema });
 export type SavingsGoalInput = z.infer<typeof savingsGoalSchema>;
 
-export const workerVerificationSchema = z.object({ verified: z.boolean() });
+export const workerRejectionSchema = z.object({
+  reason: z.string().trim().min(MIN_REJECT_REASON_LENGTH).max(MAX_REJECT_REASON_LENGTH),
+});
 export const reviewModerationSchema = z.object({ status: z.enum(REVIEW_STATUSES) });
 export const complaintResolutionSchema = z.object({ status: z.enum(['resolved', 'dismissed']) });
 

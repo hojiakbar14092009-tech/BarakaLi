@@ -8,6 +8,7 @@ import type {
   ProductStatus,
   ReviewStatus,
   UserRole,
+  WorkerStatus,
 } from './constants.js';
 import type { OrderStatus } from './order-status.js';
 
@@ -33,15 +34,23 @@ export interface UserDto {
   workerId: string | null;
   /** Public name of the worker profile this account owns (what customers see on its products). */
   workerName: string | null;
+  /** Application state of the worker profile this account owns; null for non-workers. */
+  workerStatus: WorkerStatus | null;
+  workerRejectReason: string | null;
 }
 
 export interface NotificationDto {
   id: string;
-  kind: 'order_new';
+  kind: NotificationKind;
+  /** Extra text for the notification, e.g. the reason an application was rejected. */
+  detail: string | null;
   orderId: string | null;
   readAt: string | null;
   createdAt: string;
 }
+
+export type NotificationKind =
+  'order_new' | 'worker_application_received' | 'worker_approved' | 'worker_rejected';
 
 export interface NotificationsDto {
   unread: number;
@@ -231,8 +240,9 @@ export interface PublicReviewDto {
 export interface AdminStatsDto {
   users: number;
   workers: number;
-  verifiedWorkers: number;
+  approvedWorkers: number;
   pendingWorkers: number;
+  rejectedWorkers: number;
   ordersByStatus: Record<string, number>;
   turnover: number;
   commission: number;
@@ -245,7 +255,9 @@ export interface AdminWorkerDto {
   displayName: string;
   phone: string;
   categorySlug: string;
-  isVerified: boolean;
+  status: WorkerStatus;
+  rejectReason: string | null;
+  reviewedAt: string | null;
   rating: number;
   reviewsCount: number;
   createdAt: string;

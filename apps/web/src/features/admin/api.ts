@@ -63,11 +63,16 @@ function useAdminAction<TVariables>(request: (variables: TVariables) => Promise<
   });
 }
 
-export const useSetVerified = () =>
-  useAdminAction(({ id, verified }: { id: string; verified: boolean }) =>
-    apiRequest<void>(`/admin/workers/${id}/verification`, {
-      method: 'PATCH',
-      body: { verified },
+export const useApproveWorker = () =>
+  useAdminAction((id: string) =>
+    apiRequest<void>(`/admin/workers/${id}/approve`, { method: 'POST', auth: true }),
+  );
+
+export const useRejectWorker = () =>
+  useAdminAction(({ id, reason }: { id: string; reason: string }) =>
+    apiRequest<void>(`/admin/workers/${id}/reject`, {
+      method: 'POST',
+      body: { reason },
       auth: true,
     }),
   );

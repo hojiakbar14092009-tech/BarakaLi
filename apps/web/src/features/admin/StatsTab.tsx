@@ -32,7 +32,7 @@ export function StatsTab() {
       <dl className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Tile label={t('admin.stats.users')} value={String(data.users)} />
         <Tile label={t('admin.stats.workers')} value={String(data.workers)} />
-        <Tile label={t('admin.stats.verified')} value={String(data.verifiedWorkers)} />
+        <Tile label={t('admin.stats.verified')} value={String(data.approvedWorkers)} />
         <Tile label={t('admin.stats.pending')} value={String(data.pendingWorkers)} />
         <Tile label={t('admin.stats.turnover')} value={formatPrice(data.turnover, currency)} />
         <Tile

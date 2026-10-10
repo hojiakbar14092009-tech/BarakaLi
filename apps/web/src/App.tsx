@@ -22,6 +22,7 @@ const MaterialsPage = lazy(() => import('./features/materials/MaterialsPage'));
 const MaterialPaymentPage = lazy(() => import('./features/materials/MaterialPaymentPage'));
 const LessonsPage = lazy(() => import('./features/lessons/LessonsPage'));
 const AdminPage = lazy(() => import('./features/admin/AdminPage'));
+const AdminWorkersPage = lazy(() => import('./features/admin/AdminWorkersPage'));
 const ProfilePage = lazy(() => import('./features/profile/ProfilePage'));
 const AuthPage = lazy(() => import('./features/auth/AuthPage'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
@@ -56,7 +57,10 @@ const router = createBrowserRouter([
       { path: '/hunarmand/:id', element: <WorkerPage /> },
       {
         element: <RequireAuth role="admin" />,
-        children: [{ path: '/admin', element: <AdminPage /> }],
+        children: [
+          { path: '/admin', element: <AdminPage /> },
+          { path: '/admin/hunarmandlar', element: <AdminWorkersPage /> },
+        ],
       },
       {
         element: <RequireAuth />,

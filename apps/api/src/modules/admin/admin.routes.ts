@@ -4,7 +4,7 @@ import {
   complaintResolutionSchema,
   materialInputSchema,
   reviewModerationSchema,
-  workerVerificationSchema,
+  workerRejectionSchema,
 } from '@barakali/shared';
 import type { AppContext } from '../../context.js';
 import { AppError } from '../../errors.js';
@@ -37,9 +37,14 @@ export function createAdminRouter(ctx: AppContext): Router {
     res.json(await admin.listWorkers(adminListQuerySchema.parse(req.query)));
   });
 
-  router.patch('/admin/workers/:id/verification', async (req, res) => {
-    const { verified } = workerVerificationSchema.parse(req.body);
-    await admin.setVerified(idParam(req), verified);
+  router.post('/admin/workers/:id/approve', async (req, res) => {
+    await admin.approveWorker(req.auth?.userId ?? '', idParam(req));
+    res.status(204).end();
+  });
+
+  router.post('/admin/workers/:id/reject', async (req, res) => {
+    const { reason } = workerRejectionSchema.parse(req.body);
+    await admin.rejectWorker(req.auth?.userId ?? '', idParam(req), reason);
     res.status(204).end();
   });
 

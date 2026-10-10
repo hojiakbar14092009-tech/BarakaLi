@@ -17,9 +17,13 @@ const TABS = [
 
 type TabId = (typeof TABS)[number]['id'];
 
-export default function AdminPage() {
+interface AdminPageProps {
+  initialTab?: TabId;
+}
+
+export default function AdminPage({ initialTab = 'stats' }: AdminPageProps) {
   const { t } = useTranslation();
-  const [active, setActive] = useState<TabId>('stats');
+  const [active, setActive] = useState<TabId>(initialTab);
   const Panel = TABS.find((tab) => tab.id === active)?.Panel ?? StatsTab;
 
   return (

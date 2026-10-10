@@ -59,11 +59,13 @@ export class AvailabilityService {
     };
   }
 
+  /** Public calendars exist only for approved workers. */
   async workerExists(workerId: string): Promise<boolean> {
     const row = await this.ctx.db
       .selectFrom('workers')
       .select('id')
       .where('id', '=', workerId)
+      .where('status', '=', 'approved')
       .executeTakeFirst();
     return row !== undefined;
   }

@@ -1,5 +1,5 @@
 import { sql } from 'kysely';
-import type { BecomeWorkerInput, WorkerSummaryDto } from '@barakali/shared';
+import type { BecomeWorkerInput, WorkerStatus, WorkerSummaryDto } from '@barakali/shared';
 import type { Db } from '../../db/client.js';
 
 interface WorkerRow {
@@ -9,7 +9,7 @@ interface WorkerRow {
   avatar_url: string | null;
   rating: number;
   reviews_count: number;
-  is_verified: boolean;
+  status: WorkerStatus;
   category_slug: string;
   min_price: number | null;
   products_count: number;
@@ -24,7 +24,8 @@ function toDto(row: WorkerRow): WorkerSummaryDto {
     avatarUrl: row.avatar_url,
     rating: row.rating,
     reviewsCount: row.reviews_count,
-    isVerified: row.is_verified,
+    // The badge is derived from the reviewed status, never stored as a separate flag.
+    isVerified: row.status === 'approved',
     minPrice: row.min_price === null ? null : Number(row.min_price),
     productsCount: Number(row.products_count),
   };
@@ -65,14 +66,19 @@ export class WorkersRepository {
         .returning('id')
         .executeTakeFirstOrThrow();
       await trx.updateTable('users').set({ role: 'worker' }).where('id', '=', userId).execute();
+      // The worker hears that the application arrived in the same transaction that created it.
+      await trx
+        .insertInto('notifications')
+        .values({ user_id: userId, kind: 'worker_application_received' })
+        .execute();
       return worker.id;
     });
   }
 
   async findFeatured(limit: number): Promise<WorkerSummaryDto[]> {
     const rows = await this.summaryQuery()
+      .where('w.status', '=', 'approved')
       .having(sql<number>`count(p.id)`, '>', 0)
-      .orderBy('w.is_verified', 'desc')
       .orderBy('w.rating', 'desc')
       .orderBy('w.reviews_count', 'desc')
       .orderBy('w.created_at', 'desc')
@@ -82,7 +88,10 @@ export class WorkersRepository {
   }
 
   async findById(id: string): Promise<WorkerSummaryDto | undefined> {
-    const row = await this.summaryQuery().where('w.id', '=', id).executeTakeFirst();
+    const row = await this.summaryQuery()
+      .where('w.id', '=', id)
+      .where('w.status', '=', 'approved')
+      .executeTakeFirst();
     return row ? toDto(row) : undefined;
   }
 
@@ -100,7 +109,7 @@ export class WorkersRepository {
         'w.avatar_url',
         'w.rating',
         'w.reviews_count',
-        'w.is_verified',
+        'w.status',
         'c.slug as category_slug',
         sql<number | null>`min(p.retail_price)`.as('min_price'),
         sql<number>`count(p.id)`.as('products_count'),

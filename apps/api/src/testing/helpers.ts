@@ -58,16 +58,26 @@ export async function firstCategoryId(db: Db): Promise<string> {
   return row.id;
 }
 
+/** Signs up a worker. Applications start pending; tests get an approved worker unless told not to. */
 export async function makeWorker(
   t: TestApp,
   name = 'Dilnoza',
+  options: { approved?: boolean } = {},
 ): Promise<Session & { workerId: string }> {
   const session = await login(t.app, nextPhone(), name);
   const res = await request(t.app)
     .post('/api/me/worker')
     .set('Authorization', `Bearer ${session.token}`)
     .send({ displayName: name, categoryId: await firstCategoryId(t.db) });
-  return { ...session, workerId: res.body.workerId as string };
+  const workerId = res.body.workerId as string;
+  if (options.approved !== false) {
+    await t.db
+      .updateTable('workers')
+      .set({ status: 'approved' })
+      .where('id', '=', workerId)
+      .execute();
+  }
+  return { ...session, workerId };
 }
 
 export async function pngBuffer(width = 40, height = 30): Promise<Buffer> {

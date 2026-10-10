@@ -71,7 +71,7 @@ export class ProductRepository {
           'p.id',
           'p.worker_id',
           'w.display_name',
-          'w.is_verified',
+          'w.status as worker_status',
           'p.category_id',
           'c.slug as category_slug',
           'p.title',
@@ -108,7 +108,11 @@ export class ProductRepository {
           : null;
         const dto: ProductDto = {
           id: row.id,
-          worker: { id: row.worker_id, displayName: row.display_name, isVerified: row.is_verified },
+          worker: {
+            id: row.worker_id,
+            displayName: row.display_name,
+            isVerified: row.worker_status === 'approved',
+          },
           categoryId: row.category_id,
           categorySlug: row.category_slug,
           title: row.title,
@@ -129,6 +133,15 @@ export class ProductRepository {
       const dto = byId.get(id);
       return dto ? [dto] : [];
     });
+  }
+
+  async isWorkerApproved(workerId: string): Promise<boolean> {
+    const row = await this.db
+      .selectFrom('workers')
+      .select('status')
+      .where('id', '=', workerId)
+      .executeTakeFirst();
+    return row?.status === 'approved';
   }
 
   async listIdsByWorker(workerId: string): Promise<string[]> {
@@ -283,8 +296,13 @@ export class ProductRepository {
   private filtered(filter: ProductFilter) {
     let query = this.db
       .selectFrom('products as p')
+      .innerJoin('workers as w', 'w.id', 'p.worker_id')
       .innerJoin('categories as c', 'c.id', 'p.category_id');
-    if (filter.publishedOnly) query = query.where('p.status', '=', 'published');
+    // Public listings: published products of approved workers only. Pending and rejected
+    // applicants never show up, whatever the client asks for.
+    if (filter.publishedOnly) {
+      query = query.where('p.status', '=', 'published').where('w.status', '=', 'approved');
+    }
     if (filter.categorySlug) query = query.where('c.slug', '=', filter.categorySlug);
     if (filter.workerId) query = query.where('p.worker_id', '=', filter.workerId);
     if (filter.q) {

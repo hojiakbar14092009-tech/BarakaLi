@@ -110,5 +110,20 @@
     "IMAGE_REQUIRED": "Chop etish uchun kamida bitta rasm qoʻshing.",
     "NOT_FOUND": "Tanlangan qiymat topilmadi.",
     "INVALID_DATE": "Sanani toʻgʻri kiriting."
+  },
+  "application": {
+    "title": "Ariza holati",
+    "reason": "Sabab",
+    "status": {
+      "pending": "Ariza qabul qilindi, admin tekshiradi. Tasdiqlangunga qadar profilingiz katalogda koʻrinmaydi va buyurtma qabul qila olmaysiz.",
+      "approved": "Profilingiz tasdiqlangan: katalogda koʻrinadi va buyurtma qabul qila olasiz.",
+      "rejected": "Arizangiz rad etildi. Profilingiz katalogda koʻrinmaydi va buyurtma qabul qila olmaysiz."
+    },
+    "notice": {
+      "worker_application_received": "Ariza qabul qilindi, admin tekshiradi.",
+      "worker_approved": "Arizangiz tasdiqlandi.",
+      "worker_rejected": "Arizangiz rad etildi",
+      "order_new": "Yangi buyurtma keldi."
+    }
   }
 }

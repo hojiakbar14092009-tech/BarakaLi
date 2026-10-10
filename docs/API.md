@@ -57,7 +57,9 @@ interface UserDto {
   role: 'customer' | 'worker' | 'admin';
   language: 'uz' | 'ru';
   workerId: string | null;
-  workerName: string | null; // hunarmand profilining ommaviy nomi (PATCH /me nomni unga ham yozadi)
+  workerName: string | null;
+  workerStatus: 'pending' | 'approved' | 'rejected' | null; // o'z arizasi holati
+  workerRejectReason: string | null; // hunarmand profilining ommaviy nomi (PATCH /me nomni unga ham yozadi)
 }
 ```
 
@@ -287,6 +289,13 @@ qaytarish (`refunded`).
 **Xizmat buyurtmasi xatolari.** `ORDER_SLOT_TAKEN` (409, DB constraint), `SLOT_OUTSIDE_AVAILABILITY` (409),
 `SLOT_IN_PAST` (400), `OWN_SERVICE` (400), `ORDER_IMAGE_INVALID` (400).
 
+## Hunarmand arizasi
+
+`POST /me/worker` arizani `pending` holatda yaratadi va hunarmandga `worker_application_received`
+xabarini yozadi. Faqat `approved` hunarmand katalogda, tavsiyada, profil/kalendar/sharhlar
+endpointlarida ko'rinadi (aks holda 404) va buyurtma qabul qila oladi (`POST /orders`, `/orders/service`
+uchun 404; `accept` uchun 403 `WORKER_NOT_APPROVED`). Egasi o'z mahsulotlarini baribir ko'radi.
+
 ## Bildirishnomalar
 
 | Yo'l                                          | Kim    | Javob                                               |
@@ -298,7 +307,8 @@ qaytarish (`refunded`).
 ```ts
 interface NotificationDto {
   id: string;
-  kind: 'order_new';
+  kind: 'order_new' | 'worker_application_received' | 'worker_approved' | 'worker_rejected';
+  detail: string | null; // masalan, rad etish sababi
   orderId: string | null;
   readAt: string | null;
   createdAt: string;
@@ -360,21 +370,22 @@ Xatolar: `MATERIAL_UNAVAILABLE` (404/409), `INSUFFICIENT_STOCK` (409), `MATERIAL
 
 Ro'yxatlar `?page` (20 tadan) va `?status` qabul qiladi.
 
-| Yo'l                                                | So'rov                                | Javob / ta'siri                                                                             |
-| --------------------------------------------------- | ------------------------------------- | ------------------------------------------------------------------------------------------- |
-| `GET /admin/stats`                                  | —                                     | `AdminStatsDto`                                                                             |
-| `GET /admin/workers?status=pending\|verified`       | —                                     | `Page<AdminWorkerDto>` (telefon bilan)                                                      |
-| `PATCH /admin/workers/:id/verification`             | `{ verified: boolean }`               | 204                                                                                         |
-| `GET /admin/orders?status`                          | —                                     | `Page<AdminOrderDto>`                                                                       |
-| `POST /admin/orders/:id/refund`                     | —                                     | 204; faqat to'langan `new/accepted/in_progress/ready`, aks holda 409 `ORDER_NOT_REFUNDABLE` |
-| `GET /admin/reviews?status=visible\|hidden`         | —                                     | `Page<AdminReviewDto>`                                                                      |
-| `PATCH /admin/reviews/:id`                          | `{ status: 'visible'\|'hidden' }`     | 204; hunarmand reytingi bir tranzaksiyada qayta hisoblanadi                                 |
-| `GET /admin/complaints?status`                      | —                                     | `Page<AdminComplaintDto>`                                                                   |
-| `PATCH /admin/complaints/:id`                       | `{ status: 'resolved'\|'dismissed' }` | 204; ochiq bo'lmasa 409 `COMPLAINT_NOT_OPEN`                                                |
-| `GET /admin/materials`                              | —                                     | `MaterialDto[]` (yashirinlari ham)                                                          |
-| `POST /admin/materials`, `PUT /admin/materials/:id` | `MaterialInput`                       | `MaterialDto`                                                                               |
-| `GET /admin/material-orders`                        | —                                     | `(MaterialOrderDto & { workerName })[]` (toʻlanganlar)                                      |
-| `POST /admin/material-orders/:id/deliver`           | —                                     | 204; faqat `paid` dan                                                                       |
+| Yo'l                                                    | So'rov                                | Javob / ta'siri                                                                                |
+| ------------------------------------------------------- | ------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `GET /admin/stats`                                      | —                                     | `AdminStatsDto`                                                                                |
+| `GET /admin/workers?status=pending\|approved\|rejected` | —                                     | `Page<AdminWorkerDto>` (telefon bilan, kutilayotganlar birinchi)                               |
+| `POST /admin/workers/:id/approve`                       | —                                     | 204; `reviewed_by`/`reviewed_at` yoziladi, hunarmandga xabar                                   |
+| `POST /admin/workers/:id/reject`                        | `{ reason: 10..500 }`                 | 204; sababsiz yoki qisqa sabab 400; `reviewed_by`/`reviewed_at`, hunarmandga sabab bilan xabar |
+| `GET /admin/orders?status`                              | —                                     | `Page<AdminOrderDto>`                                                                          |
+| `POST /admin/orders/:id/refund`                         | —                                     | 204; faqat to'langan `new/accepted/in_progress/ready`, aks holda 409 `ORDER_NOT_REFUNDABLE`    |
+| `GET /admin/reviews?status=visible\|hidden`             | —                                     | `Page<AdminReviewDto>`                                                                         |
+| `PATCH /admin/reviews/:id`                              | `{ status: 'visible'\|'hidden' }`     | 204; hunarmand reytingi bir tranzaksiyada qayta hisoblanadi                                    |
+| `GET /admin/complaints?status`                          | —                                     | `Page<AdminComplaintDto>`                                                                      |
+| `PATCH /admin/complaints/:id`                           | `{ status: 'resolved'\|'dismissed' }` | 204; ochiq bo'lmasa 409 `COMPLAINT_NOT_OPEN`                                                   |
+| `GET /admin/materials`                                  | —                                     | `MaterialDto[]` (yashirinlari ham)                                                             |
+| `POST /admin/materials`, `PUT /admin/materials/:id`     | `MaterialInput`                       | `MaterialDto`                                                                                  |
+| `GET /admin/material-orders`                            | —                                     | `(MaterialOrderDto & { workerName })[]` (toʻlanganlar)                                         |
+| `POST /admin/material-orders/:id/deliver`               | —                                     | 204; faqat `paid` dan                                                                          |
 
 ```ts
 interface MaterialInput {
@@ -388,8 +399,9 @@ interface MaterialInput {
 interface AdminStatsDto {
   users: number;
   workers: number;
-  verifiedWorkers: number;
+  approvedWorkers: number;
   pendingWorkers: number;
+  rejectedWorkers: number;
   ordersByStatus: Record<string, number>;
   turnover: number;
   commission: number;
@@ -401,7 +413,9 @@ interface AdminWorkerDto {
   displayName: string;
   phone: string;
   categorySlug: string;
-  isVerified: boolean;
+  status: 'pending' | 'approved' | 'rejected';
+  rejectReason: string | null;
+  reviewedAt: string | null;
   rating: number;
   reviewsCount: number;
   createdAt: string;

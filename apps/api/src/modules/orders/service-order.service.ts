@@ -41,10 +41,10 @@ export class ServiceOrderService {
     await expireUnpaidOrders(this.ctx.db, now);
     const worker = await this.ctx.db
       .selectFrom('workers')
-      .select(['id', 'user_id'])
+      .select(['id', 'user_id', 'status'])
       .where('id', '=', input.workerId)
       .executeTakeFirst();
-    if (!worker) throw AppError.notFound();
+    if (!worker || worker.status !== 'approved') throw AppError.notFound();
     if (worker.user_id === customerId) throw AppError.badRequest('OWN_SERVICE');
     await this.assertInsideAvailability(worker.id, start, end);
     await this.assertImagesStored(input.imageUrls);

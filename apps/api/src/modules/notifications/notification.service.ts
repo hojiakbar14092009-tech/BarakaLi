@@ -63,6 +63,7 @@ export class NotificationService {
       items: items.map((row) => ({
         id: row.id,
         kind: row.kind,
+        detail: row.detail,
         orderId: row.order_id,
         readAt: row.read_at ? row.read_at.toISOString() : null,
         createdAt: row.created_at.toISOString(),

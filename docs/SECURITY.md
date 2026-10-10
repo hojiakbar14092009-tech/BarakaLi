@@ -25,6 +25,7 @@ qayerda amalga oshirilgani va qanday tekshirilgani ko'rsatilgan. Qolgan xavflar 
 | Admin kirishi                                    | ✅    | `ADMIN_PHONES` + SMS tasdig'i. **Yangi:** `EXPOSE_SMS_CODE=true` rejimida ham admin raqami kodi javobda qaytmaydi (aks holda istalgan kishi admin bo'lardi); kod server logiga yoziladi (`auth.test.ts`) |
 | Buyurtma egasi                                   | ✅    | `order_items_owner_matches` triggeri + tranzaksiya ichida `FOR SHARE` tekshiruv; mijoz yuborgan `workerId` e'tiborga olinmaydi (`order-routing.test.ts`)                                                 |
 | Telefon loglarda yo'q                            | ✅    | `ConsoleSmsProvider` raqamni maskalaydi (`maskPhone`), admin kodi logida raqam yo'q; telefon URL parametrida ishlatilmaydi                                                                               |
+| Hunarmand tasdig'i                               | ✅    | `workers.status` server filtri (katalog, tavsiya, buyurtma, `accept`); admin amallari `requireAdmin`; `worker-approval.test.ts`                                                                          |
 | Bog'liqliklarni ko'rib chiqish                   | ⚠️    | `pnpm audit` CI'da yo'q; qo'lda ishga tushirish tavsiya etiladi                                                                                                                                          |
 
 ## Qolgan xavflar va ochiq masalalar

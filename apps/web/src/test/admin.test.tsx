@@ -66,6 +66,8 @@ describe('admin route guard', () => {
     language: 'uz' as const,
     workerId: null,
     workerName: null,
+    workerStatus: null,
+    workerRejectReason: null,
   });
 
   it('sends anonymous visitors to sign in and non-admins home', () => {
@@ -91,19 +93,22 @@ describe('admin panel', () => {
     displayName: 'Dilfuza',
     phone: '+998901112233',
     categorySlug: 'tikuvchilik',
-    isVerified: false,
+    status: 'pending',
+    rejectReason: null,
+    reviewedAt: null,
     rating: 0,
     reviewsCount: 0,
     createdAt: '2026-01-01T00:00:00.000Z',
   };
 
-  it('verifies a pending worker', async () => {
+  it('approves a pending application and shows the filters in order', async () => {
     const fetchMock = mockApi({
       'GET /admin/stats': () => ({
         users: 3,
         workers: 2,
-        verifiedWorkers: 1,
+        approvedWorkers: 1,
         pendingWorkers: 1,
+        rejectedWorkers: 0,
         ordersByStatus: { delivered: 4 },
         turnover: 500_000,
         commission: 10_000,
@@ -111,7 +116,7 @@ describe('admin panel', () => {
         hiddenReviews: 0,
       }),
       'GET /admin/workers': () => ({ ...emptyPage, items: [worker], total: 1 }),
-      'PATCH /admin/workers/w1/verification': () => null,
+      'POST /admin/workers/w1/approve': () => null,
     });
     renderApp(<AdminPage />);
 
@@ -120,15 +125,50 @@ describe('admin panel', () => {
 
     fireEvent.click(screen.getByRole('tab', { name: 'Hunarmandlar' }));
     expect(await screen.findByText('Dilfuza')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Kutilmoqda' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    expect(screen.getByRole('button', { name: 'Tasdiqlangan' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Rad etilgan' })).toBeInTheDocument();
     expect(screen.getByText(/\+998901112233/)).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: 'Tasdiqlash' }));
+    fireEvent.click(screen.getByRole('button', { name: /^Tasdiqlash: Dilfuza$/ }));
 
     await waitFor(() => {
       const call = fetchMock.mock.calls.find(([url]) =>
-        String(url).endsWith('/admin/workers/w1/verification'),
+        String(url).endsWith('/admin/workers/w1/approve'),
       );
       expect(call).toBeDefined();
-      expect(JSON.parse(String((call?.[1] as RequestInit).body))).toEqual({ verified: true });
+      expect((call?.[1] as RequestInit).method).toBe('POST');
+    });
+  });
+
+  it('rejects only with a reason of at least 10 characters', async () => {
+    const fetchMock = mockApi({
+      'GET /admin/stats': () => ({}),
+      'GET /admin/workers': () => ({ ...emptyPage, items: [worker], total: 1 }),
+      'POST /admin/workers/w1/reject': () => null,
+    });
+    renderApp(<AdminPage initialTab="workers" />);
+    fireEvent.click(await screen.findByRole('button', { name: /^Rad etish: Dilfuza$/ }));
+
+    const confirm = screen.getByRole('button', { name: 'Rad etishni tasdiqlash' });
+    expect(confirm).toBeDisabled();
+    fireEvent.change(screen.getByLabelText('Rad etish sababi'), { target: { value: 'qisqa' } });
+    expect(confirm).toBeDisabled();
+    fireEvent.change(screen.getByLabelText('Rad etish sababi'), {
+      target: { value: 'Hujjatlar yetarli emas' },
+    });
+    expect(confirm).toBeEnabled();
+    fireEvent.click(confirm);
+
+    await waitFor(() => {
+      const call = fetchMock.mock.calls.find(([url]) =>
+        String(url).endsWith('/admin/workers/w1/reject'),
+      );
+      expect(JSON.parse(String((call?.[1] as RequestInit).body))).toEqual({
+        reason: 'Hujjatlar yetarli emas',
+      });
     });
   });
 

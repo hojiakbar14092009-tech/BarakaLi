@@ -130,6 +130,30 @@ Brifdagi noaniqliklar bo'yicha qabul qilingan qarorlar. Yangi qaror oxiriga qo's
 - **Loglar:** `ConsoleSmsProvider` telefonni maskalab yozadi (`+998*******67`); telefon URL
   parametrlarida ishlatilmaydi.
 
+## Hunarmand arizasi va admin tasdiqlash (2026-10-10)
+
+- **Holat:** `workers.status` = `pending | approved | rejected`, `reviewed_by`, `reviewed_at`,
+  `reject_reason`. Yangi ariza `pending`. Rad etish uchun sabab (≥ 10 belgi) DB constraint bilan ham,
+  zod bilan ham majburiy. Har qaror (holat, kim, qachon, xabar) bitta tranzaksiyada.
+- **Belgi:** `is_verified` ustuni olib tashlandi; "Tasdiqlangan" `status = approved` dan hisoblanadi.
+  Qoʻlda belgilash yoʻli yoʻq.
+- **Mavjud hunarmandlar [QAROR]:** migratsiya vaqtida mavjud barcha hunarmandlar (haqiqiy ham, namuna
+  ham) `approved` qilindi: ular katalogdan yoʻqolmasin. Faqat migratsiyadan keyingi arizalar
+  `pending`. Buni oʻzgartirish kerak boʻlsa (masalan, tasdiqlanmagan haqiqiy hunarmandlarni
+  `pending` qilish) admin sahifasidan "Rad etish"/qayta koʻrib chiqish yoki alohida migratsiya kerak.
+- **Server filtri:** ommaviy roʻyxatlar (katalog, tavsiya, mahsulot, profil, kalendar, sharhlar)
+  faqat `approved`; pending/rejected javobda umuman chiqmaydi. Buyurtma (mahsulot va xizmat)
+  `approved` egasi uchungina yaratiladi, `accept` esa `WORKER_NOT_APPROVED` (403) qaytaradi.
+  Hunarmand oʻz mahsulotlarini tasdiqdan oldin ham yaratib qoʻya oladi (egasiga koʻrinadi).
+- **Admin:** `ADMIN_PHONES` mexanizmi oʻzgarmadi; rolni server har soʻrovda tekshiradi.
+  `POST /admin/workers/:id/approve|reject`; sahifa `/admin/hunarmandlar` (filtr: kutilmoqda,
+  tasdiqlangan, rad etilgan). Qayta koʻrib chiqish: rad etilgan arizani tasdiqlash va tasdiqlanganni
+  rad etish mumkin, har safar `reviewed_*` yangilanadi.
+- **Xabarlar:** `worker_application_received`, `worker_approved`, `worker_rejected` (sabab bilan)
+  `notifications` ga yoziladi, kabinetda "Ariza holati" boʻlimida koʻrinadi. SMS nusxasi yoʻq
+  (shlyuz ulanmagan).
+- **Ochiq masala:** rad etilgan hunarmand qayta ariza topshira olmaydi (yangi ariza oqimi yoʻq).
+
 ## Brauzer testlari va moslashuvchanlik
 
 - **Playwright:** `pnpm e2e` (oldin `pnpm --filter @barakali/web build`). Web ilovaning production

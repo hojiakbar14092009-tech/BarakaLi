@@ -23,13 +23,26 @@
   },
   "workers": {
     "filter": {
-      "pending": "Tasdiq kutayotgan",
-      "verified": "Tasdiqlangan",
-      "all": "Barchasi"
+      "pending": "Kutilmoqda",
+      "approved": "Tasdiqlangan",
+      "rejected": "Rad etilgan"
     },
-    "empty": "Bu boʻlimda hunarmand yoʻq.",
-    "verify": "Tasdiqlash",
-    "unverify": "Tasdiqni olish"
+    "status": {
+      "pending": "Kutilmoqda",
+      "approved": "Tasdiqlangan",
+      "rejected": "Rad etilgan"
+    },
+    "empty": {
+      "pending": "Tekshirilishi kutilayotgan ariza yoʻq.",
+      "approved": "Tasdiqlangan hunarmand yoʻq.",
+      "rejected": "Rad etilgan ariza yoʻq."
+    },
+    "approve": "Tasdiqlash",
+    "reject": "Rad etish",
+    "confirmReject": "Rad etishni tasdiqlash",
+    "reasonLabel": "Rad etish sababi",
+    "reasonHint": "Kamida {{min}} ta belgi. Sabab hunarmandga koʻrsatiladi.",
+    "reason": "Sabab"
   },
   "orders": {
     "status": "Holat",

@@ -58,46 +58,9 @@ describe('access control', () => {
 
   it('blocks a customer from mutating admin resources', async () => {
     const res = await request(t.app)
-      .patch(`/api/admin/workers/${seller.workerId}/verification`)
-      .set(bearer(buyer))
-      .send({ verified: true });
+      .post(`/api/admin/workers/${seller.workerId}/approve`)
+      .set(bearer(buyer));
     expect(res.status).toBe(403);
-  });
-});
-
-describe('worker verification', () => {
-  it('lists pending workers with their phone and verifies one', async () => {
-    const pending = await request(t.app)
-      .get('/api/admin/workers?status=pending')
-      .set(bearer(admin));
-    const row = pending.body.items.find((w: { id: string }) => w.id === seller.workerId);
-    expect(row).toMatchObject({ phone: seller.phone, isVerified: false });
-
-    const verify = await request(t.app)
-      .patch(`/api/admin/workers/${seller.workerId}/verification`)
-      .set(bearer(admin))
-      .send({ verified: true });
-    expect(verify.status).toBe(204);
-    const profile = await request(t.app).get(`/api/workers/${seller.workerId}`);
-    expect(profile.body.isVerified).toBe(true);
-
-    const verified = await request(t.app)
-      .get('/api/admin/workers?status=verified')
-      .set(bearer(admin));
-    expect(verified.body.items.some((w: { id: string }) => w.id === seller.workerId)).toBe(true);
-  });
-
-  it('returns 404 for an unknown worker and 400 for a bad body', async () => {
-    const missing = await request(t.app)
-      .patch('/api/admin/workers/6f1b4f0e-79a1-4a5b-8f0e-3f9d2f3f6a11/verification')
-      .set(bearer(admin))
-      .send({ verified: true });
-    expect(missing.status).toBe(404);
-    const bad = await request(t.app)
-      .patch(`/api/admin/workers/${seller.workerId}/verification`)
-      .set(bearer(admin))
-      .send({ verified: 'yes' });
-    expect(bad.status).toBe(400);
   });
 });
 

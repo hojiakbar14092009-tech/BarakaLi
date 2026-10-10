@@ -132,6 +132,14 @@ export class OrderService {
       if (!order) throw AppError.notFound();
       if (order.worker_id !== viewer.workerId) throw AppError.forbidden();
       // A rejected service order has no payment to give back, so it is cancelled rather than refunded.
+      if (action === 'accept') {
+        const owner = await trx
+          .selectFrom('workers')
+          .select('status')
+          .where('id', '=', order.worker_id)
+          .executeTakeFirstOrThrow();
+        if (owner.status !== 'approved') throw new AppError('WORKER_NOT_APPROVED', 403);
+      }
       const target =
         action === 'reject' && order.type === 'service' ? 'cancelled' : ACTION_TARGET[action];
       // Refund from a started order exists only as the admin's complaint refund, never as a worker action.
@@ -192,6 +200,7 @@ export class OrderService {
         'p.wholesale_price',
         'p.wholesale_min_qty',
         'w.user_id as owner_user_id',
+        'w.status as owner_status',
       ])
       .where(
         'p.id',
@@ -202,7 +211,7 @@ export class OrderService {
     const byId = new Map(rows.map((row) => [row.id, row]));
     return items.map((item) => {
       const product = byId.get(item.productId);
-      if (!product || product.status !== 'published')
+      if (!product || product.status !== 'published' || product.owner_status !== 'approved')
         throw AppError.notFound('PRODUCT_UNAVAILABLE');
       if (product.owner_user_id === customerId) throw AppError.badRequest('OWN_PRODUCT');
       if (product.stock < item.quantity) throw AppError.conflict('INSUFFICIENT_STOCK');

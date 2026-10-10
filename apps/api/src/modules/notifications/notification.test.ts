@@ -21,6 +21,9 @@ let other: Awaited<ReturnType<typeof makeWorker>>;
 let buyer: Session;
 
 const bearer = (who: Session) => ({ Authorization: `Bearer ${who.token}` });
+/** Unread order notifications only: every new worker also has an application notification. */
+const newOrders = async (who: Session): Promise<number> =>
+  (await inbox(who)).items.filter((n) => n.kind === 'order_new' && n.readAt === null).length;
 const inbox = async (who: Session): Promise<NotificationsDto> =>
   (await request(t.app).get('/api/my/notifications').set(bearer(who))).body as NotificationsDto;
 
@@ -41,7 +44,7 @@ describe('new order notifications', () => {
       .send({ items: [{ productId: product.id, quantity: 1 }], fulfillment: 'pickup' });
     const orderId = (created.body as OrderDto[])[0]!.id;
     // Nothing before payment: an unpaid cart must not ping the worker.
-    expect((await inbox(worker)).unread).toBe(0);
+    expect(await newOrders(worker)).toBe(0);
 
     await request(t.app).post(`/api/orders/${orderId}/payment`).set(bearer(buyer));
     await request(t.app)
@@ -50,10 +53,10 @@ describe('new order notifications', () => {
       .send({ cardNumber: '4242424242424242', expiry: '12/40', cvc: '123' });
 
     const mine = await inbox(worker);
-    expect(mine.unread).toBe(1);
+    expect(await newOrders(worker)).toBe(1);
     expect(mine.items[0]).toMatchObject({ kind: 'order_new', orderId, readAt: null });
-    expect((await inbox(other)).unread).toBe(0);
-    expect((await inbox(buyer)).unread).toBe(0);
+    expect(await newOrders(other)).toBe(0);
+    expect(await newOrders(buyer)).toBe(0);
   });
 
   it('is written once even when the payment callback is repeated', async () => {

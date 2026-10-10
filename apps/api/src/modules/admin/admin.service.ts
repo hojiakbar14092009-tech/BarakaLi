@@ -1,6 +1,7 @@
 import { sql } from 'kysely';
 import {
   ADMIN_PAGE_SIZE,
+  WORKER_STATUSES,
   canTransition,
   type AdminComplaintDto,
   type AdminListQuery,
@@ -43,15 +44,13 @@ export class AdminService {
     const db = this.ctx.db;
     const count = async (query: { executeTakeFirstOrThrow(): Promise<{ n: unknown }> }) =>
       Number((await query.executeTakeFirstOrThrow()).n);
-    const [users, workers, verified, statuses, money, complaints, hidden] = await Promise.all([
+    const [users, workerCounts, statuses, money, complaints, hidden] = await Promise.all([
       count(db.selectFrom('users').select((eb) => eb.fn.countAll().as('n'))),
-      count(db.selectFrom('workers').select((eb) => eb.fn.countAll().as('n'))),
-      count(
-        db
-          .selectFrom('workers')
-          .select((eb) => eb.fn.countAll().as('n'))
-          .where('is_verified', '=', true),
-      ),
+      db
+        .selectFrom('workers')
+        .select(['status', (eb) => eb.fn.countAll().as('n')])
+        .groupBy('status')
+        .execute(),
       db
         .selectFrom('orders')
         .select(['status', (eb) => eb.fn.countAll().as('n')])
@@ -78,11 +77,14 @@ export class AdminService {
       ),
     ]);
     const commission = Number(money.commission);
+    const byStatus = (status: string) =>
+      Number(workerCounts.find((row) => row.status === status)?.n ?? 0);
     return {
       users,
-      workers,
-      verifiedWorkers: verified,
-      pendingWorkers: workers - verified,
+      workers: workerCounts.reduce((sum, row) => sum + Number(row.n), 0),
+      approvedWorkers: byStatus('approved'),
+      pendingWorkers: byStatus('pending'),
+      rejectedWorkers: byStatus('rejected'),
       ordersByStatus: Object.fromEntries(statuses.map((row) => [row.status, Number(row.n)])),
       turnover: Number(money.worker) + commission,
       commission,
@@ -97,12 +99,8 @@ export class AdminService {
       .selectFrom('workers as w')
       .innerJoin('users as u', 'u.id', 'w.user_id')
       .innerJoin('categories as c', 'c.id', 'w.category_id');
-    const filtered =
-      query.status === 'pending'
-        ? base.where('w.is_verified', '=', false)
-        : query.status === 'verified'
-          ? base.where('w.is_verified', '=', true)
-          : base;
+    const status = WORKER_STATUSES.find((value) => value === query.status);
+    const filtered = status ? base.where('w.status', '=', status) : base;
     const [rows, total] = await Promise.all([
       filtered
         .select([
@@ -110,12 +108,15 @@ export class AdminService {
           'w.display_name',
           'u.phone',
           'c.slug as category_slug',
-          'w.is_verified',
+          'w.status',
+          'w.reject_reason',
+          'w.reviewed_at',
           'w.rating',
           'w.reviews_count',
           'w.created_at',
         ])
-        .orderBy('w.is_verified')
+        // Applications waiting for a decision come first, oldest first.
+        .orderBy(sql`(w.status = 'pending')`, 'desc')
         .orderBy('w.created_at', 'desc')
         .limit(ADMIN_PAGE_SIZE)
         .offset(offset)
@@ -128,7 +129,9 @@ export class AdminService {
         displayName: row.display_name,
         phone: row.phone,
         categorySlug: row.category_slug,
-        isVerified: row.is_verified,
+        status: row.status,
+        rejectReason: row.reject_reason,
+        reviewedAt: row.reviewed_at ? row.reviewed_at.toISOString() : null,
         rating: row.rating,
         reviewsCount: row.reviews_count,
         createdAt: row.created_at.toISOString(),
@@ -138,14 +141,46 @@ export class AdminService {
     );
   }
 
-  async setVerified(workerId: string, verified: boolean): Promise<void> {
-    const result = await this.ctx.db
-      .updateTable('workers')
-      .set({ is_verified: verified })
-      .where('id', '=', workerId)
-      .executeTakeFirst();
-    if (Number(result.numUpdatedRows) !== 1) throw AppError.notFound();
+  /**
+   * Records the decision (who and when), the new status and the applicant's notification in one
+   * transaction, so a decision can never exist without its audit trail or its message.
+   */
+  private async decide(
+    adminId: string,
+    workerId: string,
+    decision: { status: 'approved' | 'rejected'; reason: string | null },
+  ): Promise<void> {
+    await this.ctx.db.transaction().execute(async (trx) => {
+      const worker = await trx
+        .updateTable('workers')
+        .set({
+          status: decision.status,
+          reviewed_by: adminId,
+          reviewed_at: this.now(),
+          reject_reason: decision.reason,
+        })
+        .where('id', '=', workerId)
+        .returning('user_id')
+        .executeTakeFirst();
+      if (!worker) throw AppError.notFound();
+      await trx
+        .insertInto('notifications')
+        .values({
+          user_id: worker.user_id,
+          kind: decision.status === 'approved' ? 'worker_approved' : 'worker_rejected',
+          detail: decision.reason,
+        })
+        .execute();
+    });
     this.ctx.cache.delete(FEATURED_CACHE_KEY);
+  }
+
+  approveWorker(adminId: string, workerId: string): Promise<void> {
+    return this.decide(adminId, workerId, { status: 'approved', reason: null });
+  }
+
+  rejectWorker(adminId: string, workerId: string, reason: string): Promise<void> {
+    return this.decide(adminId, workerId, { status: 'rejected', reason });
   }
 
   async listOrders(query: AdminListQuery): Promise<Page<AdminOrderDto>> {

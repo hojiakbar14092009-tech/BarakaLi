@@ -40,6 +40,7 @@ export function createCatalogRouter(ctx: AppContext): Router {
 
   router.get('/workers/:id/reviews', async (req, res) => {
     const id = requireUuid(req.params.id, 'NOT_FOUND');
+    if (!(await workersRepo.findById(id))) throw AppError.notFound();
     const { page } = pageQuery.parse(req.query);
     res.json(await reviews.listVisible(id, page));
   });

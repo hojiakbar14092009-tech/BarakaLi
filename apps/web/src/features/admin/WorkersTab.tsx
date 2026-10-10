@@ -1,20 +1,65 @@
 import { BadgeCheck } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import {
+  MAX_REJECT_REASON_LENGTH,
+  MIN_REJECT_REASON_LENGTH,
+  type AdminWorkerDto,
+  type WorkerStatus,
+} from '@barakali/shared';
 import { Button } from '../../components/Button';
+import { TextAreaField } from '../../components/Field';
 import { EmptyState, ErrorState, LoadingState } from '../../components/StateViews';
 import { errorMessage } from '../../lib/errors';
 import { Pagination } from '../catalog/Pagination';
-import { useAdminWorkers, useSetVerified } from './api';
+import { useAdminWorkers, useApproveWorker, useRejectWorker } from './api';
 
-const FILTERS = ['pending', 'verified', 'all'] as const;
+const FILTERS: WorkerStatus[] = ['pending', 'approved', 'rejected'];
+
+function RejectForm({ worker, onDone }: { worker: AdminWorkerDto; onDone: () => void }) {
+  const { t } = useTranslation();
+  const [reason, setReason] = useState('');
+  const reject = useRejectWorker();
+  const trimmed = reason.trim();
+  const valid = trimmed.length >= MIN_REJECT_REASON_LENGTH;
+
+  return (
+    <form
+      className="w-full space-y-3 rounded-field bg-bisque/50 p-3"
+      onSubmit={(event) => {
+        event.preventDefault();
+        if (valid) reject.mutate({ id: worker.id, reason: trimmed }, { onSuccess: onDone });
+      }}
+    >
+      <TextAreaField
+        label={t('admin.workers.reasonLabel')}
+        hint={t('admin.workers.reasonHint', { min: MIN_REJECT_REASON_LENGTH })}
+        rows={3}
+        maxLength={MAX_REJECT_REASON_LENGTH}
+        value={reason}
+        onChange={(event) => setReason(event.target.value)}
+      />
+      {reject.isError && <p role="alert">{errorMessage(reject.error, t)}</p>}
+      <div className="flex gap-2">
+        <Button type="submit" disabled={!valid || reject.isPending}>
+          {t('admin.workers.confirmReject')}
+        </Button>
+        <Button variant="secondary" onClick={onDone}>
+          {t('common.cancel')}
+        </Button>
+      </div>
+    </form>
+  );
+}
 
 export function WorkersTab() {
-  const { t } = useTranslation();
-  const [filter, setFilter] = useState<(typeof FILTERS)[number]>('pending');
+  const { t, i18n } = useTranslation();
+  const [filter, setFilter] = useState<WorkerStatus>('pending');
   const [page, setPage] = useState(1);
-  const workers = useAdminWorkers(page, filter === 'all' ? undefined : filter);
-  const verify = useSetVerified();
+  const [rejecting, setRejecting] = useState<string | null>(null);
+  const workers = useAdminWorkers(page, filter);
+  const approve = useApproveWorker();
+  const locale = i18n.language === 'ru' ? 'ru-RU' : 'uz-UZ';
 
   return (
     <section aria-labelledby="admin-workers" className="space-y-3">
@@ -30,6 +75,7 @@ export function WorkersTab() {
             onClick={() => {
               setFilter(value);
               setPage(1);
+              setRejecting(null);
             }}
             className={`min-h-12 rounded-full px-4 font-semibold ${
               filter === value ? 'bg-mocha text-sugar' : 'bg-bisque text-espresso'
@@ -47,7 +93,7 @@ export function WorkersTab() {
         />
       )}
       {workers.data && workers.data.items.length === 0 && (
-        <EmptyState title={t('admin.workers.empty')} />
+        <EmptyState title={t(`admin.workers.empty.${filter}`)} />
       )}
       <ul className="space-y-2">
         {workers.data?.items.map((worker) => (
@@ -58,7 +104,7 @@ export function WorkersTab() {
             <div className="min-w-0">
               <p className="flex items-center gap-2 font-semibold">
                 {worker.displayName}
-                {worker.isVerified && (
+                {worker.status === 'approved' && (
                   <BadgeCheck className="size-5 text-mocha" aria-label={t('home.verified')} />
                 )}
               </p>
@@ -66,20 +112,45 @@ export function WorkersTab() {
                 {t(`categories.${worker.categorySlug}`)} · {worker.phone}
               </p>
               <p className="text-sm text-mocha">
-                {worker.rating.toFixed(1)} ({worker.reviewsCount})
+                {t(`admin.workers.status.${worker.status}`)}
+                {worker.reviewedAt &&
+                  ` · ${new Date(worker.reviewedAt).toLocaleDateString(locale, {
+                    timeZone: 'Asia/Tashkent',
+                  })}`}
               </p>
+              {worker.rejectReason && (
+                <p className="text-sm">
+                  {t('admin.workers.reason')}: {worker.rejectReason}
+                </p>
+              )}
             </div>
-            <Button
-              variant={worker.isVerified ? 'secondary' : 'primary'}
-              disabled={verify.isPending}
-              onClick={() => verify.mutate({ id: worker.id, verified: !worker.isVerified })}
-            >
-              {worker.isVerified ? t('admin.workers.unverify') : t('admin.workers.verify')}
-            </Button>
+            <div className="flex flex-wrap gap-2">
+              {worker.status !== 'approved' && (
+                <Button
+                  disabled={approve.isPending}
+                  onClick={() => approve.mutate(worker.id)}
+                  aria-label={`${t('admin.workers.approve')}: ${worker.displayName}`}
+                >
+                  {t('admin.workers.approve')}
+                </Button>
+              )}
+              {worker.status !== 'rejected' && (
+                <Button
+                  variant="secondary"
+                  onClick={() => setRejecting(worker.id)}
+                  aria-label={`${t('admin.workers.reject')}: ${worker.displayName}`}
+                >
+                  {t('admin.workers.reject')}
+                </Button>
+              )}
+            </div>
+            {rejecting === worker.id && (
+              <RejectForm worker={worker} onDone={() => setRejecting(null)} />
+            )}
           </li>
         ))}
       </ul>
-      {verify.isError && <p role="alert">{errorMessage(verify.error, t)}</p>}
+      {approve.isError && <p role="alert">{errorMessage(approve.error, t)}</p>}
       {workers.data && (
         <Pagination
           page={workers.data.page}

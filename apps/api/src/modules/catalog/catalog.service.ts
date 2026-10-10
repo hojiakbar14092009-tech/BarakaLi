@@ -51,13 +51,14 @@ export class CatalogService {
     return { items, page: query.page, pageSize: query.pageSize, total };
   }
 
-  /** Drafts and hidden products are visible only to their owner. */
+  /** Drafts, hidden products and products of unapproved workers are visible only to their owner. */
   async getProduct(id: string, viewerWorkerId: string | undefined): Promise<ProductDto> {
     const [product] = await this.products.findDtosByIds([id]);
     if (!product) throw AppError.notFound('PRODUCT_NOT_FOUND');
-    if (product.status !== 'published' && product.worker.id !== viewerWorkerId) {
-      throw AppError.notFound('PRODUCT_NOT_FOUND');
-    }
+    if (product.worker.id === viewerWorkerId) return product;
+    const visible =
+      product.status === 'published' && (await this.products.isWorkerApproved(product.worker.id));
+    if (!visible) throw AppError.notFound('PRODUCT_NOT_FOUND');
     return product;
   }
 }

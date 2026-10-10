@@ -51,6 +51,43 @@ export async function firstCategoryId(request: APIRequestContext): Promise<strin
   return categories[0]?.id ?? '';
 }
 
+const ORIGIN = 'http://localhost:4173';
+
+let adminToken: Promise<string> | undefined;
+
+/**
+ * One administrator session for the whole run: sign-in codes are limited per phone, and every
+ * test worker needs an approval.
+ */
+function adminAccessToken(): Promise<string> {
+  adminToken ??= (async () => {
+    const headers = { 'Content-Type': 'application/json', Origin: ORIGIN };
+    const codeRes = await fetch(`${ORIGIN}/api/auth/request-code`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ phone: ADMIN_PHONE }),
+    });
+    const { code } = (await codeRes.json()) as { code: string };
+    const verify = await fetch(`${ORIGIN}/api/auth/verify`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ phone: ADMIN_PHONE, code, name: 'Admin' }),
+    });
+    return ((await verify.json()) as { accessToken: string }).accessToken;
+  })();
+  return adminToken;
+}
+
+/** Approves a worker application as the administrator, through the public API. */
+export async function approveWorker(workerId: string): Promise<void> {
+  const res = await fetch(`${ORIGIN}/api/admin/workers/${workerId}/approve`, {
+    method: 'POST',
+    headers: { Origin: ORIGIN, Authorization: `Bearer ${await adminAccessToken()}` },
+  });
+  expect(res.status).toBe(204);
+}
+
+/** Applies as a worker and gets approved, so the profile is public and can take orders. */
 export async function becomeWorker(
   request: APIRequestContext,
   account: Account,
@@ -61,7 +98,9 @@ export async function becomeWorker(
     data: { displayName, categoryId: await firstCategoryId(request) },
   });
   expect(res.ok()).toBe(true);
-  return ((await res.json()) as { workerId: string }).workerId;
+  const workerId = ((await res.json()) as { workerId: string }).workerId;
+  await approveWorker(workerId);
+  return workerId;
 }
 
 /** Adds a window that starts `daysAhead` days from now at a whole UTC hour. */

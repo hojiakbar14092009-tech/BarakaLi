@@ -66683,7 +66683,7 @@ __export(vercel_exports, {
 module.exports = __toCommonJS(vercel_exports);
 
 // embedded-migrations:migrations
-var migrations_default = [{ "name": "1760000000000_core.sql", "up": "CREATE EXTENSION IF NOT EXISTS pg_trgm;\n\nCREATE TABLE categories (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  slug text NOT NULL UNIQUE,\n  name_uz text NOT NULL,\n  name_ru text NOT NULL,\n  position integer NOT NULL DEFAULT 0\n);\n\nINSERT INTO categories (slug, name_uz, name_ru, position) VALUES\n  ('tikuvchilik', 'Tikuvchilik', '\u0428\u0438\u0442\u044C\u0451', 1),\n  ('pishiriq', 'Pishiriq', '\u0412\u044B\u043F\u0435\u0447\u043A\u0430', 2),\n  ('qol-mehnati', 'Qo''l mehnati', '\u0420\u0443\u043A\u043E\u0434\u0435\u043B\u0438\u0435', 3),\n  ('dizayn', 'Dizayn', '\u0414\u0438\u0437\u0430\u0439\u043D', 4),\n  ('masofaviy-ishlar', 'Masofaviy ishlar', '\u0423\u0434\u0430\u043B\u0451\u043D\u043D\u0430\u044F \u0440\u0430\u0431\u043E\u0442\u0430', 5);\n\nCREATE TABLE users (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  phone text NOT NULL UNIQUE,\n  name text,\n  role text NOT NULL DEFAULT 'customer' CHECK (role IN ('customer', 'worker', 'admin')),\n  language text NOT NULL DEFAULT 'uz' CHECK (language IN ('uz', 'ru')),\n  created_at timestamptz NOT NULL DEFAULT now()\n);\n\nCREATE TABLE workers (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  user_id uuid NOT NULL UNIQUE REFERENCES users (id) ON DELETE CASCADE,\n  category_id uuid NOT NULL REFERENCES categories (id),\n  display_name text NOT NULL,\n  bio text,\n  avatar_url text,\n  rating numeric(3, 2) NOT NULL DEFAULT 0,\n  reviews_count integer NOT NULL DEFAULT 0,\n  is_verified boolean NOT NULL DEFAULT false,\n  created_at timestamptz NOT NULL DEFAULT now()\n);\nCREATE INDEX workers_category_idx ON workers (category_id);\n\nCREATE TABLE products (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  worker_id uuid NOT NULL REFERENCES workers (id) ON DELETE CASCADE,\n  category_id uuid NOT NULL REFERENCES categories (id),\n  title text NOT NULL,\n  description text NOT NULL DEFAULT '',\n  retail_price bigint NOT NULL CHECK (retail_price > 0),\n  wholesale_price bigint CHECK (wholesale_price IS NULL OR wholesale_price > 0),\n  wholesale_min_qty integer CHECK (wholesale_min_qty IS NULL OR wholesale_min_qty >= 2),\n  stock integer NOT NULL DEFAULT 0 CHECK (stock >= 0),\n  status text NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'published', 'hidden')),\n  created_at timestamptz NOT NULL DEFAULT now(),\n  updated_at timestamptz NOT NULL DEFAULT now(),\n  CONSTRAINT products_wholesale_pair CHECK (\n    (wholesale_price IS NULL) = (wholesale_min_qty IS NULL)\n  ),\n  CONSTRAINT products_wholesale_lower CHECK (\n    wholesale_price IS NULL OR wholesale_price < retail_price\n  )\n);\nCREATE INDEX products_worker_status_idx ON products (worker_id, status);\nCREATE INDEX products_category_status_idx ON products (category_id, status);\n-- Uzbek apostrophe variants (' \u02BB \u02BC \u2019 \u2018 `) collapse to one form for search.\nCREATE FUNCTION uz_normalize(value text) RETURNS text\n  LANGUAGE sql IMMUTABLE PARALLEL SAFE\n  AS $$ SELECT lower(translate(value, '''\u02BB\u02BC\u2019\u2018`', '')) $$;\nCREATE INDEX products_title_trgm_idx ON products USING gin (uz_normalize(title) gin_trgm_ops);\n\nCREATE TABLE product_images (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  product_id uuid NOT NULL REFERENCES products (id) ON DELETE CASCADE,\n  url text NOT NULL,\n  position integer NOT NULL DEFAULT 0\n);\nCREATE INDEX product_images_product_idx ON product_images (product_id, position);\n\nCREATE TABLE product_models (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  product_id uuid NOT NULL UNIQUE REFERENCES products (id) ON DELETE CASCADE,\n  file_url text NOT NULL,\n  file_size integer NOT NULL,\n  poster_url text,\n  created_at timestamptz NOT NULL DEFAULT now()\n);\n\nCREATE TABLE orders (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  type text NOT NULL CHECK (type IN ('service', 'product')),\n  customer_id uuid NOT NULL REFERENCES users (id),\n  worker_id uuid NOT NULL REFERENCES workers (id),\n  status text NOT NULL DEFAULT 'awaiting_payment' CHECK (\n    status IN ('awaiting_payment', 'new', 'accepted', 'in_progress', 'ready', 'delivered', 'cancelled', 'refunded')\n  ),\n  total bigint NOT NULL CHECK (total >= 0),\n  commission bigint NOT NULL CHECK (commission >= 0),\n  worker_amount bigint NOT NULL CHECK (worker_amount >= 0),\n  fulfillment text NOT NULL DEFAULT 'pickup' CHECK (fulfillment IN ('pickup', 'delivery')),\n  delivery_address text,\n  start_time timestamptz,\n  end_time timestamptz,\n  created_at timestamptz NOT NULL DEFAULT now(),\n  updated_at timestamptz NOT NULL DEFAULT now()\n);\nCREATE INDEX orders_type_idx ON orders (type);\nCREATE INDEX orders_customer_idx ON orders (customer_id, created_at DESC);\nCREATE INDEX orders_worker_status_idx ON orders (worker_id, status);\n\nCREATE TABLE order_items (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  order_id uuid NOT NULL REFERENCES orders (id) ON DELETE CASCADE,\n  product_id uuid REFERENCES products (id) ON DELETE SET NULL,\n  title_snapshot text NOT NULL,\n  unit_price bigint NOT NULL CHECK (unit_price > 0),\n  quantity integer NOT NULL CHECK (quantity > 0),\n  price_type text NOT NULL CHECK (price_type IN ('retail', 'wholesale'))\n);\nCREATE INDEX order_items_order_idx ON order_items (order_id);\n\nCREATE TABLE payments (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  order_id uuid NOT NULL REFERENCES orders (id) ON DELETE CASCADE,\n  amount bigint NOT NULL CHECK (amount >= 0),\n  status text NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'paid', 'refunded', 'failed')),\n  provider text NOT NULL,\n  provider_ref text,\n  idempotency_key text NOT NULL UNIQUE,\n  created_at timestamptz NOT NULL DEFAULT now()\n);\nCREATE INDEX payments_order_idx ON payments (order_id);\n\nCREATE TABLE earnings (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  order_id uuid NOT NULL UNIQUE REFERENCES orders (id) ON DELETE CASCADE,\n  worker_id uuid NOT NULL REFERENCES workers (id),\n  amount bigint NOT NULL CHECK (amount >= 0),\n  commission bigint NOT NULL CHECK (commission >= 0),\n  created_at timestamptz NOT NULL DEFAULT now()\n);\nCREATE INDEX earnings_worker_idx ON earnings (worker_id, created_at DESC);\n\nCREATE TABLE sms_codes (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  phone text NOT NULL,\n  code_hash text NOT NULL,\n  expires_at timestamptz NOT NULL,\n  attempts integer NOT NULL DEFAULT 0,\n  consumed_at timestamptz,\n  created_at timestamptz NOT NULL DEFAULT now()\n);\nCREATE INDEX sms_codes_phone_idx ON sms_codes (phone, created_at DESC);\n\nCREATE TABLE refresh_tokens (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  user_id uuid NOT NULL REFERENCES users (id) ON DELETE CASCADE,\n  token_hash text NOT NULL UNIQUE,\n  expires_at timestamptz NOT NULL,\n  revoked_at timestamptz,\n  created_at timestamptz NOT NULL DEFAULT now()\n);\nCREATE INDEX refresh_tokens_user_idx ON refresh_tokens (user_id);\n\nCREATE TABLE files (\n  name text PRIMARY KEY,\n  content_type text NOT NULL,\n  size integer NOT NULL,\n  data bytea NOT NULL,\n  created_at timestamptz NOT NULL DEFAULT now()\n);" }, { "name": "1760000100000_reviews_complaints.sql", "up": "CREATE TABLE reviews (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  -- One review per order: the unique key is what stops a second review at the database level.\n  order_id uuid NOT NULL UNIQUE REFERENCES orders (id) ON DELETE CASCADE,\n  customer_id uuid NOT NULL REFERENCES users (id),\n  worker_id uuid NOT NULL REFERENCES workers (id),\n  rating smallint NOT NULL CHECK (rating BETWEEN 1 AND 5),\n  comment text CHECK (comment IS NULL OR char_length(comment) <= 1000),\n  status text NOT NULL DEFAULT 'visible' CHECK (status IN ('visible', 'hidden')),\n  created_at timestamptz NOT NULL DEFAULT now()\n);\nCREATE INDEX reviews_worker_idx ON reviews (worker_id, created_at DESC);\n\nCREATE TABLE complaints (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  order_id uuid NOT NULL REFERENCES orders (id) ON DELETE CASCADE,\n  user_id uuid NOT NULL REFERENCES users (id),\n  reason text NOT NULL CHECK (char_length(reason) BETWEEN 5 AND 1000),\n  status text NOT NULL DEFAULT 'open' CHECK (status IN ('open', 'resolved', 'dismissed')),\n  created_at timestamptz NOT NULL DEFAULT now()\n);\nCREATE INDEX complaints_order_idx ON complaints (order_id);\n-- A user can have only one open complaint per order; they can file again after it is closed.\nCREATE UNIQUE INDEX complaints_one_open_per_user_idx\n  ON complaints (order_id, user_id) WHERE status = 'open';" }, { "name": "1760000200000_calendar.sql", "up": "CREATE EXTENSION IF NOT EXISTS btree_gist;\n\nALTER TABLE workers\n  ADD COLUMN hourly_rate bigint CHECK (hourly_rate IS NULL OR hourly_rate > 0);\n\n-- Free windows a worker publishes. The exclusion constraint keeps one worker's windows from overlapping.\nCREATE TABLE availability (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  worker_id uuid NOT NULL REFERENCES workers (id) ON DELETE CASCADE,\n  start_time timestamptz NOT NULL,\n  end_time timestamptz NOT NULL,\n  created_at timestamptz NOT NULL DEFAULT now(),\n  CONSTRAINT availability_range_valid CHECK (end_time > start_time),\n  CONSTRAINT availability_no_overlap\n    EXCLUDE USING gist (worker_id WITH =, tstzrange(start_time, end_time) WITH &&)\n);\nCREATE INDEX availability_worker_idx ON availability (worker_id, start_time);\n\nALTER TABLE orders\n  ADD COLUMN description text,\n  ADD COLUMN deadline date,\n  ADD CONSTRAINT orders_service_has_slot CHECK (\n    type = 'product' OR (start_time IS NOT NULL AND end_time IS NOT NULL AND end_time > start_time)\n  ),\n  -- Slot clash is decided by the database, not by a check-then-insert in application code.\n  -- A slot is held from the moment the order is created (even unpaid) until it leaves these states.\n  ADD CONSTRAINT orders_slot_no_overlap\n    EXCLUDE USING gist (worker_id WITH =, tstzrange(start_time, end_time) WITH &&)\n    WHERE (start_time IS NOT NULL AND status IN ('awaiting_payment', 'new', 'accepted', 'in_progress'));\nCREATE INDEX orders_status_created_idx ON orders (status, created_at);\n\nCREATE TABLE order_images (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  order_id uuid NOT NULL REFERENCES orders (id) ON DELETE CASCADE,\n  url text NOT NULL,\n  position integer NOT NULL DEFAULT 0\n);\nCREATE INDEX order_images_order_idx ON order_images (order_id, position);" }, { "name": "1760000300000_materials_savings.sql", "up": "CREATE TABLE materials (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  name text NOT NULL,\n  description text NOT NULL DEFAULT '',\n  price bigint NOT NULL CHECK (price > 0),\n  discount_percent smallint NOT NULL DEFAULT 0 CHECK (discount_percent BETWEEN 0 AND 90),\n  stock integer NOT NULL DEFAULT 0 CHECK (stock >= 0),\n  is_active boolean NOT NULL DEFAULT true,\n  created_at timestamptz NOT NULL DEFAULT now()\n);\n\nCREATE TABLE material_orders (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  worker_id uuid NOT NULL REFERENCES workers (id),\n  status text NOT NULL DEFAULT 'awaiting_payment'\n    CHECK (status IN ('awaiting_payment', 'paid', 'delivered', 'cancelled')),\n  total bigint NOT NULL CHECK (total > 0),\n  created_at timestamptz NOT NULL DEFAULT now(),\n  updated_at timestamptz NOT NULL DEFAULT now()\n);\nCREATE INDEX material_orders_worker_idx ON material_orders (worker_id, created_at DESC);\nCREATE INDEX material_orders_status_idx ON material_orders (status, created_at);\n\nCREATE TABLE material_order_items (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  material_order_id uuid NOT NULL REFERENCES material_orders (id) ON DELETE CASCADE,\n  material_id uuid REFERENCES materials (id) ON DELETE SET NULL,\n  name_snapshot text NOT NULL,\n  unit_price bigint NOT NULL CHECK (unit_price > 0),\n  quantity integer NOT NULL CHECK (quantity > 0)\n);\nCREATE INDEX material_order_items_order_idx ON material_order_items (material_order_id);\n\n-- Same shape as `payments`, kept apart so product/service payment code stays untouched.\nCREATE TABLE material_payments (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  material_order_id uuid NOT NULL REFERENCES material_orders (id) ON DELETE CASCADE,\n  amount bigint NOT NULL CHECK (amount > 0),\n  status text NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'paid', 'refunded', 'failed')),\n  provider text NOT NULL,\n  provider_ref text,\n  idempotency_key text NOT NULL UNIQUE,\n  created_at timestamptz NOT NULL DEFAULT now()\n);\nCREATE INDEX material_payments_order_idx ON material_payments (material_order_id);\n\nCREATE TABLE savings_goals (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  worker_id uuid NOT NULL UNIQUE REFERENCES workers (id) ON DELETE CASCADE,\n  target_amount bigint NOT NULL CHECK (target_amount > 0),\n  created_at timestamptz NOT NULL DEFAULT now(),\n  updated_at timestamptz NOT NULL DEFAULT now()\n);\n\nCREATE INDEX reviews_status_idx ON reviews (status, created_at DESC);\nCREATE INDEX complaints_status_idx ON complaints (status, created_at DESC);\nCREATE INDEX workers_verified_idx ON workers (is_verified, created_at DESC);" }, { "name": "1760000400000_commission_rate.sql", "up": "-- Every order keeps the rate it was charged at, so changing the platform rate never rewrites history.\n-- Rows that exist before this migration were all charged at the previous rate of 5%.\nALTER TABLE orders RENAME COLUMN commission TO commission_amount;\nALTER TABLE orders\n  ADD COLUMN commission_rate numeric(5, 4) NOT NULL DEFAULT 0.05\n    CHECK (commission_rate >= 0 AND commission_rate < 1);\nALTER TABLE orders ALTER COLUMN commission_rate DROP DEFAULT;" }, { "name": "1760000500000_drop_hourly_rate.sql", "up": "-- Service orders no longer carry a price: a worker's calendar only publishes free time.\nALTER TABLE workers DROP COLUMN IF EXISTS hourly_rate;" }, { "name": "1760000600000_order_owner_guard_notifications.sql", "up": "-- Hard guarantee that a product line can only sit on an order addressed to the product's owner.\n-- Checked on every insert/update of order_items; existing rows are not touched or validated here.\nCREATE FUNCTION order_item_owner_matches() RETURNS trigger\n  LANGUAGE plpgsql\n  AS $$\nDECLARE\n  product_owner uuid;\n  order_worker uuid;\nBEGIN\n  IF NEW.product_id IS NULL THEN\n    RETURN NEW;\n  END IF;\n  SELECT worker_id INTO product_owner FROM products WHERE id = NEW.product_id;\n  SELECT worker_id INTO order_worker FROM orders WHERE id = NEW.order_id;\n  IF product_owner IS DISTINCT FROM order_worker THEN\n    RAISE EXCEPTION 'order_items.product owner % does not match orders.worker_id %',\n      product_owner, order_worker\n      USING ERRCODE = 'check_violation', CONSTRAINT = 'order_items_owner_matches';\n  END IF;\n  RETURN NEW;\nEND;\n$$;\n\nCREATE TRIGGER order_items_owner_matches\n  BEFORE INSERT OR UPDATE OF product_id, order_id ON order_items\n  FOR EACH ROW EXECUTE FUNCTION order_item_owner_matches();\n\n-- In-app notifications; the SMS gateway is a separate, not yet connected, channel.\nCREATE TABLE notifications (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  user_id uuid NOT NULL REFERENCES users (id) ON DELETE CASCADE,\n  kind text NOT NULL CHECK (kind IN ('order_new')),\n  order_id uuid REFERENCES orders (id) ON DELETE CASCADE,\n  read_at timestamptz,\n  created_at timestamptz NOT NULL DEFAULT now()\n);\nCREATE INDEX notifications_user_unread_idx ON notifications (user_id, created_at DESC)\n  WHERE read_at IS NULL;\nCREATE INDEX notifications_user_idx ON notifications (user_id, created_at DESC);" }];
+var migrations_default = [{ "name": "1760000000000_core.sql", "up": "CREATE EXTENSION IF NOT EXISTS pg_trgm;\n\nCREATE TABLE categories (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  slug text NOT NULL UNIQUE,\n  name_uz text NOT NULL,\n  name_ru text NOT NULL,\n  position integer NOT NULL DEFAULT 0\n);\n\nINSERT INTO categories (slug, name_uz, name_ru, position) VALUES\n  ('tikuvchilik', 'Tikuvchilik', '\u0428\u0438\u0442\u044C\u0451', 1),\n  ('pishiriq', 'Pishiriq', '\u0412\u044B\u043F\u0435\u0447\u043A\u0430', 2),\n  ('qol-mehnati', 'Qo''l mehnati', '\u0420\u0443\u043A\u043E\u0434\u0435\u043B\u0438\u0435', 3),\n  ('dizayn', 'Dizayn', '\u0414\u0438\u0437\u0430\u0439\u043D', 4),\n  ('masofaviy-ishlar', 'Masofaviy ishlar', '\u0423\u0434\u0430\u043B\u0451\u043D\u043D\u0430\u044F \u0440\u0430\u0431\u043E\u0442\u0430', 5);\n\nCREATE TABLE users (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  phone text NOT NULL UNIQUE,\n  name text,\n  role text NOT NULL DEFAULT 'customer' CHECK (role IN ('customer', 'worker', 'admin')),\n  language text NOT NULL DEFAULT 'uz' CHECK (language IN ('uz', 'ru')),\n  created_at timestamptz NOT NULL DEFAULT now()\n);\n\nCREATE TABLE workers (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  user_id uuid NOT NULL UNIQUE REFERENCES users (id) ON DELETE CASCADE,\n  category_id uuid NOT NULL REFERENCES categories (id),\n  display_name text NOT NULL,\n  bio text,\n  avatar_url text,\n  rating numeric(3, 2) NOT NULL DEFAULT 0,\n  reviews_count integer NOT NULL DEFAULT 0,\n  is_verified boolean NOT NULL DEFAULT false,\n  created_at timestamptz NOT NULL DEFAULT now()\n);\nCREATE INDEX workers_category_idx ON workers (category_id);\n\nCREATE TABLE products (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  worker_id uuid NOT NULL REFERENCES workers (id) ON DELETE CASCADE,\n  category_id uuid NOT NULL REFERENCES categories (id),\n  title text NOT NULL,\n  description text NOT NULL DEFAULT '',\n  retail_price bigint NOT NULL CHECK (retail_price > 0),\n  wholesale_price bigint CHECK (wholesale_price IS NULL OR wholesale_price > 0),\n  wholesale_min_qty integer CHECK (wholesale_min_qty IS NULL OR wholesale_min_qty >= 2),\n  stock integer NOT NULL DEFAULT 0 CHECK (stock >= 0),\n  status text NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'published', 'hidden')),\n  created_at timestamptz NOT NULL DEFAULT now(),\n  updated_at timestamptz NOT NULL DEFAULT now(),\n  CONSTRAINT products_wholesale_pair CHECK (\n    (wholesale_price IS NULL) = (wholesale_min_qty IS NULL)\n  ),\n  CONSTRAINT products_wholesale_lower CHECK (\n    wholesale_price IS NULL OR wholesale_price < retail_price\n  )\n);\nCREATE INDEX products_worker_status_idx ON products (worker_id, status);\nCREATE INDEX products_category_status_idx ON products (category_id, status);\n-- Uzbek apostrophe variants (' \u02BB \u02BC \u2019 \u2018 `) collapse to one form for search.\nCREATE FUNCTION uz_normalize(value text) RETURNS text\n  LANGUAGE sql IMMUTABLE PARALLEL SAFE\n  AS $$ SELECT lower(translate(value, '''\u02BB\u02BC\u2019\u2018`', '')) $$;\nCREATE INDEX products_title_trgm_idx ON products USING gin (uz_normalize(title) gin_trgm_ops);\n\nCREATE TABLE product_images (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  product_id uuid NOT NULL REFERENCES products (id) ON DELETE CASCADE,\n  url text NOT NULL,\n  position integer NOT NULL DEFAULT 0\n);\nCREATE INDEX product_images_product_idx ON product_images (product_id, position);\n\nCREATE TABLE product_models (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  product_id uuid NOT NULL UNIQUE REFERENCES products (id) ON DELETE CASCADE,\n  file_url text NOT NULL,\n  file_size integer NOT NULL,\n  poster_url text,\n  created_at timestamptz NOT NULL DEFAULT now()\n);\n\nCREATE TABLE orders (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  type text NOT NULL CHECK (type IN ('service', 'product')),\n  customer_id uuid NOT NULL REFERENCES users (id),\n  worker_id uuid NOT NULL REFERENCES workers (id),\n  status text NOT NULL DEFAULT 'awaiting_payment' CHECK (\n    status IN ('awaiting_payment', 'new', 'accepted', 'in_progress', 'ready', 'delivered', 'cancelled', 'refunded')\n  ),\n  total bigint NOT NULL CHECK (total >= 0),\n  commission bigint NOT NULL CHECK (commission >= 0),\n  worker_amount bigint NOT NULL CHECK (worker_amount >= 0),\n  fulfillment text NOT NULL DEFAULT 'pickup' CHECK (fulfillment IN ('pickup', 'delivery')),\n  delivery_address text,\n  start_time timestamptz,\n  end_time timestamptz,\n  created_at timestamptz NOT NULL DEFAULT now(),\n  updated_at timestamptz NOT NULL DEFAULT now()\n);\nCREATE INDEX orders_type_idx ON orders (type);\nCREATE INDEX orders_customer_idx ON orders (customer_id, created_at DESC);\nCREATE INDEX orders_worker_status_idx ON orders (worker_id, status);\n\nCREATE TABLE order_items (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  order_id uuid NOT NULL REFERENCES orders (id) ON DELETE CASCADE,\n  product_id uuid REFERENCES products (id) ON DELETE SET NULL,\n  title_snapshot text NOT NULL,\n  unit_price bigint NOT NULL CHECK (unit_price > 0),\n  quantity integer NOT NULL CHECK (quantity > 0),\n  price_type text NOT NULL CHECK (price_type IN ('retail', 'wholesale'))\n);\nCREATE INDEX order_items_order_idx ON order_items (order_id);\n\nCREATE TABLE payments (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  order_id uuid NOT NULL REFERENCES orders (id) ON DELETE CASCADE,\n  amount bigint NOT NULL CHECK (amount >= 0),\n  status text NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'paid', 'refunded', 'failed')),\n  provider text NOT NULL,\n  provider_ref text,\n  idempotency_key text NOT NULL UNIQUE,\n  created_at timestamptz NOT NULL DEFAULT now()\n);\nCREATE INDEX payments_order_idx ON payments (order_id);\n\nCREATE TABLE earnings (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  order_id uuid NOT NULL UNIQUE REFERENCES orders (id) ON DELETE CASCADE,\n  worker_id uuid NOT NULL REFERENCES workers (id),\n  amount bigint NOT NULL CHECK (amount >= 0),\n  commission bigint NOT NULL CHECK (commission >= 0),\n  created_at timestamptz NOT NULL DEFAULT now()\n);\nCREATE INDEX earnings_worker_idx ON earnings (worker_id, created_at DESC);\n\nCREATE TABLE sms_codes (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  phone text NOT NULL,\n  code_hash text NOT NULL,\n  expires_at timestamptz NOT NULL,\n  attempts integer NOT NULL DEFAULT 0,\n  consumed_at timestamptz,\n  created_at timestamptz NOT NULL DEFAULT now()\n);\nCREATE INDEX sms_codes_phone_idx ON sms_codes (phone, created_at DESC);\n\nCREATE TABLE refresh_tokens (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  user_id uuid NOT NULL REFERENCES users (id) ON DELETE CASCADE,\n  token_hash text NOT NULL UNIQUE,\n  expires_at timestamptz NOT NULL,\n  revoked_at timestamptz,\n  created_at timestamptz NOT NULL DEFAULT now()\n);\nCREATE INDEX refresh_tokens_user_idx ON refresh_tokens (user_id);\n\nCREATE TABLE files (\n  name text PRIMARY KEY,\n  content_type text NOT NULL,\n  size integer NOT NULL,\n  data bytea NOT NULL,\n  created_at timestamptz NOT NULL DEFAULT now()\n);" }, { "name": "1760000100000_reviews_complaints.sql", "up": "CREATE TABLE reviews (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  -- One review per order: the unique key is what stops a second review at the database level.\n  order_id uuid NOT NULL UNIQUE REFERENCES orders (id) ON DELETE CASCADE,\n  customer_id uuid NOT NULL REFERENCES users (id),\n  worker_id uuid NOT NULL REFERENCES workers (id),\n  rating smallint NOT NULL CHECK (rating BETWEEN 1 AND 5),\n  comment text CHECK (comment IS NULL OR char_length(comment) <= 1000),\n  status text NOT NULL DEFAULT 'visible' CHECK (status IN ('visible', 'hidden')),\n  created_at timestamptz NOT NULL DEFAULT now()\n);\nCREATE INDEX reviews_worker_idx ON reviews (worker_id, created_at DESC);\n\nCREATE TABLE complaints (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  order_id uuid NOT NULL REFERENCES orders (id) ON DELETE CASCADE,\n  user_id uuid NOT NULL REFERENCES users (id),\n  reason text NOT NULL CHECK (char_length(reason) BETWEEN 5 AND 1000),\n  status text NOT NULL DEFAULT 'open' CHECK (status IN ('open', 'resolved', 'dismissed')),\n  created_at timestamptz NOT NULL DEFAULT now()\n);\nCREATE INDEX complaints_order_idx ON complaints (order_id);\n-- A user can have only one open complaint per order; they can file again after it is closed.\nCREATE UNIQUE INDEX complaints_one_open_per_user_idx\n  ON complaints (order_id, user_id) WHERE status = 'open';" }, { "name": "1760000200000_calendar.sql", "up": "CREATE EXTENSION IF NOT EXISTS btree_gist;\n\nALTER TABLE workers\n  ADD COLUMN hourly_rate bigint CHECK (hourly_rate IS NULL OR hourly_rate > 0);\n\n-- Free windows a worker publishes. The exclusion constraint keeps one worker's windows from overlapping.\nCREATE TABLE availability (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  worker_id uuid NOT NULL REFERENCES workers (id) ON DELETE CASCADE,\n  start_time timestamptz NOT NULL,\n  end_time timestamptz NOT NULL,\n  created_at timestamptz NOT NULL DEFAULT now(),\n  CONSTRAINT availability_range_valid CHECK (end_time > start_time),\n  CONSTRAINT availability_no_overlap\n    EXCLUDE USING gist (worker_id WITH =, tstzrange(start_time, end_time) WITH &&)\n);\nCREATE INDEX availability_worker_idx ON availability (worker_id, start_time);\n\nALTER TABLE orders\n  ADD COLUMN description text,\n  ADD COLUMN deadline date,\n  ADD CONSTRAINT orders_service_has_slot CHECK (\n    type = 'product' OR (start_time IS NOT NULL AND end_time IS NOT NULL AND end_time > start_time)\n  ),\n  -- Slot clash is decided by the database, not by a check-then-insert in application code.\n  -- A slot is held from the moment the order is created (even unpaid) until it leaves these states.\n  ADD CONSTRAINT orders_slot_no_overlap\n    EXCLUDE USING gist (worker_id WITH =, tstzrange(start_time, end_time) WITH &&)\n    WHERE (start_time IS NOT NULL AND status IN ('awaiting_payment', 'new', 'accepted', 'in_progress'));\nCREATE INDEX orders_status_created_idx ON orders (status, created_at);\n\nCREATE TABLE order_images (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  order_id uuid NOT NULL REFERENCES orders (id) ON DELETE CASCADE,\n  url text NOT NULL,\n  position integer NOT NULL DEFAULT 0\n);\nCREATE INDEX order_images_order_idx ON order_images (order_id, position);" }, { "name": "1760000300000_materials_savings.sql", "up": "CREATE TABLE materials (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  name text NOT NULL,\n  description text NOT NULL DEFAULT '',\n  price bigint NOT NULL CHECK (price > 0),\n  discount_percent smallint NOT NULL DEFAULT 0 CHECK (discount_percent BETWEEN 0 AND 90),\n  stock integer NOT NULL DEFAULT 0 CHECK (stock >= 0),\n  is_active boolean NOT NULL DEFAULT true,\n  created_at timestamptz NOT NULL DEFAULT now()\n);\n\nCREATE TABLE material_orders (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  worker_id uuid NOT NULL REFERENCES workers (id),\n  status text NOT NULL DEFAULT 'awaiting_payment'\n    CHECK (status IN ('awaiting_payment', 'paid', 'delivered', 'cancelled')),\n  total bigint NOT NULL CHECK (total > 0),\n  created_at timestamptz NOT NULL DEFAULT now(),\n  updated_at timestamptz NOT NULL DEFAULT now()\n);\nCREATE INDEX material_orders_worker_idx ON material_orders (worker_id, created_at DESC);\nCREATE INDEX material_orders_status_idx ON material_orders (status, created_at);\n\nCREATE TABLE material_order_items (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  material_order_id uuid NOT NULL REFERENCES material_orders (id) ON DELETE CASCADE,\n  material_id uuid REFERENCES materials (id) ON DELETE SET NULL,\n  name_snapshot text NOT NULL,\n  unit_price bigint NOT NULL CHECK (unit_price > 0),\n  quantity integer NOT NULL CHECK (quantity > 0)\n);\nCREATE INDEX material_order_items_order_idx ON material_order_items (material_order_id);\n\n-- Same shape as `payments`, kept apart so product/service payment code stays untouched.\nCREATE TABLE material_payments (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  material_order_id uuid NOT NULL REFERENCES material_orders (id) ON DELETE CASCADE,\n  amount bigint NOT NULL CHECK (amount > 0),\n  status text NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'paid', 'refunded', 'failed')),\n  provider text NOT NULL,\n  provider_ref text,\n  idempotency_key text NOT NULL UNIQUE,\n  created_at timestamptz NOT NULL DEFAULT now()\n);\nCREATE INDEX material_payments_order_idx ON material_payments (material_order_id);\n\nCREATE TABLE savings_goals (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  worker_id uuid NOT NULL UNIQUE REFERENCES workers (id) ON DELETE CASCADE,\n  target_amount bigint NOT NULL CHECK (target_amount > 0),\n  created_at timestamptz NOT NULL DEFAULT now(),\n  updated_at timestamptz NOT NULL DEFAULT now()\n);\n\nCREATE INDEX reviews_status_idx ON reviews (status, created_at DESC);\nCREATE INDEX complaints_status_idx ON complaints (status, created_at DESC);\nCREATE INDEX workers_verified_idx ON workers (is_verified, created_at DESC);" }, { "name": "1760000400000_commission_rate.sql", "up": "-- Every order keeps the rate it was charged at, so changing the platform rate never rewrites history.\n-- Rows that exist before this migration were all charged at the previous rate of 5%.\nALTER TABLE orders RENAME COLUMN commission TO commission_amount;\nALTER TABLE orders\n  ADD COLUMN commission_rate numeric(5, 4) NOT NULL DEFAULT 0.05\n    CHECK (commission_rate >= 0 AND commission_rate < 1);\nALTER TABLE orders ALTER COLUMN commission_rate DROP DEFAULT;" }, { "name": "1760000500000_drop_hourly_rate.sql", "up": "-- Service orders no longer carry a price: a worker's calendar only publishes free time.\nALTER TABLE workers DROP COLUMN IF EXISTS hourly_rate;" }, { "name": "1760000600000_order_owner_guard_notifications.sql", "up": "-- Hard guarantee that a product line can only sit on an order addressed to the product's owner.\n-- Checked on every insert/update of order_items; existing rows are not touched or validated here.\nCREATE FUNCTION order_item_owner_matches() RETURNS trigger\n  LANGUAGE plpgsql\n  AS $$\nDECLARE\n  product_owner uuid;\n  order_worker uuid;\nBEGIN\n  IF NEW.product_id IS NULL THEN\n    RETURN NEW;\n  END IF;\n  SELECT worker_id INTO product_owner FROM products WHERE id = NEW.product_id;\n  SELECT worker_id INTO order_worker FROM orders WHERE id = NEW.order_id;\n  IF product_owner IS DISTINCT FROM order_worker THEN\n    RAISE EXCEPTION 'order_items.product owner % does not match orders.worker_id %',\n      product_owner, order_worker\n      USING ERRCODE = 'check_violation', CONSTRAINT = 'order_items_owner_matches';\n  END IF;\n  RETURN NEW;\nEND;\n$$;\n\nCREATE TRIGGER order_items_owner_matches\n  BEFORE INSERT OR UPDATE OF product_id, order_id ON order_items\n  FOR EACH ROW EXECUTE FUNCTION order_item_owner_matches();\n\n-- In-app notifications; the SMS gateway is a separate, not yet connected, channel.\nCREATE TABLE notifications (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  user_id uuid NOT NULL REFERENCES users (id) ON DELETE CASCADE,\n  kind text NOT NULL CHECK (kind IN ('order_new')),\n  order_id uuid REFERENCES orders (id) ON DELETE CASCADE,\n  read_at timestamptz,\n  created_at timestamptz NOT NULL DEFAULT now()\n);\nCREATE INDEX notifications_user_unread_idx ON notifications (user_id, created_at DESC)\n  WHERE read_at IS NULL;\nCREATE INDEX notifications_user_idx ON notifications (user_id, created_at DESC);" }, { "name": "1760000700000_worker_approval.sql", "up": "-- Worker applications. Every worker that exists when this migration runs (real accounts and the\n-- sample workers alike) stays visible: they are marked approved. Only applications submitted from\n-- now on start as pending, which is the column default set below.\nALTER TABLE workers\n  ADD COLUMN status text NOT NULL DEFAULT 'approved'\n    CHECK (status IN ('pending', 'approved', 'rejected')),\n  ADD COLUMN reviewed_by uuid REFERENCES users (id) ON DELETE SET NULL,\n  ADD COLUMN reviewed_at timestamptz,\n  ADD COLUMN reject_reason text;\n\nALTER TABLE workers ALTER COLUMN status SET DEFAULT 'pending';\n\nALTER TABLE workers\n  ADD CONSTRAINT workers_reject_reason_required\n    CHECK (status <> 'rejected' OR char_length(btrim(reject_reason)) >= 10);\n\n-- The \"verified\" badge is derived from status = 'approved'; a hand-set flag no longer exists.\nALTER TABLE workers DROP COLUMN is_verified;\n\nCREATE INDEX workers_status_idx ON workers (status, created_at DESC);\n\n-- Notification kinds for the application lifecycle; `detail` carries the rejection reason.\nALTER TABLE notifications DROP CONSTRAINT notifications_kind_check;\nALTER TABLE notifications\n  ADD CONSTRAINT notifications_kind_check CHECK (\n    kind IN ('order_new', 'worker_application_received', 'worker_approved', 'worker_rejected')\n  );\nALTER TABLE notifications ADD COLUMN detail text;" }];
 
 // src/app.ts
 var import_cookie_parser = __toESM(require_cookie_parser(), 1);
@@ -72560,6 +72560,9 @@ var ALLOWED_MODEL_EXTENSIONS = [
 ];
 var MODEL_MIME_TYPE = "model/gltf-binary";
 var USER_ROLES = ["customer", "worker", "admin"];
+var WORKER_STATUSES = ["pending", "approved", "rejected"];
+var MIN_REJECT_REASON_LENGTH = 10;
+var MAX_REJECT_REASON_LENGTH = 500;
 var PRODUCT_STATUSES = ["draft", "published", "hidden"];
 var FULFILLMENT_TYPES = ["pickup", "delivery"];
 var ALL_CATEGORIES_SLUG = "barchasi";
@@ -72800,7 +72803,9 @@ var materialOrderSchema = external_exports.object({
   ).min(1).max(MAX_CART_ITEMS)
 });
 var savingsGoalSchema = external_exports.object({ targetAmount: moneySchema });
-var workerVerificationSchema = external_exports.object({ verified: external_exports.boolean() });
+var workerRejectionSchema = external_exports.object({
+  reason: external_exports.string().trim().min(MIN_REJECT_REASON_LENGTH).max(MAX_REJECT_REASON_LENGTH)
+});
 var reviewModerationSchema = external_exports.object({ status: external_exports.enum(REVIEW_STATUSES) });
 var complaintResolutionSchema = external_exports.object({ status: external_exports.enum(["resolved", "dismissed"]) });
 var adminListQuerySchema = external_exports.object({
@@ -72897,7 +72902,8 @@ function toDto(row) {
     avatarUrl: row.avatar_url,
     rating: row.rating,
     reviewsCount: row.reviews_count,
-    isVerified: row.is_verified,
+    // The badge is derived from the reviewed status, never stored as a separate flag.
+    isVerified: row.status === "approved",
     minPrice: row.min_price === null ? null : Number(row.min_price),
     productsCount: Number(row.products_count)
   };
@@ -72924,15 +72930,16 @@ var WorkersRepository = class {
         avatar_url: null
       }).returning("id").executeTakeFirstOrThrow();
       await trx.updateTable("users").set({ role: "worker" }).where("id", "=", userId).execute();
+      await trx.insertInto("notifications").values({ user_id: userId, kind: "worker_application_received" }).execute();
       return worker.id;
     });
   }
   async findFeatured(limit) {
-    const rows = await this.summaryQuery().having(sql`count(p.id)`, ">", 0).orderBy("w.is_verified", "desc").orderBy("w.rating", "desc").orderBy("w.reviews_count", "desc").orderBy("w.created_at", "desc").limit(limit).execute();
+    const rows = await this.summaryQuery().where("w.status", "=", "approved").having(sql`count(p.id)`, ">", 0).orderBy("w.rating", "desc").orderBy("w.reviews_count", "desc").orderBy("w.created_at", "desc").limit(limit).execute();
     return rows.map(toDto);
   }
   async findById(id) {
-    const row = await this.summaryQuery().where("w.id", "=", id).executeTakeFirst();
+    const row = await this.summaryQuery().where("w.id", "=", id).where("w.status", "=", "approved").executeTakeFirst();
     return row ? toDto(row) : void 0;
   }
   summaryQuery() {
@@ -72946,7 +72953,7 @@ var WorkersRepository = class {
       "w.avatar_url",
       "w.rating",
       "w.reviews_count",
-      "w.is_verified",
+      "w.status",
       "c.slug as category_slug",
       sql`min(p.retail_price)`.as("min_price"),
       sql`count(p.id)`.as("products_count")
@@ -73000,7 +73007,9 @@ function toUserDto(row) {
     role: row.role,
     language: row.language,
     workerId: row.worker_id,
-    workerName: row.worker_name
+    workerName: row.worker_name,
+    workerStatus: row.worker_status,
+    workerRejectReason: row.worker_status === "rejected" ? row.reject_reason : null
   };
 }
 var AuthRepository = class {
@@ -73068,7 +73077,9 @@ var AuthRepository = class {
       "u.role",
       "u.language",
       "w.id as worker_id",
-      "w.display_name as worker_name"
+      "w.display_name as worker_name",
+      "w.status as worker_status",
+      "w.reject_reason"
     ]);
   }
 };
@@ -73464,6 +73475,7 @@ var NotificationService = class {
       items: items.map((row) => ({
         id: row.id,
         kind: row.kind,
+        detail: row.detail,
         orderId: row.order_id,
         readAt: row.read_at ? row.read_at.toISOString() : null,
         createdAt: row.created_at.toISOString()
@@ -73831,12 +73843,9 @@ var AdminService = class {
   async stats() {
     const db2 = this.ctx.db;
     const count = async (query) => Number((await query.executeTakeFirstOrThrow()).n);
-    const [users, workers, verified, statuses, money, complaints, hidden] = await Promise.all([
+    const [users, workerCounts, statuses, money, complaints, hidden] = await Promise.all([
       count(db2.selectFrom("users").select((eb) => eb.fn.countAll().as("n"))),
-      count(db2.selectFrom("workers").select((eb) => eb.fn.countAll().as("n"))),
-      count(
-        db2.selectFrom("workers").select((eb) => eb.fn.countAll().as("n")).where("is_verified", "=", true)
-      ),
+      db2.selectFrom("workers").select(["status", (eb) => eb.fn.countAll().as("n")]).groupBy("status").execute(),
       db2.selectFrom("orders").select(["status", (eb) => eb.fn.countAll().as("n")]).groupBy("status").execute(),
       db2.selectFrom("earnings").select([
         (eb) => eb.fn.coalesce(eb.fn.sum("amount"), eb.lit(0)).as("worker"),
@@ -73850,11 +73859,13 @@ var AdminService = class {
       )
     ]);
     const commission = Number(money.commission);
+    const byStatus = (status) => Number(workerCounts.find((row) => row.status === status)?.n ?? 0);
     return {
       users,
-      workers,
-      verifiedWorkers: verified,
-      pendingWorkers: workers - verified,
+      workers: workerCounts.reduce((sum, row) => sum + Number(row.n), 0),
+      approvedWorkers: byStatus("approved"),
+      pendingWorkers: byStatus("pending"),
+      rejectedWorkers: byStatus("rejected"),
       ordersByStatus: Object.fromEntries(statuses.map((row) => [row.status, Number(row.n)])),
       turnover: Number(money.worker) + commission,
       commission,
@@ -73865,18 +73876,21 @@ var AdminService = class {
   async listWorkers(query) {
     const offset = (query.page - 1) * ADMIN_PAGE_SIZE;
     const base = this.ctx.db.selectFrom("workers as w").innerJoin("users as u", "u.id", "w.user_id").innerJoin("categories as c", "c.id", "w.category_id");
-    const filtered = query.status === "pending" ? base.where("w.is_verified", "=", false) : query.status === "verified" ? base.where("w.is_verified", "=", true) : base;
+    const status = WORKER_STATUSES.find((value) => value === query.status);
+    const filtered = status ? base.where("w.status", "=", status) : base;
     const [rows, total] = await Promise.all([
       filtered.select([
         "w.id",
         "w.display_name",
         "u.phone",
         "c.slug as category_slug",
-        "w.is_verified",
+        "w.status",
+        "w.reject_reason",
+        "w.reviewed_at",
         "w.rating",
         "w.reviews_count",
         "w.created_at"
-      ]).orderBy("w.is_verified").orderBy("w.created_at", "desc").limit(ADMIN_PAGE_SIZE).offset(offset).execute(),
+      ]).orderBy(sql`(w.status = 'pending')`, "desc").orderBy("w.created_at", "desc").limit(ADMIN_PAGE_SIZE).offset(offset).execute(),
       filtered.select((eb) => eb.fn.countAll().as("n")).executeTakeFirstOrThrow()
     ]);
     return paged(
@@ -73885,7 +73899,9 @@ var AdminService = class {
         displayName: row.display_name,
         phone: row.phone,
         categorySlug: row.category_slug,
-        isVerified: row.is_verified,
+        status: row.status,
+        rejectReason: row.reject_reason,
+        reviewedAt: row.reviewed_at ? row.reviewed_at.toISOString() : null,
         rating: row.rating,
         reviewsCount: row.reviews_count,
         createdAt: row.created_at.toISOString()
@@ -73894,10 +73910,32 @@ var AdminService = class {
       query.page
     );
   }
-  async setVerified(workerId, verified) {
-    const result = await this.ctx.db.updateTable("workers").set({ is_verified: verified }).where("id", "=", workerId).executeTakeFirst();
-    if (Number(result.numUpdatedRows) !== 1) throw AppError.notFound();
+  /**
+   * Records the decision (who and when), the new status and the applicant's notification in one
+   * transaction, so a decision can never exist without its audit trail or its message.
+   */
+  async decide(adminId, workerId, decision) {
+    await this.ctx.db.transaction().execute(async (trx) => {
+      const worker = await trx.updateTable("workers").set({
+        status: decision.status,
+        reviewed_by: adminId,
+        reviewed_at: this.now(),
+        reject_reason: decision.reason
+      }).where("id", "=", workerId).returning("user_id").executeTakeFirst();
+      if (!worker) throw AppError.notFound();
+      await trx.insertInto("notifications").values({
+        user_id: worker.user_id,
+        kind: decision.status === "approved" ? "worker_approved" : "worker_rejected",
+        detail: decision.reason
+      }).execute();
+    });
     this.ctx.cache.delete(FEATURED_CACHE_KEY2);
+  }
+  approveWorker(adminId, workerId) {
+    return this.decide(adminId, workerId, { status: "approved", reason: null });
+  }
+  rejectWorker(adminId, workerId, reason) {
+    return this.decide(adminId, workerId, { status: "rejected", reason });
   }
   async listOrders(query) {
     const offset = (query.page - 1) * ADMIN_PAGE_SIZE;
@@ -74064,9 +74102,13 @@ function createAdminRouter(ctx) {
   router.get("/admin/workers", async (req, res) => {
     res.json(await admin.listWorkers(adminListQuerySchema.parse(req.query)));
   });
-  router.patch("/admin/workers/:id/verification", async (req, res) => {
-    const { verified } = workerVerificationSchema.parse(req.body);
-    await admin.setVerified(idParam(req), verified);
+  router.post("/admin/workers/:id/approve", async (req, res) => {
+    await admin.approveWorker(req.auth?.userId ?? "", idParam(req));
+    res.status(204).end();
+  });
+  router.post("/admin/workers/:id/reject", async (req, res) => {
+    const { reason } = workerRejectionSchema.parse(req.body);
+    await admin.rejectWorker(req.auth?.userId ?? "", idParam(req), reason);
     res.status(204).end();
   });
   router.get("/admin/orders", async (req, res) => {
@@ -74206,8 +74248,9 @@ var AvailabilityService = class {
       )
     };
   }
+  /** Public calendars exist only for approved workers. */
   async workerExists(workerId) {
-    const row = await this.ctx.db.selectFrom("workers").select("id").where("id", "=", workerId).executeTakeFirst();
+    const row = await this.ctx.db.selectFrom("workers").select("id").where("id", "=", workerId).where("status", "=", "approved").executeTakeFirst();
     return row !== void 0;
   }
   async add(workerId, input) {
@@ -74332,7 +74375,7 @@ var ProductRepository = class {
         "p.id",
         "p.worker_id",
         "w.display_name",
-        "w.is_verified",
+        "w.status as worker_status",
         "p.category_id",
         "c.slug as category_slug",
         "p.title",
@@ -74360,7 +74403,11 @@ var ProductRepository = class {
         } : null;
         const dto = {
           id: row.id,
-          worker: { id: row.worker_id, displayName: row.display_name, isVerified: row.is_verified },
+          worker: {
+            id: row.worker_id,
+            displayName: row.display_name,
+            isVerified: row.worker_status === "approved"
+          },
           categoryId: row.category_id,
           categorySlug: row.category_slug,
           title: row.title,
@@ -74381,6 +74428,10 @@ var ProductRepository = class {
       const dto = byId.get(id);
       return dto ? [dto] : [];
     });
+  }
+  async isWorkerApproved(workerId) {
+    const row = await this.db.selectFrom("workers").select("status").where("id", "=", workerId).executeTakeFirst();
+    return row?.status === "approved";
   }
   async listIdsByWorker(workerId) {
     const rows = await this.db.selectFrom("products").select("id").where("worker_id", "=", workerId).orderBy("created_at", "desc").execute();
@@ -74463,8 +74514,10 @@ var ProductRepository = class {
     await this.db.deleteFrom("product_models").where("product_id", "=", productId).execute();
   }
   filtered(filter) {
-    let query = this.db.selectFrom("products as p").innerJoin("categories as c", "c.id", "p.category_id");
-    if (filter.publishedOnly) query = query.where("p.status", "=", "published");
+    let query = this.db.selectFrom("products as p").innerJoin("workers as w", "w.id", "p.worker_id").innerJoin("categories as c", "c.id", "p.category_id");
+    if (filter.publishedOnly) {
+      query = query.where("p.status", "=", "published").where("w.status", "=", "approved");
+    }
     if (filter.categorySlug) query = query.where("c.slug", "=", filter.categorySlug);
     if (filter.workerId) query = query.where("p.worker_id", "=", filter.workerId);
     if (filter.q) {
@@ -74517,13 +74570,13 @@ var CatalogService = class {
     const items = await this.products.findDtosByIds(ids);
     return { items, page: query.page, pageSize: query.pageSize, total };
   }
-  /** Drafts and hidden products are visible only to their owner. */
+  /** Drafts, hidden products and products of unapproved workers are visible only to their owner. */
   async getProduct(id, viewerWorkerId) {
     const [product] = await this.products.findDtosByIds([id]);
     if (!product) throw AppError.notFound("PRODUCT_NOT_FOUND");
-    if (product.status !== "published" && product.worker.id !== viewerWorkerId) {
-      throw AppError.notFound("PRODUCT_NOT_FOUND");
-    }
+    if (product.worker.id === viewerWorkerId) return product;
+    const visible = product.status === "published" && await this.products.isWorkerApproved(product.worker.id);
+    if (!visible) throw AppError.notFound("PRODUCT_NOT_FOUND");
     return product;
   }
 };
@@ -74553,6 +74606,7 @@ function createCatalogRouter(ctx) {
   });
   router.get("/workers/:id/reviews", async (req, res) => {
     const id = requireUuid(req.params.id, "NOT_FOUND");
+    if (!await workersRepo.findById(id)) throw AppError.notFound();
     const { page } = pageQuery.parse(req.query);
     res.json(await reviews.listVisible(id, page));
   });
@@ -74853,6 +74907,10 @@ var OrderService = class {
       const order = await trx.selectFrom("orders").selectAll().where("id", "=", id).forUpdate().executeTakeFirst();
       if (!order) throw AppError.notFound();
       if (order.worker_id !== viewer.workerId) throw AppError.forbidden();
+      if (action === "accept") {
+        const owner = await trx.selectFrom("workers").select("status").where("id", "=", order.worker_id).executeTakeFirstOrThrow();
+        if (owner.status !== "approved") throw new AppError("WORKER_NOT_APPROVED", 403);
+      }
       const target = action === "reject" && order.type === "service" ? "cancelled" : ACTION_TARGET[action];
       const rejectsStarted = action === "reject" && order.status !== "new";
       if (rejectsStarted || !canTransition(order.status, target))
@@ -74897,7 +74955,8 @@ var OrderService = class {
       "p.retail_price",
       "p.wholesale_price",
       "p.wholesale_min_qty",
-      "w.user_id as owner_user_id"
+      "w.user_id as owner_user_id",
+      "w.status as owner_status"
     ]).where(
       "p.id",
       "in",
@@ -74906,7 +74965,7 @@ var OrderService = class {
     const byId = new Map(rows.map((row) => [row.id, row]));
     return items.map((item) => {
       const product = byId.get(item.productId);
-      if (!product || product.status !== "published")
+      if (!product || product.status !== "published" || product.owner_status !== "approved")
         throw AppError.notFound("PRODUCT_UNAVAILABLE");
       if (product.owner_user_id === customerId) throw AppError.badRequest("OWN_PRODUCT");
       if (product.stock < item.quantity) throw AppError.conflict("INSUFFICIENT_STOCK");
@@ -74983,8 +75042,8 @@ var ServiceOrderService = class {
     const end = new Date(start.getTime() + input.hours * HOUR_MS4);
     if (start <= now) throw AppError.badRequest("SLOT_IN_PAST");
     await expireUnpaidOrders(this.ctx.db, now);
-    const worker = await this.ctx.db.selectFrom("workers").select(["id", "user_id"]).where("id", "=", input.workerId).executeTakeFirst();
-    if (!worker) throw AppError.notFound();
+    const worker = await this.ctx.db.selectFrom("workers").select(["id", "user_id", "status"]).where("id", "=", input.workerId).executeTakeFirst();
+    if (!worker || worker.status !== "approved") throw AppError.notFound();
     if (worker.user_id === customerId) throw AppError.badRequest("OWN_SERVICE");
     await this.assertInsideAvailability(worker.id, start, end);
     await this.assertImagesStored(input.imageUrls);
@@ -80785,7 +80844,7 @@ async function seedWorker(db2, storage, seed, categories) {
     avatar_url: null,
     rating: seed.rating,
     reviews_count: seed.reviews,
-    is_verified: seed.verified
+    status: "approved"
   }).returning("id").executeTakeFirstOrThrow();
   for (const product of seed.products) {
     await seedProduct(db2, storage, worker.id, categoryId, product);

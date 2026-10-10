@@ -43,6 +43,8 @@ beforeEach(() => {
       language: 'uz',
       workerId: 'w1',
       workerName: 'Usta',
+      workerStatus: 'approved',
+      workerRejectReason: null,
     },
   });
 });

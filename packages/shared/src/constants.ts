@@ -21,6 +21,11 @@ export const MODEL_MIME_TYPE = 'model/gltf-binary';
 export const USER_ROLES = ['customer', 'worker', 'admin'] as const;
 export type UserRole = (typeof USER_ROLES)[number];
 
+export const WORKER_STATUSES = ['pending', 'approved', 'rejected'] as const;
+export type WorkerStatus = (typeof WORKER_STATUSES)[number];
+export const MIN_REJECT_REASON_LENGTH = 10;
+export const MAX_REJECT_REASON_LENGTH = 500;
+
 export const PRODUCT_STATUSES = ['draft', 'published', 'hidden'] as const;
 export type ProductStatus = (typeof PRODUCT_STATUSES)[number];
 

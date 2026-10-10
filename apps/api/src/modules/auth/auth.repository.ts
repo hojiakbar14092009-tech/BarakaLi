@@ -13,6 +13,8 @@ interface UserRow {
   language: UserDto['language'];
   worker_id: string | null;
   worker_name: string | null;
+  worker_status: UserDto['workerStatus'];
+  reject_reason: string | null;
 }
 
 function toUserDto(row: UserRow): UserDto {
@@ -24,6 +26,8 @@ function toUserDto(row: UserRow): UserDto {
     language: row.language,
     workerId: row.worker_id,
     workerName: row.worker_name,
+    workerStatus: row.worker_status,
+    workerRejectReason: row.worker_status === 'rejected' ? row.reject_reason : null,
   };
 }
 
@@ -166,6 +170,8 @@ export class AuthRepository {
         'u.language',
         'w.id as worker_id',
         'w.display_name as worker_name',
+        'w.status as worker_status',
+        'w.reject_reason',
       ]);
   }
 }

@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import { COMMISSION_RATE_PERCENT } from '@barakali/shared';
 import { formatPrice } from '../../lib/format';
 import { useAuthStore } from '../../stores/auth';
+import { ApplicationStatus } from '../notifications/ApplicationStatus';
 import { useNotifications } from '../notifications/api';
 import { useEarnings } from '../orders/api';
 import { useOrders } from '../orders/api';
@@ -60,6 +61,7 @@ export default function CabinetPage() {
           </p>
         )}
       </header>
+      <ApplicationStatus />
       <div className="grid gap-3 sm:grid-cols-2">
         <Card
           title={t('cabinet.todayOrders')}

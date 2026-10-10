@@ -25,7 +25,8 @@ Bu ro'yxat `CLAUDE.md` dagi bosqichlardan MVP'ga kirmagan qismlarni o'z ichiga o
 - [x] Materiallar doʻkoni (`materials`, `material_orders`, `material_order_items`), `/materiallar`
 - [x] `/daromad` da jamgʻarma maqsadi (`savings_goals`), `/darslar` kontenti
 - [x] 24 soat ichida qabul qilinmagan toʻlangan buyurtmani avtomatik qaytarish (13.11, 5-bosqichda)
-- [ ] Tasdiqlanmagan hunarmand buyurtma qabul qilishini cheklash (DECISIONS.md: hozircha belgi sifatida)
+- [x] Tasdiqlanmagan hunarmand buyurtma qabul qilishini cheklash (4-bosqich: `workers.status`)
+- [ ] Rad etilgan hunarmand qayta ariza topshirishi uchun oqim
 
 ## Noto'g'ri hunarmandga tushgan buyurtmalar (3-bosqich)
 
