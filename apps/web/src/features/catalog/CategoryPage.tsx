@@ -123,7 +123,7 @@ function CategoryListing({ kategoriya }: { kategoriya: string }) {
       )}
       {products.data && products.data.items.length > 0 && (
         <>
-          <ul className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+          <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 xl:grid-cols-5">
             {products.data.items.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}

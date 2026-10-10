@@ -62,7 +62,7 @@ export default function ProductPage() {
           </p>
         </header>
 
-        <PriceBlock product={data} size="lg" />
+        <PriceBlock product={data} />
 
         {data.status !== 'published' && (
           <p role="status" className="rounded-field bg-bisque px-4 py-3">

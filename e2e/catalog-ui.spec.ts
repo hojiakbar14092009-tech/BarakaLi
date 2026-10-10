@@ -85,3 +85,38 @@ for (const viewport of [
     });
   });
 }
+
+for (const viewport of [
+  { width: 390, height: 844, columns: 2, imageHeight: 180 },
+  { width: 768, height: 1024, columns: 3, imageHeight: 180 },
+]) {
+  test.describe(`compact product cards (${viewport.width}px)`, () => {
+    test.use({ viewport: { width: viewport.width, height: viewport.height } });
+
+    test('fixed image frame, single-line text, whole card is one link', async ({ page }) => {
+      await page.goto('/xizmatlar/barchasi');
+      const cards = page
+        .getByRole('main')
+        .getByRole('listitem')
+        .filter({ has: page.locator('h3') });
+      await expect(cards.first()).toBeVisible();
+      const first = cards.first();
+      await expect(first.getByRole('link')).toHaveCount(1);
+      await expect(first.getByRole('button')).toHaveCount(0);
+
+      const image = first.getByRole('img').first();
+      expect((await box(image)).height).toBeCloseTo(viewport.imageHeight, 0);
+      const fit = await image.evaluate((el) => getComputedStyle(el).objectFit);
+      if (fit) expect(['contain', 'fill']).toContain(fit);
+
+      const title = first.locator('h3');
+      const lineHeight = await title.evaluate((el) => parseFloat(getComputedStyle(el).lineHeight));
+      expect((await box(title)).height).toBeLessThanOrEqual(lineHeight + 1);
+
+      const tops = await cards.evaluateAll((items) =>
+        items.slice(0, 6).map((el) => Math.round(el.getBoundingClientRect().top)),
+      );
+      expect(tops.filter((top) => top === tops[0])).toHaveLength(viewport.columns);
+    });
+  });
+}

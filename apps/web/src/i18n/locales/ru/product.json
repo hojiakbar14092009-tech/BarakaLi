@@ -33,5 +33,6 @@
     "zoomIn": "Приблизить",
     "zoomOut": "Отдалить",
     "reset": "Вернуть исходный вид"
-  }
+  },
+  "wholesaleCompact": "Опт от {{qty}} шт.: {{price}}"
 }

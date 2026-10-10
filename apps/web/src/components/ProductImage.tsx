@@ -8,9 +8,15 @@ interface ProductImageProps {
   priority?: boolean;
   /** Picks the icon shown when the product has no photo yet. */
   categorySlug?: string;
+  /** `card`: fixed-height frame that shows the whole item (contain) instead of a square crop. */
+  variant?: 'square' | 'card';
 }
 
 const INTRINSIC_SIZE = 800;
+const FRAME = {
+  square: 'aspect-square object-cover',
+  card: 'h-[180px] object-contain lg:h-[220px]',
+} as const;
 
 /** Square, lazy-loaded image with fixed dimensions so the layout never jumps. */
 export function ProductImage({
@@ -19,6 +25,7 @@ export function ProductImage({
   className = '',
   priority = false,
   categorySlug = '',
+  variant = 'square',
 }: ProductImageProps) {
   const { t } = useTranslation();
   if (!src) {
@@ -26,7 +33,7 @@ export function ProductImage({
       <div
         role="img"
         aria-label={t('product.noImage')}
-        className={`grid aspect-square place-items-center bg-gradient-to-br from-wheat to-bisque text-mocha ${className}`}
+        className={`grid w-full ${FRAME[variant]} place-items-center bg-gradient-to-br from-wheat to-bisque text-mocha ${className}`}
       >
         <CategoryIcon slug={categorySlug} className="size-10" />
       </div>
@@ -40,7 +47,7 @@ export function ProductImage({
       height={INTRINSIC_SIZE}
       loading={priority ? 'eager' : 'lazy'}
       decoding="async"
-      className={`aspect-square w-full bg-bisque object-cover ${className}`}
+      className={`w-full bg-bisque ${FRAME[variant]} ${className}`}
     />
   );
 }
