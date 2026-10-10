@@ -66713,7 +66713,7 @@ CREATE TABLE platform_settings (
   updated_at timestamptz NOT NULL DEFAULT now(),
   updated_by uuid REFERENCES users (id) ON DELETE SET NULL
 );
-INSERT INTO platform_settings (id) VALUES (1);` }];
+INSERT INTO platform_settings (id) VALUES (1);` }, { "name": "1760001600000_hide_somsa.sql", "up": "-- Somsa is a meal, not baking: products named like it leave the Pishiriq catalog. They are hidden,\n-- never deleted, so order history keeps pointing at them.\nUPDATE products p\nSET status = 'hidden', updated_at = now()\nFROM categories c\nWHERE c.id = p.category_id\n  AND c.slug = 'pishiriq'\n  AND p.status <> 'hidden'\n  AND (uz_normalize(p.title) LIKE '%samsa%' OR uz_normalize(p.title) LIKE '%somsa%');" }];
 
 // src/app.ts
 var import_cookie_parser = __toESM(require_cookie_parser(), 1);
@@ -81583,28 +81583,28 @@ var WORKERS = [
     products: [
       {
         title: "Ikat adras ko\u02BBylak",
+        photo: "ikat-xalat",
         description: "Qo\u02BBlda tanlangan adras matosidan tikilgan ko\u02BBylak. O\u02BBlcham buyurtmaga qarab o\u02BBzgartiriladi.",
         retailPrice: 42e4,
-        stock: 6,
-        tint: "#b08968"
+        stock: 6
       },
       {
         title: "Kashta ilingan sumka",
+        photo: "kashta-sumka",
         description: "Suzani naqshli, astarli kundalik sumka. Ichida cho\u2018ntagi bor.",
         retailPrice: 95e3,
         wholesalePrice: 8e4,
         wholesaleMinQty: 10,
-        stock: 40,
-        tint: "#9c6644"
+        stock: 40
       },
       {
         title: "Bolalar uchun paxtali kombinezon",
+        photo: "bolalar-kombinezon",
         description: "Yumshoq paxta, 1\u20133 yosh uchun. Tugmalari xavfsiz mahkamlangan.",
         retailPrice: 13e4,
         wholesalePrice: 11e4,
         wholesaleMinQty: 5,
-        stock: 25,
-        tint: "#ddb892"
+        stock: 25
       }
     ]
   },
@@ -81619,28 +81619,19 @@ var WORKERS = [
     products: [
       {
         title: "Medovik tort (1 kg)",
+        photo: "asal-tort",
         description: "Asalli qatlamli klassik tort, qaymoqli krem bilan. Bayramlar uchun.",
         retailPrice: 18e4,
-        stock: 8,
-        tint: "#e6b17e"
-      },
-      {
-        title: "Tandirda pishgan samsa",
-        description: "Go\u02BBshtli, piyozli samsa. Ulgurji narx kafe va tadbirlar uchun.",
-        retailPrice: 9e3,
-        wholesalePrice: 7500,
-        wholesaleMinQty: 20,
-        stock: 200,
-        tint: "#d4a373"
+        stock: 8
       },
       {
         title: "Yong\u2018oqli pakhlava",
+        photo: "baklava",
         description: "Yupqa qatlamli, yong\u2018oq va asalli pakhlava. 500 g quti.",
         retailPrice: 85e3,
         wholesalePrice: 72e3,
         wholesaleMinQty: 6,
-        stock: 30,
-        tint: "#c08552"
+        stock: 30
       }
     ]
   },
@@ -81655,29 +81646,29 @@ var WORKERS = [
     products: [
       {
         title: "Sopol vaza (qo\u02BBlda yasalgan)",
+        photo: "sopol-vaza",
         description: "O\u02BBrta hajmli sopol vaza. 3D ko\u02BBrinishda aylantirib ko\u02BBring.",
         retailPrice: 15e4,
         wholesalePrice: 125e3,
         wholesaleMinQty: 4,
         stock: 12,
-        tint: "#b9835a",
         model: [0.72, 0.5, 0.36]
       },
       {
         title: "Suzani yostiq jildi",
+        photo: "suzani-yostiq-jildi",
         description: "Qo\u02BBlda kashta qilingan, 45\xD745 sm yostiq jildi.",
         retailPrice: 11e4,
-        stock: 15,
-        tint: "#a98467"
+        stock: 15
       },
       {
         title: "To\u02BBqilgan savat",
+        photo: "toqilgan-savat",
         description: "Tabiiy tolalardan to\u02BBqilgan, uy-ro\u02BBzg\u02BBor uchun mustahkam savat.",
         retailPrice: 7e4,
         wholesalePrice: 58e3,
         wholesaleMinQty: 8,
-        stock: 22,
-        tint: "#cb997e"
+        stock: 22
       }
     ]
   },
@@ -81694,25 +81685,34 @@ var WORKERS = [
         title: "To\u02BBy taklifnomalari (50 dona)",
         description: "Individual dizayn va bosmaga tayyor taklifnoma to\u02BBplami.",
         retailPrice: 25e4,
-        stock: 10,
-        tint: "#8d6e63"
+        stock: 10
       }
     ]
   }
 ];
-var IMAGE_SIZE = 900;
-async function renderImage(tint, variant) {
-  const { default: sharp } = await import("sharp");
-  const shift = variant * 70;
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${IMAGE_SIZE}" height="${IMAGE_SIZE}">
-    <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#fcf8f0"/><stop offset="1" stop-color="${tint}"/>
-    </linearGradient></defs>
-    <rect width="100%" height="100%" fill="url(#g)"/>
-    <circle cx="${300 + shift}" cy="${330 + shift / 2}" r="${190 - variant * 20}" fill="${tint}" fill-opacity="0.55"/>
-    <circle cx="${620 - shift}" cy="${560}" r="${230}" fill="#392e26" fill-opacity="0.12"/>
-  </svg>`;
-  return sharp(Buffer.from(svg)).webp({ quality: 78 }).toBuffer();
+function photoUrls(product) {
+  return product.photo ? [`/products/${product.photo}.webp`] : [];
+}
+async function syncSamplePhotos(db2) {
+  let updated = 0;
+  for (const worker of WORKERS) {
+    for (const product of worker.products) {
+      const row = await db2.selectFrom("products as p").innerJoin("workers as w", "w.id", "p.worker_id").innerJoin("users as u", "u.id", "w.user_id").select("p.id").where("u.phone", "=", worker.phone).where("p.title", "=", product.title).executeTakeFirst();
+      if (!row) continue;
+      const urls = photoUrls(product);
+      const images = await db2.selectFrom("product_images").select("url").where("product_id", "=", row.id).orderBy("position").execute();
+      if (images.map((image) => image.url).join() === urls.join()) continue;
+      await db2.transaction().execute(async (trx) => {
+        await trx.deleteFrom("product_images").where("product_id", "=", row.id).execute();
+        if (urls.length > 0) {
+          await trx.insertInto("product_images").values(urls.map((url, position) => ({ product_id: row.id, url, position }))).execute();
+        }
+        await trx.updateTable("product_models").set({ poster_url: urls[0] ?? null }).where("product_id", "=", row.id).execute();
+      });
+      updated += 1;
+    }
+  }
+  return updated;
 }
 async function categoryIds(db2) {
   const rows = await db2.selectFrom("categories").select(["id", "slug"]).execute();
@@ -81749,12 +81749,10 @@ async function seedProduct(db2, storage, workerId, categoryId, product) {
     status: "published",
     updated_at: /* @__PURE__ */ new Date()
   }).returning("id").executeTakeFirstOrThrow();
-  const urls = [];
-  for (const variant of [0, 1]) {
-    const image = await renderImage(product.tint, variant);
-    urls.push(await storage.put(`${(0, import_node_crypto7.randomUUID)()}.webp`, image, "image/webp"));
+  const urls = photoUrls(product);
+  if (urls.length > 0) {
+    await db2.insertInto("product_images").values(urls.map((url, position) => ({ product_id: row.id, url, position }))).execute();
   }
-  await db2.insertInto("product_images").values(urls.map((url, position) => ({ product_id: row.id, url, position }))).execute();
   if (product.model) {
     const glb = await buildVaseGlb(product.model);
     const fileUrl = await storage.put(`${(0, import_node_crypto7.randomUUID)()}.glb`, glb, MODEL_MIME_TYPE);
@@ -81819,6 +81817,7 @@ async function seedSampleData(db2) {
     await seedWorker(db2, storage, seed, categories);
     created += 1;
   }
+  await syncSamplePhotos(db2);
   await seedMaterials(db2);
   return created;
 }

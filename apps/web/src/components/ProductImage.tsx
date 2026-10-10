@@ -1,26 +1,34 @@
-import { ImageOff } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { CategoryIcon } from './CategoryIcon';
 
 interface ProductImageProps {
   src: string | undefined;
   alt: string;
   className?: string;
   priority?: boolean;
+  /** Picks the icon shown when the product has no photo yet. */
+  categorySlug?: string;
 }
 
 const INTRINSIC_SIZE = 800;
 
 /** Square, lazy-loaded image with fixed dimensions so the layout never jumps. */
-export function ProductImage({ src, alt, className = '', priority = false }: ProductImageProps) {
+export function ProductImage({
+  src,
+  alt,
+  className = '',
+  priority = false,
+  categorySlug = '',
+}: ProductImageProps) {
   const { t } = useTranslation();
   if (!src) {
     return (
       <div
         role="img"
         aria-label={t('product.noImage')}
-        className={`grid aspect-square place-items-center bg-bisque text-mocha ${className}`}
+        className={`grid aspect-square place-items-center bg-gradient-to-br from-wheat to-bisque text-mocha ${className}`}
       >
-        <ImageOff className="size-8" aria-hidden="true" strokeWidth={1.5} />
+        <CategoryIcon slug={categorySlug} className="size-10" />
       </div>
     );
   }

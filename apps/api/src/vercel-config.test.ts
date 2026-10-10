@@ -30,6 +30,7 @@ describe('vercel.json routing', () => {
 
     expect(matches('/mahsulot/abc')).toBe(true);
     expect(matches('/assets/app.js')).toBe(false);
+    expect(matches('/products/baklava.webp')).toBe(false);
   });
 
   it('ships the bundled function the rewrite points at', () => {

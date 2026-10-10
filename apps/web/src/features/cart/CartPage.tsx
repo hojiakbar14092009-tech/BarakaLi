@@ -92,7 +92,11 @@ export default function CartPage() {
             className="flex gap-3 rounded-card border border-bisque bg-white/60 p-3"
           >
             <div className="size-24 shrink-0 overflow-hidden rounded-field">
-              <ProductImage src={product?.images[0]?.url} alt={product?.title ?? ''} />
+              <ProductImage
+                src={product?.images[0]?.url}
+                alt={product?.title ?? ''}
+                categorySlug={product?.categorySlug}
+              />
             </div>
             <div className="min-w-0 flex-1 space-y-2">
               {product ? (

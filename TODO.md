@@ -104,3 +104,24 @@ pnpm db:audit-orders
 - [ ] Biriktirilmagan buyurtma rasmlarini (`/uploads/order-image`) davriy tozalash
 - [ ] `pnpm audit` ni CI'ga qoʻshish
 - [ ] Husky pre-commit tezlashtirish (faqat oʻzgargan paketlarni tekshirish)
+
+## Mahsulot rasmlari va somsa (2026-10-10)
+
+- [x] Pishiriqdan somsa olib tashlandi: migratsiya `1760001600000_hide_somsa` nomi `samsa`/`somsa` boʻlgan
+      pishiriq mahsulotlarini `status='hidden'` qiladi (oʻchirmaydi, buyurtma tarixi saqlanadi); seed'dan ham olindi
+- [x] Rasmlar `apps/web/public/products/*.webp` (800 px eni, har biri < 200 KB). Konvertatsiya:
+      `pnpm --filter @barakali/api product:images <manba-papka>`; asl jpg/png gitga tushmaydi
+- Nom mosligi (eng yaqini tanlandi): `ikat-xalat` → "Ikat adras koʻylak", `asal-tort` → "Medovik tort",
+  `baklava` → "Yongʻoqli pakhlava"
+- Kichik asllar 800 px gacha kattalashtirildi (sifat biroz past): `baklava` (500 px), `kashta-sumka` (570 px),
+  `suzani-yostiq-jildi` (700 px), `ikat-xalat` (713 px). [ ] Kattaroq asl rasmlar kutilmoqda
+- [ ] **Taklifnoma rasmi huquqi tekshirilsin.** Yuborilgan taklifnoma rasmi commit qilinmadi;
+      `toy-taklifnomalari.webp` boshqa (yuborilgan 2-rasm) manbadan. Rasmlar egasining roziligi tasdiqlansin
+- [ ] Production bazasidagi eski namuna rasmlari `SEED_SAMPLE_DATA=true` bilan seed ishga tushganda
+      (`syncSamplePhotos`) yangilanadi; aks holda eski rasmlar qoladi
+- [ ] Rasmi yoʻq mahsulot: Wheat→Bisque gradient + toifa ikonkasi koʻrsatiladi (rasmlar kutilmoqda boʻlganlar uchun)
+
+## Ochiq savol: catering hero (desktop)
+
+- [ ] Promptdagi "CATERING HERO: FAQAT DESKTOP UCHUN" bloki avvalgi "catering toʻliq olib tashlansin" qaroriga
+      zid. Qayta qoʻshilmadi; tasdiqlansa alohida bosqich sifatida qilinadi

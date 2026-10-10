@@ -15,3 +15,8 @@ coverage/
 playwright-report/
 test-results/
 
+
+# Raw product photos; only the generated WebP files are committed.
+apps/web/public/products/*.jpg
+apps/web/public/products/*.jpeg
+apps/web/public/products/*.png

@@ -66,6 +66,7 @@ export function ProductGallery({ product }: { product: ProductDto }) {
             <ProductImage
               src={current?.url}
               alt={product.title}
+              categorySlug={product.categorySlug}
               priority
               className="rounded-card"
             />

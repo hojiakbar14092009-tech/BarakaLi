@@ -11,7 +11,11 @@ export function ProductCard({ product }: { product: ProductDto }) {
     <li className="overflow-hidden rounded-card border border-bisque bg-white/60 shadow-soft">
       <Link to={`/mahsulot/${product.id}`} className="block">
         <div className="relative">
-          <ProductImage src={product.images[0]?.url} alt={product.title} />
+          <ProductImage
+            src={product.images[0]?.url}
+            alt={product.title}
+            categorySlug={product.categorySlug}
+          />
           {product.model && (
             <span className="absolute left-2 top-2 inline-flex items-center gap-1 rounded-full bg-sugar/95 px-2.5 py-1 text-xs font-bold text-espresso">
               <Box className="size-3.5" aria-hidden="true" />

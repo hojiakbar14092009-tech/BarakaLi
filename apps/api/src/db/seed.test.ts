@@ -18,7 +18,15 @@ describe('seed', () => {
     expect(await seedSampleData(db)).toBe(0);
     const app = createApp({ db, config: loadConfig({ NODE_ENV: 'test' }) });
     const res = await request(app).get('/api/products?pageSize=20');
-    expect(res.body.total).toBe(10);
+    expect(res.body.total).toBe(9);
+    const items = res.body.items as { title: string; images: { url: string }[] }[];
+    const withPhoto = items.filter((p) => p.images.length > 0);
+    expect(withPhoto).toHaveLength(8);
+    for (const product of withPhoto) {
+      expect(product.images[0]?.url).toMatch(/^\/products\/[a-z-]+\.webp$/);
+    }
+    const titles = items.map((p) => p.title.toLowerCase());
+    expect(titles.some((title) => /s[ao]msa/.test(title))).toBe(false);
     const withModel = res.body.items.filter((p: { model: unknown }) => p.model);
     expect(withModel).toHaveLength(1);
     const featured = await request(app).get('/api/workers/featured');

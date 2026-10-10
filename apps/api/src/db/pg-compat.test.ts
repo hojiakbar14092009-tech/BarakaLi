@@ -38,7 +38,7 @@ describe('node-postgres driver (the production path)', () => {
   it('returns money and ratings as numbers and binary files intact', async () => {
     const res = await request(app).get('/api/products?pageSize=20');
     expect(res.status).toBe(200);
-    expect(res.body.total).toBe(10);
+    expect(res.body.total).toBe(9);
     expect(typeof res.body.items[0].retailPrice).toBe('number');
     const model = res.body.items.find((p: { model: unknown }) => p.model).model;
     const file = await request(app)
@@ -56,15 +56,15 @@ describe('node-postgres driver (the production path)', () => {
 
   it('runs the full purchase flow with transactions and row locks', async () => {
     const buyer = await login(app, '+998933333333', 'Haridor');
-    const list = await request(app).get('/api/products?q=samsa');
+    const list = await request(app).get('/api/products?q=pakhlava');
     const product = list.body.items[0];
     const created = await request(app)
       .post('/api/orders')
       .set('Authorization', `Bearer ${buyer.token}`)
-      .send({ items: [{ productId: product.id, quantity: 20 }], fulfillment: 'pickup' });
+      .send({ items: [{ productId: product.id, quantity: 10 }], fulfillment: 'pickup' });
     expect(created.body[0]).toMatchObject({
-      total: 150_000,
-      commission: 3_000,
+      total: 720_000,
+      commission: 14_400,
       commissionRate: 0.02,
     });
     const orderId = created.body[0].id as string;
@@ -86,6 +86,6 @@ describe('node-postgres driver (the production path)', () => {
       .select('stock')
       .where('id', '=', product.id)
       .executeTakeFirstOrThrow();
-    expect(stock.stock).toBe(180);
+    expect(stock.stock).toBe(20);
   });
 });

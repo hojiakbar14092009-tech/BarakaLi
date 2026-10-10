@@ -11,7 +11,8 @@ interface SeedProduct {
   wholesalePrice?: number;
   wholesaleMinQty?: number;
   stock: number;
-  tint: string;
+  /** File name (without extension) under apps/web/public/products/; absent while the photo is awaited. */
+  photo?: string;
   model?: [number, number, number];
 }
 
@@ -38,29 +39,29 @@ const WORKERS: SeedWorker[] = [
     products: [
       {
         title: 'Ikat adras koʻylak',
+        photo: 'ikat-xalat',
         description:
           'Qoʻlda tanlangan adras matosidan tikilgan koʻylak. Oʻlcham buyurtmaga qarab oʻzgartiriladi.',
         retailPrice: 420_000,
         stock: 6,
-        tint: '#b08968',
       },
       {
         title: 'Kashta ilingan sumka',
+        photo: 'kashta-sumka',
         description: 'Suzani naqshli, astarli kundalik sumka. Ichida cho‘ntagi bor.',
         retailPrice: 95_000,
         wholesalePrice: 80_000,
         wholesaleMinQty: 10,
         stock: 40,
-        tint: '#9c6644',
       },
       {
         title: 'Bolalar uchun paxtali kombinezon',
+        photo: 'bolalar-kombinezon',
         description: 'Yumshoq paxta, 1–3 yosh uchun. Tugmalari xavfsiz mahkamlangan.',
         retailPrice: 130_000,
         wholesalePrice: 110_000,
         wholesaleMinQty: 5,
         stock: 25,
-        tint: '#ddb892',
       },
     ],
   },
@@ -75,28 +76,19 @@ const WORKERS: SeedWorker[] = [
     products: [
       {
         title: 'Medovik tort (1 kg)',
+        photo: 'asal-tort',
         description: 'Asalli qatlamli klassik tort, qaymoqli krem bilan. Bayramlar uchun.',
         retailPrice: 180_000,
         stock: 8,
-        tint: '#e6b17e',
-      },
-      {
-        title: 'Tandirda pishgan samsa',
-        description: 'Goʻshtli, piyozli samsa. Ulgurji narx kafe va tadbirlar uchun.',
-        retailPrice: 9_000,
-        wholesalePrice: 7_500,
-        wholesaleMinQty: 20,
-        stock: 200,
-        tint: '#d4a373',
       },
       {
         title: 'Yong‘oqli pakhlava',
+        photo: 'baklava',
         description: 'Yupqa qatlamli, yong‘oq va asalli pakhlava. 500 g quti.',
         retailPrice: 85_000,
         wholesalePrice: 72_000,
         wholesaleMinQty: 6,
         stock: 30,
-        tint: '#c08552',
       },
     ],
   },
@@ -111,29 +103,29 @@ const WORKERS: SeedWorker[] = [
     products: [
       {
         title: 'Sopol vaza (qoʻlda yasalgan)',
+        photo: 'sopol-vaza',
         description: 'Oʻrta hajmli sopol vaza. 3D koʻrinishda aylantirib koʻring.',
         retailPrice: 150_000,
         wholesalePrice: 125_000,
         wholesaleMinQty: 4,
         stock: 12,
-        tint: '#b9835a',
         model: [0.72, 0.5, 0.36],
       },
       {
         title: 'Suzani yostiq jildi',
+        photo: 'suzani-yostiq-jildi',
         description: 'Qoʻlda kashta qilingan, 45×45 sm yostiq jildi.',
         retailPrice: 110_000,
         stock: 15,
-        tint: '#a98467',
       },
       {
         title: 'Toʻqilgan savat',
+        photo: 'toqilgan-savat',
         description: 'Tabiiy tolalardan toʻqilgan, uy-roʻzgʻor uchun mustahkam savat.',
         retailPrice: 70_000,
         wholesalePrice: 58_000,
         wholesaleMinQty: 8,
         stock: 22,
-        tint: '#cb997e',
       },
     ],
   },
@@ -151,26 +143,59 @@ const WORKERS: SeedWorker[] = [
         description: 'Individual dizayn va bosmaga tayyor taklifnoma toʻplami.',
         retailPrice: 250_000,
         stock: 10,
-        tint: '#8d6e63',
       },
     ],
   },
 ];
 
-const IMAGE_SIZE = 900;
+/** Served by the web app as a static file, so the API never has to store or stream it. */
+function photoUrls(product: SeedProduct): string[] {
+  return product.photo ? [`/products/${product.photo}.webp`] : [];
+}
 
-async function renderImage(tint: string, variant: number): Promise<Buffer> {
-  const { default: sharp } = await import('sharp');
-  const shift = variant * 70;
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${IMAGE_SIZE}" height="${IMAGE_SIZE}">
-    <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#fcf8f0"/><stop offset="1" stop-color="${tint}"/>
-    </linearGradient></defs>
-    <rect width="100%" height="100%" fill="url(#g)"/>
-    <circle cx="${300 + shift}" cy="${330 + shift / 2}" r="${190 - variant * 20}" fill="${tint}" fill-opacity="0.55"/>
-    <circle cx="${620 - shift}" cy="${560}" r="${230}" fill="#392e26" fill-opacity="0.12"/>
-  </svg>`;
-  return sharp(Buffer.from(svg)).webp({ quality: 78 }).toBuffer();
+/**
+ * Databases seeded before real photos existed hold generated placeholder images; this swaps them for
+ * the photos, idempotently, matching sample products by their worker's number and title.
+ */
+async function syncSamplePhotos(db: Db): Promise<number> {
+  let updated = 0;
+  for (const worker of WORKERS) {
+    for (const product of worker.products) {
+      const row = await db
+        .selectFrom('products as p')
+        .innerJoin('workers as w', 'w.id', 'p.worker_id')
+        .innerJoin('users as u', 'u.id', 'w.user_id')
+        .select('p.id')
+        .where('u.phone', '=', worker.phone)
+        .where('p.title', '=', product.title)
+        .executeTakeFirst();
+      if (!row) continue;
+      const urls = photoUrls(product);
+      const images = await db
+        .selectFrom('product_images')
+        .select('url')
+        .where('product_id', '=', row.id)
+        .orderBy('position')
+        .execute();
+      if (images.map((image) => image.url).join() === urls.join()) continue;
+      await db.transaction().execute(async (trx) => {
+        await trx.deleteFrom('product_images').where('product_id', '=', row.id).execute();
+        if (urls.length > 0) {
+          await trx
+            .insertInto('product_images')
+            .values(urls.map((url, position) => ({ product_id: row.id, url, position })))
+            .execute();
+        }
+        await trx
+          .updateTable('product_models')
+          .set({ poster_url: urls[0] ?? null })
+          .where('product_id', '=', row.id)
+          .execute();
+      });
+      updated += 1;
+    }
+  }
+  return updated;
 }
 
 async function categoryIds(db: Db): Promise<Map<string, string>> {
@@ -233,15 +258,13 @@ async function seedProduct(
     })
     .returning('id')
     .executeTakeFirstOrThrow();
-  const urls: string[] = [];
-  for (const variant of [0, 1]) {
-    const image = await renderImage(product.tint, variant);
-    urls.push(await storage.put(`${randomUUID()}.webp`, image, 'image/webp'));
+  const urls = photoUrls(product);
+  if (urls.length > 0) {
+    await db
+      .insertInto('product_images')
+      .values(urls.map((url, position) => ({ product_id: row.id, url, position })))
+      .execute();
   }
-  await db
-    .insertInto('product_images')
-    .values(urls.map((url, position) => ({ product_id: row.id, url, position })))
-    .execute();
   if (product.model) {
     const glb = await buildVaseGlb(product.model);
     const fileUrl = await storage.put(`${randomUUID()}.glb`, glb, MODEL_MIME_TYPE);
@@ -320,6 +343,7 @@ export async function seedSampleData(db: Db): Promise<number> {
     await seedWorker(db, storage, seed, categories);
     created += 1;
   }
+  await syncSamplePhotos(db);
   await seedMaterials(db);
   return created;
 }
