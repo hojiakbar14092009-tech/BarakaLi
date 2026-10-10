@@ -30,7 +30,7 @@ export interface WorkersTable {
   avatar_url: string | null;
   rating: Generated<number>;
   reviews_count: Generated<number>;
-  status: Generated<'pending' | 'approved' | 'rejected'>;
+  status: Generated<'pending' | 'approved' | 'rejected' | 'suspended'>;
   reviewed_by: string | null;
   reviewed_at: Date | null;
   reject_reason: string | null;
@@ -233,7 +233,12 @@ export interface SavingsGoalsTable {
 export interface NotificationsTable {
   id: Generated<string>;
   user_id: string;
-  kind: 'order_new' | 'worker_application_received' | 'worker_approved' | 'worker_rejected';
+  kind:
+    | 'order_new'
+    | 'worker_application_received'
+    | 'worker_approved'
+    | 'worker_rejected'
+    | 'worker_suspended';
   detail: string | null;
   order_id: string | null;
   read_at: Date | null;

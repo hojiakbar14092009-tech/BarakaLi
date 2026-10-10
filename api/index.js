@@ -66688,7 +66688,7 @@ var migrations_default = [{ "name": "1760000000000_core.sql", "up": "CREATE EXTE
 -- chosen for new workers or products.
 ALTER TABLE categories ADD COLUMN is_active boolean NOT NULL DEFAULT true;
 
-UPDATE categories SET is_active = false WHERE slug = 'masofaviy-ishlar';` }, { "name": "1760001000000_catering_requests.sql", "up": "-- Catering enquiries from the landing page. Not an order: no price, no payment; the team calls back.\n-- service_type_id mirrors CATERING_SERVICE_IDS in packages/shared.\nCREATE TABLE catering_requests (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  name text NOT NULL,\n  phone text NOT NULL,\n  service_type_id text NOT NULL\n    CHECK (service_type_id IN ('tikuvchilik', 'pishiriq', 'qolmehnat', 'dizayn', 'boshqa')),\n  event_date date NOT NULL,\n  guests_count integer NOT NULL CHECK (guests_count >= 1),\n  note text NOT NULL DEFAULT '',\n  status text NOT NULL DEFAULT 'new' CHECK (status IN ('new', 'contacted', 'closed')),\n  created_at timestamptz NOT NULL DEFAULT now()\n);\n\nCREATE INDEX catering_requests_status_created_idx ON catering_requests (status, created_at DESC);" }, { "name": "1760001100000_drop_catering_requests.sql", "up": "-- The catering section was removed. The table is dropped only when it holds no rows; if enquiries\n-- exist they are left untouched for the team to export first (nothing in the app reads them).\nDO $$\nBEGIN\n  IF to_regclass('public.catering_requests') IS NOT NULL THEN\n    IF (SELECT count(*) FROM catering_requests) = 0 THEN\n      DROP TABLE catering_requests;\n    ELSE\n      RAISE NOTICE 'catering_requests has rows; table kept';\n    END IF;\n  END IF;\nEND\n$$;" }, { "name": "1760001200000_audit_log.sql", "up": "-- Every administrator action, who did it and to what. `details` holds only ids, statuses and\n-- reasons: never a phone number, a code or a token.\nCREATE TABLE audit_log (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  admin_user_id uuid NOT NULL REFERENCES users (id),\n  action text NOT NULL,\n  target_type text NOT NULL,\n  target_id uuid,\n  details jsonb NOT NULL DEFAULT '{}'::jsonb,\n  created_at timestamptz NOT NULL DEFAULT now()\n);\n\nCREATE INDEX audit_log_created_idx ON audit_log (created_at DESC);\nCREATE INDEX audit_log_target_idx ON audit_log (target_type, target_id);" }];
+UPDATE categories SET is_active = false WHERE slug = 'masofaviy-ishlar';` }, { "name": "1760001000000_catering_requests.sql", "up": "-- Catering enquiries from the landing page. Not an order: no price, no payment; the team calls back.\n-- service_type_id mirrors CATERING_SERVICE_IDS in packages/shared.\nCREATE TABLE catering_requests (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  name text NOT NULL,\n  phone text NOT NULL,\n  service_type_id text NOT NULL\n    CHECK (service_type_id IN ('tikuvchilik', 'pishiriq', 'qolmehnat', 'dizayn', 'boshqa')),\n  event_date date NOT NULL,\n  guests_count integer NOT NULL CHECK (guests_count >= 1),\n  note text NOT NULL DEFAULT '',\n  status text NOT NULL DEFAULT 'new' CHECK (status IN ('new', 'contacted', 'closed')),\n  created_at timestamptz NOT NULL DEFAULT now()\n);\n\nCREATE INDEX catering_requests_status_created_idx ON catering_requests (status, created_at DESC);" }, { "name": "1760001100000_drop_catering_requests.sql", "up": "-- The catering section was removed. The table is dropped only when it holds no rows; if enquiries\n-- exist they are left untouched for the team to export first (nothing in the app reads them).\nDO $$\nBEGIN\n  IF to_regclass('public.catering_requests') IS NOT NULL THEN\n    IF (SELECT count(*) FROM catering_requests) = 0 THEN\n      DROP TABLE catering_requests;\n    ELSE\n      RAISE NOTICE 'catering_requests has rows; table kept';\n    END IF;\n  END IF;\nEND\n$$;" }, { "name": "1760001200000_audit_log.sql", "up": "-- Every administrator action, who did it and to what. `details` holds only ids, statuses and\n-- reasons: never a phone number, a code or a token.\nCREATE TABLE audit_log (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  admin_user_id uuid NOT NULL REFERENCES users (id),\n  action text NOT NULL,\n  target_type text NOT NULL,\n  target_id uuid,\n  details jsonb NOT NULL DEFAULT '{}'::jsonb,\n  created_at timestamptz NOT NULL DEFAULT now()\n);\n\nCREATE INDEX audit_log_created_idx ON audit_log (created_at DESC);\nCREATE INDEX audit_log_target_idx ON audit_log (target_type, target_id);" }, { "name": "1760001300000_worker_suspension.sql", "up": "-- An approved worker can be suspended: hidden from the catalog and unable to take new orders, while\n-- orders already placed run to completion. Sample and existing workers keep their current status.\nALTER TABLE workers DROP CONSTRAINT IF EXISTS workers_status_check;\nALTER TABLE workers\n  ADD CONSTRAINT workers_status_check\n    CHECK (status IN ('pending', 'approved', 'rejected', 'suspended'));\n\nALTER TABLE notifications DROP CONSTRAINT IF EXISTS notifications_kind_check;\nALTER TABLE notifications\n  ADD CONSTRAINT notifications_kind_check CHECK (\n    kind IN (\n      'order_new',\n      'worker_application_received',\n      'worker_approved',\n      'worker_rejected',\n      'worker_suspended'\n    )\n  );" }];
 
 // src/app.ts
 var import_cookie_parser = __toESM(require_cookie_parser(), 1);
@@ -71321,7 +71321,7 @@ var ALLOWED_MODEL_EXTENSIONS = [
 ];
 var MODEL_MIME_TYPE = "model/gltf-binary";
 var USER_ROLES = ["customer", "worker", "admin"];
-var WORKER_STATUSES = ["pending", "approved", "rejected"];
+var WORKER_STATUSES = ["pending", "approved", "rejected", "suspended"];
 var MIN_REJECT_REASON_LENGTH = 10;
 var MAX_REJECT_REASON_LENGTH = 500;
 var PRODUCT_STATUSES = ["draft", "published", "hidden"];
@@ -71580,7 +71580,9 @@ var reviewModerationSchema = external_exports.object({ status: external_exports.
 var complaintResolutionSchema = external_exports.object({ status: external_exports.enum(["resolved", "dismissed"]) });
 var adminListQuerySchema = external_exports.object({
   page: external_exports.coerce.number().int().min(1).default(1),
-  status: external_exports.string().trim().max(30).optional()
+  status: external_exports.string().trim().max(30).optional(),
+  /** Free text: a name, or the last digits of a phone number. */
+  q: external_exports.string().trim().max(60).optional()
 });
 
 // ../../packages/shared/src/slots.ts
@@ -71605,7 +71607,11 @@ var envSchema = external_exports.object({
     external_exports.array(
       external_exports.string().transform((value, ctx) => {
         const phone = normalizePhone(value);
-        if (!phone) ctx.addIssue({ code: external_exports.ZodIssueCode.custom, message: "ADMIN_PHONES must hold +998 numbers" });
+        if (!phone)
+          ctx.addIssue({
+            code: external_exports.ZodIssueCode.custom,
+            message: "ADMIN_PHONES must hold +998 numbers"
+          });
         return phone ?? "";
       })
     )
@@ -73042,7 +73048,7 @@ function toUserDto(row) {
     workerId: row.worker_id,
     workerName: row.worker_name,
     workerStatus: row.worker_status,
-    workerRejectReason: row.worker_status === "rejected" ? row.reject_reason : null,
+    workerRejectReason: row.worker_status === "rejected" || row.worker_status === "suspended" ? row.reject_reason : null,
     workerTelegramUsername: row.worker_telegram_username
   };
 }
@@ -73785,6 +73791,198 @@ var PaymentService = class {
   }
 };
 
+// src/modules/products/product.repository.ts
+init_esm();
+var UZ_APOSTROPHES = /['ʻʼ’‘`]/g;
+function normalizeSearch(value) {
+  return value.replace(UZ_APOSTROPHES, "").toLowerCase();
+}
+function escapeLike(value) {
+  return value.replace(/[\\%_]/g, (char) => `\\${char}`);
+}
+var ProductRepository = class {
+  constructor(db2) {
+    this.db = db2;
+  }
+  async list(filter, page, pageSize) {
+    const totalRow = await this.filtered(filter).select(sql`count(*)`.as("total")).executeTakeFirstOrThrow();
+    let ordered = this.filtered(filter).select("p.id");
+    if (filter.sort === "price_asc") ordered = ordered.orderBy("p.retail_price", "asc");
+    else if (filter.sort === "price_desc") ordered = ordered.orderBy("p.retail_price", "desc");
+    else ordered = ordered.orderBy("p.created_at", "desc");
+    const rows = await ordered.orderBy("p.id").limit(pageSize).offset((page - 1) * pageSize).execute();
+    return { ids: rows.map((row) => row.id), total: Number(totalRow.total) };
+  }
+  /** Three queries regardless of how many products: rows, images (IN), models (IN). */
+  async findDtosByIds(ids) {
+    if (ids.length === 0) return [];
+    const [rows, images, models] = await Promise.all([
+      this.db.selectFrom("products as p").innerJoin("workers as w", "w.id", "p.worker_id").innerJoin("categories as c", "c.id", "p.category_id").select([
+        "p.id",
+        "p.worker_id",
+        "w.display_name",
+        "w.status as worker_status",
+        "p.category_id",
+        "c.slug as category_slug",
+        "p.title",
+        "p.description",
+        "p.retail_price",
+        "p.wholesale_price",
+        "p.wholesale_min_qty",
+        "p.stock",
+        "p.status",
+        "p.created_at"
+      ]).where("p.id", "in", ids).execute(),
+      this.db.selectFrom("product_images").selectAll().where("product_id", "in", ids).orderBy("position").execute(),
+      this.db.selectFrom("product_models").selectAll().where("product_id", "in", ids).execute()
+    ]);
+    const imagesByProduct = groupImages(images);
+    const modelByProduct = new Map(models.map((model) => [model.product_id, model]));
+    const byId = new Map(
+      rows.map((row) => {
+        const productImages = imagesByProduct.get(row.id) ?? [];
+        const stored = modelByProduct.get(row.id);
+        const model = stored ? {
+          fileUrl: stored.file_url,
+          fileSize: stored.file_size,
+          posterUrl: productImages[0]?.url ?? stored.poster_url
+        } : null;
+        const dto = {
+          id: row.id,
+          worker: {
+            id: row.worker_id,
+            displayName: row.display_name,
+            isVerified: row.worker_status === "approved"
+          },
+          categoryId: row.category_id,
+          categorySlug: row.category_slug,
+          title: row.title,
+          description: row.description,
+          retailPrice: row.retail_price,
+          wholesalePrice: row.wholesale_price,
+          wholesaleMinQty: row.wholesale_min_qty,
+          stock: row.stock,
+          status: row.status,
+          images: productImages,
+          model,
+          createdAt: row.created_at.toISOString()
+        };
+        return [row.id, dto];
+      })
+    );
+    return ids.flatMap((id) => {
+      const dto = byId.get(id);
+      return dto ? [dto] : [];
+    });
+  }
+  async isWorkerApproved(workerId) {
+    const row = await this.db.selectFrom("workers").select("status").where("id", "=", workerId).executeTakeFirst();
+    return row?.status === "approved";
+  }
+  async listIdsByWorker(workerId) {
+    const rows = await this.db.selectFrom("products").select("id").where("worker_id", "=", workerId).orderBy("created_at", "desc").execute();
+    return rows.map((row) => row.id);
+  }
+  async findOwnership(id) {
+    const row = await this.db.selectFrom("products").select(["id", "worker_id", "status"]).where("id", "=", id).executeTakeFirst();
+    return row ? { id: row.id, workerId: row.worker_id, status: row.status } : void 0;
+  }
+  async categoryExists(categoryId) {
+    const row = await this.db.selectFrom("categories").select("id").where("id", "=", categoryId).where("is_active", "=", true).executeTakeFirst();
+    return row !== void 0;
+  }
+  async create(workerId, input) {
+    const row = await this.db.insertInto("products").values({
+      worker_id: workerId,
+      category_id: input.categoryId,
+      title: input.title,
+      description: input.description,
+      retail_price: input.retailPrice,
+      wholesale_price: input.wholesalePrice,
+      wholesale_min_qty: input.wholesaleMinQty,
+      stock: input.stock,
+      status: input.status,
+      updated_at: /* @__PURE__ */ new Date()
+    }).returning("id").executeTakeFirstOrThrow();
+    return row.id;
+  }
+  async update(id, input) {
+    await this.db.updateTable("products").set({
+      category_id: input.categoryId,
+      title: input.title,
+      description: input.description,
+      retail_price: input.retailPrice,
+      wholesale_price: input.wholesalePrice,
+      wholesale_min_qty: input.wholesaleMinQty,
+      stock: input.stock,
+      status: input.status,
+      updated_at: /* @__PURE__ */ new Date()
+    }).where("id", "=", id).execute();
+  }
+  async setStock(id, stock) {
+    await this.db.updateTable("products").set({ stock, updated_at: /* @__PURE__ */ new Date() }).where("id", "=", id).execute();
+  }
+  async setStatus(id, status) {
+    await this.db.updateTable("products").set({ status, updated_at: /* @__PURE__ */ new Date() }).where("id", "=", id).execute();
+  }
+  async delete(id) {
+    await this.db.deleteFrom("products").where("id", "=", id).execute();
+  }
+  async listImages(productId) {
+    return this.db.selectFrom("product_images").selectAll().where("product_id", "=", productId).orderBy("position").execute();
+  }
+  async addImage(productId, url, position) {
+    await this.db.insertInto("product_images").values({ product_id: productId, url, position }).execute();
+  }
+  async removeImage(productId, imageId) {
+    const row = await this.db.deleteFrom("product_images").where("id", "=", imageId).where("product_id", "=", productId).returning("url").executeTakeFirst();
+    return row?.url;
+  }
+  async getModelUrl(productId) {
+    const row = await this.db.selectFrom("product_models").select("file_url").where("product_id", "=", productId).executeTakeFirst();
+    return row?.file_url;
+  }
+  async upsertModel(productId, fileUrl, fileSize, posterUrl) {
+    await this.db.insertInto("product_models").values({
+      product_id: productId,
+      file_url: fileUrl,
+      file_size: fileSize,
+      poster_url: posterUrl
+    }).onConflict(
+      (oc) => oc.column("product_id").doUpdateSet({
+        file_url: fileUrl,
+        file_size: fileSize,
+        poster_url: posterUrl
+      })
+    ).execute();
+  }
+  async removeModel(productId) {
+    await this.db.deleteFrom("product_models").where("product_id", "=", productId).execute();
+  }
+  filtered(filter) {
+    let query = this.db.selectFrom("products as p").innerJoin("workers as w", "w.id", "p.worker_id").innerJoin("categories as c", "c.id", "p.category_id");
+    if (filter.publishedOnly) {
+      query = query.where("p.status", "=", "published").where("w.status", "=", "approved").where("c.is_active", "=", true);
+    }
+    if (filter.categorySlug) query = query.where("c.slug", "=", filter.categorySlug);
+    if (filter.workerId) query = query.where("p.worker_id", "=", filter.workerId);
+    if (filter.q) {
+      const pattern = `%${escapeLike(normalizeSearch(filter.q))}%`;
+      query = query.where(sql`uz_normalize(p.title) like ${pattern}`);
+    }
+    return query;
+  }
+};
+function groupImages(rows) {
+  const map = /* @__PURE__ */ new Map();
+  for (const row of rows) {
+    const list = map.get(row.product_id) ?? [];
+    list.push({ id: row.id, url: row.url, position: row.position });
+    map.set(row.product_id, list);
+  }
+  return map;
+}
+
 // src/modules/feedback/feedback.service.ts
 var UNIQUE_VIOLATION = "23505";
 var RATING_DECIMALS = 100;
@@ -73928,6 +74126,12 @@ async function listAudit(db2, page) {
 // src/modules/admin/admin.service.ts
 var RATING_DECIMALS2 = 100;
 var FEATURED_CACHE_KEY2 = "workers:featured";
+var HOUR_MS2 = 36e5;
+function tashkentDayStart(now) {
+  const shifted = new Date(now.getTime() + TASHKENT_UTC_OFFSET_HOURS * HOUR_MS2);
+  shifted.setUTCHours(0, 0, 0, 0);
+  return new Date(shifted.getTime() - TASHKENT_UTC_OFFSET_HOURS * HOUR_MS2);
+}
 function ratingWithout(current, count, removed) {
   if (count <= 1) return 0;
   const next = (current * count - removed) / (count - 1);
@@ -73944,7 +74148,7 @@ var AdminService = class {
   async stats() {
     const db2 = this.ctx.db;
     const count = async (query) => Number((await query.executeTakeFirstOrThrow()).n);
-    const [users, workerCounts, statuses, money, complaints, hidden] = await Promise.all([
+    const [users, workerCounts, statuses, money, complaints, hidden, today] = await Promise.all([
       count(db2.selectFrom("users").select((eb) => eb.fn.countAll().as("n"))),
       db2.selectFrom("workers").select(["status", (eb) => eb.fn.countAll().as("n")]).groupBy("status").execute(),
       db2.selectFrom("orders").select(["status", (eb) => eb.fn.countAll().as("n")]).groupBy("status").execute(),
@@ -73957,6 +74161,9 @@ var AdminService = class {
       ),
       count(
         db2.selectFrom("reviews").select((eb) => eb.fn.countAll().as("n")).where("status", "=", "hidden")
+      ),
+      count(
+        db2.selectFrom("orders").select((eb) => eb.fn.countAll().as("n")).where("created_at", ">=", tashkentDayStart(this.now()))
       )
     ]);
     const commission = Number(money.commission);
@@ -73968,54 +74175,102 @@ var AdminService = class {
       pendingWorkers: byStatus("pending"),
       rejectedWorkers: byStatus("rejected"),
       ordersByStatus: Object.fromEntries(statuses.map((row) => [row.status, Number(row.n)])),
+      ordersToday: today,
       turnover: Number(money.worker) + commission,
       commission,
       openComplaints: complaints,
       hiddenReviews: hidden
     };
   }
+  workerQuery() {
+    return this.ctx.db.selectFrom("workers as w").innerJoin("users as u", "u.id", "w.user_id").innerJoin("categories as c", "c.id", "w.category_id").leftJoin("users as rb", "rb.id", "w.reviewed_by").select([
+      "w.id",
+      "w.user_id",
+      "w.display_name",
+      "u.phone",
+      "w.telegram_username",
+      "w.bio",
+      "c.slug as category_slug",
+      "w.status",
+      "w.reject_reason",
+      "w.reviewed_at",
+      "rb.name as reviewed_by_name",
+      "w.rating",
+      "w.reviews_count",
+      "w.created_at",
+      sql`(select count(*) from products p where p.worker_id = w.id)`.as(
+        "products_count"
+      )
+    ]);
+  }
+  toAdminWorker(row) {
+    return {
+      id: row.id,
+      userId: row.user_id,
+      displayName: row.display_name,
+      phone: row.phone,
+      telegramUsername: row.telegram_username,
+      bio: row.bio,
+      categorySlug: row.category_slug,
+      status: row.status,
+      rejectReason: row.reject_reason,
+      reviewedAt: row.reviewed_at ? row.reviewed_at.toISOString() : null,
+      reviewedByName: row.reviewed_by_name,
+      productsCount: Number(row.products_count),
+      rating: row.rating,
+      reviewsCount: row.reviews_count,
+      createdAt: row.created_at.toISOString()
+    };
+  }
+  /**
+   * Search matches the display name or the end of the phone number (an administrator reads the
+   * last four digits off a call); the full number is never needed, so it is never typed.
+   */
   async listWorkers(query) {
     const offset = (query.page - 1) * ADMIN_PAGE_SIZE;
-    const base = this.ctx.db.selectFrom("workers as w").innerJoin("users as u", "u.id", "w.user_id").innerJoin("categories as c", "c.id", "w.category_id");
     const status = WORKER_STATUSES.find((value) => value === query.status);
-    const filtered = status ? base.where("w.status", "=", status) : base;
+    let filtered = status ? this.workerQuery().where("w.status", "=", status) : this.workerQuery();
+    const q = query.q?.trim();
+    if (q) {
+      const digits = q.replace(/\D/g, "");
+      filtered = filtered.where(
+        (eb) => eb.or([
+          eb("w.display_name", "ilike", `%${escapeLike(q)}%`),
+          ...digits ? [eb("u.phone", "like", `%${digits}`)] : []
+        ])
+      );
+    }
+    const ordered = status === "pending" ? filtered.orderBy("w.created_at", "asc") : filtered.orderBy(sql`(w.status = 'pending')`, "desc").orderBy("w.created_at", "desc");
     const [rows, total] = await Promise.all([
-      filtered.select([
-        "w.id",
-        "w.display_name",
-        "u.phone",
-        "c.slug as category_slug",
-        "w.status",
-        "w.reject_reason",
-        "w.reviewed_at",
-        "w.rating",
-        "w.reviews_count",
-        "w.created_at"
-      ]).orderBy(sql`(w.status = 'pending')`, "desc").orderBy("w.created_at", "desc").limit(ADMIN_PAGE_SIZE).offset(offset).execute(),
-      filtered.select((eb) => eb.fn.countAll().as("n")).executeTakeFirstOrThrow()
+      ordered.limit(ADMIN_PAGE_SIZE).offset(offset).execute(),
+      filtered.clearSelect().select((eb) => eb.fn.countAll().as("n")).executeTakeFirstOrThrow()
     ]);
     return paged(
-      rows.map((row) => ({
-        id: row.id,
-        displayName: row.display_name,
-        phone: row.phone,
-        categorySlug: row.category_slug,
-        status: row.status,
-        rejectReason: row.reject_reason,
-        reviewedAt: row.reviewed_at ? row.reviewed_at.toISOString() : null,
-        rating: row.rating,
-        reviewsCount: row.reviews_count,
-        createdAt: row.created_at.toISOString()
-      })),
+      rows.map((row) => this.toAdminWorker(row)),
       Number(total.n),
       query.page
     );
+  }
+  async getWorker(workerId) {
+    const row = await this.workerQuery().where("w.id", "=", workerId).executeTakeFirst();
+    if (!row) throw AppError.notFound();
+    return this.toAdminWorker(row);
   }
   /**
    * Records the decision (who and when), the new status and the applicant's notification in one
    * transaction, so a decision can never exist without its audit trail or its message.
    */
   async decide(adminId, workerId, decision) {
+    const kinds = {
+      approved: "worker_approved",
+      rejected: "worker_rejected",
+      suspended: "worker_suspended"
+    };
+    const actions = {
+      approved: "worker.approve",
+      rejected: "worker.reject",
+      suspended: "worker.suspend"
+    };
     await this.ctx.db.transaction().execute(async (trx) => {
       const worker = await trx.updateTable("workers").set({
         status: decision.status,
@@ -74026,12 +74281,12 @@ var AdminService = class {
       if (!worker) throw AppError.notFound();
       await trx.insertInto("notifications").values({
         user_id: worker.user_id,
-        kind: decision.status === "approved" ? "worker_approved" : "worker_rejected",
+        kind: kinds[decision.status],
         detail: decision.reason
       }).execute();
       await writeAudit(trx, {
         adminId,
-        action: decision.status === "approved" ? "worker.approve" : "worker.reject",
+        action: actions[decision.status],
         targetType: "worker",
         targetId: workerId,
         details: { status: decision.status, reason: decision.reason }
@@ -74039,11 +74294,19 @@ var AdminService = class {
     });
     this.ctx.cache.delete(FEATURED_CACHE_KEY2);
   }
+  /** Also reinstates a rejected or suspended worker. */
   approveWorker(adminId, workerId) {
     return this.decide(adminId, workerId, { status: "approved", reason: null });
   }
   rejectWorker(adminId, workerId, reason) {
     return this.decide(adminId, workerId, { status: "rejected", reason });
+  }
+  /** Only an approved worker can be suspended; orders already placed keep running. */
+  async suspendWorker(adminId, workerId, reason) {
+    const current = await this.ctx.db.selectFrom("workers").select("status").where("id", "=", workerId).executeTakeFirst();
+    if (!current) throw AppError.notFound();
+    if (current.status !== "approved") throw AppError.conflict("WORKER_NOT_APPROVED");
+    await this.decide(adminId, workerId, { status: "suspended", reason });
   }
   async listOrders(query) {
     const offset = (query.page - 1) * ADMIN_PAGE_SIZE;
@@ -74248,6 +74511,14 @@ function createAdminRouter(ctx) {
     await admin.rejectWorker(req.auth?.userId ?? "", idParam(req), reason);
     res.status(204).end();
   });
+  router.get("/admin/workers/:id", async (req, res) => {
+    res.json(await admin.getWorker(idParam(req)));
+  });
+  router.post("/admin/workers/:id/suspend", async (req, res) => {
+    const { reason } = workerRejectionSchema.parse(req.body);
+    await admin.suspendWorker(adminId(req), idParam(req), reason);
+    res.status(204).end();
+  });
   router.get("/admin/orders", async (req, res) => {
     res.json(await admin.listOrders(adminListQuerySchema.parse(req.query)));
   });
@@ -74324,7 +74595,7 @@ var isExclusionViolation = (error) => hasCode(error, EXCLUSION_VIOLATION);
 
 // src/modules/jobs/order-expiry.ts
 var MINUTE_MS2 = 60 * 1e3;
-var HOUR_MS2 = 60 * MINUTE_MS2;
+var HOUR_MS3 = 60 * MINUTE_MS2;
 var REFUND_BATCH = 50;
 async function expireUnpaidOrders(db2, now) {
   const cutoff = new Date(now.getTime() - UNPAID_ORDER_TTL_MINUTES * MINUTE_MS2);
@@ -74340,7 +74611,7 @@ async function expireUnpaidOrders(db2, now) {
   });
 }
 async function refundUnacceptedOrders(ctx, now) {
-  const cutoff = new Date(now.getTime() - WORKER_ACCEPT_TTL_HOURS * HOUR_MS2);
+  const cutoff = new Date(now.getTime() - WORKER_ACCEPT_TTL_HOURS * HOUR_MS3);
   const stale = await ctx.db.selectFrom("orders").select("id").where("status", "=", "new").where("updated_at", "<", cutoff).orderBy("updated_at").limit(REFUND_BATCH).execute();
   let refunded = 0;
   for (const { id } of stale) {
@@ -74380,8 +74651,8 @@ async function expireUnpaidMaterialOrders(db2, now) {
 }
 
 // src/modules/calendar/availability.service.ts
-var HOUR_MS3 = 60 * 60 * 1e3;
-var DAY_MS2 = 24 * HOUR_MS3;
+var HOUR_MS4 = 60 * 60 * 1e3;
+var DAY_MS2 = 24 * HOUR_MS4;
 var AvailabilityService = class {
   constructor(ctx, now = () => /* @__PURE__ */ new Date()) {
     this.ctx = ctx;
@@ -74418,7 +74689,7 @@ var AvailabilityService = class {
     const now = this.now();
     const length2 = end.getTime() - start.getTime();
     const horizon = now.getTime() + AVAILABILITY_HORIZON_DAYS * DAY_MS2;
-    if (length2 <= 0 || length2 > MAX_AVAILABILITY_HOURS * HOUR_MS3 || start <= now) {
+    if (length2 <= 0 || length2 > MAX_AVAILABILITY_HOURS * HOUR_MS4 || start <= now) {
       throw AppError.badRequest("AVAILABILITY_INVALID");
     }
     if (start.getTime() > horizon) throw AppError.badRequest("AVAILABILITY_INVALID");
@@ -74503,198 +74774,6 @@ var ReviewsReader = class {
     };
   }
 };
-
-// src/modules/products/product.repository.ts
-init_esm();
-var UZ_APOSTROPHES = /['ʻʼ’‘`]/g;
-function normalizeSearch(value) {
-  return value.replace(UZ_APOSTROPHES, "").toLowerCase();
-}
-function escapeLike(value) {
-  return value.replace(/[\\%_]/g, (char) => `\\${char}`);
-}
-var ProductRepository = class {
-  constructor(db2) {
-    this.db = db2;
-  }
-  async list(filter, page, pageSize) {
-    const totalRow = await this.filtered(filter).select(sql`count(*)`.as("total")).executeTakeFirstOrThrow();
-    let ordered = this.filtered(filter).select("p.id");
-    if (filter.sort === "price_asc") ordered = ordered.orderBy("p.retail_price", "asc");
-    else if (filter.sort === "price_desc") ordered = ordered.orderBy("p.retail_price", "desc");
-    else ordered = ordered.orderBy("p.created_at", "desc");
-    const rows = await ordered.orderBy("p.id").limit(pageSize).offset((page - 1) * pageSize).execute();
-    return { ids: rows.map((row) => row.id), total: Number(totalRow.total) };
-  }
-  /** Three queries regardless of how many products: rows, images (IN), models (IN). */
-  async findDtosByIds(ids) {
-    if (ids.length === 0) return [];
-    const [rows, images, models] = await Promise.all([
-      this.db.selectFrom("products as p").innerJoin("workers as w", "w.id", "p.worker_id").innerJoin("categories as c", "c.id", "p.category_id").select([
-        "p.id",
-        "p.worker_id",
-        "w.display_name",
-        "w.status as worker_status",
-        "p.category_id",
-        "c.slug as category_slug",
-        "p.title",
-        "p.description",
-        "p.retail_price",
-        "p.wholesale_price",
-        "p.wholesale_min_qty",
-        "p.stock",
-        "p.status",
-        "p.created_at"
-      ]).where("p.id", "in", ids).execute(),
-      this.db.selectFrom("product_images").selectAll().where("product_id", "in", ids).orderBy("position").execute(),
-      this.db.selectFrom("product_models").selectAll().where("product_id", "in", ids).execute()
-    ]);
-    const imagesByProduct = groupImages(images);
-    const modelByProduct = new Map(models.map((model) => [model.product_id, model]));
-    const byId = new Map(
-      rows.map((row) => {
-        const productImages = imagesByProduct.get(row.id) ?? [];
-        const stored = modelByProduct.get(row.id);
-        const model = stored ? {
-          fileUrl: stored.file_url,
-          fileSize: stored.file_size,
-          posterUrl: productImages[0]?.url ?? stored.poster_url
-        } : null;
-        const dto = {
-          id: row.id,
-          worker: {
-            id: row.worker_id,
-            displayName: row.display_name,
-            isVerified: row.worker_status === "approved"
-          },
-          categoryId: row.category_id,
-          categorySlug: row.category_slug,
-          title: row.title,
-          description: row.description,
-          retailPrice: row.retail_price,
-          wholesalePrice: row.wholesale_price,
-          wholesaleMinQty: row.wholesale_min_qty,
-          stock: row.stock,
-          status: row.status,
-          images: productImages,
-          model,
-          createdAt: row.created_at.toISOString()
-        };
-        return [row.id, dto];
-      })
-    );
-    return ids.flatMap((id) => {
-      const dto = byId.get(id);
-      return dto ? [dto] : [];
-    });
-  }
-  async isWorkerApproved(workerId) {
-    const row = await this.db.selectFrom("workers").select("status").where("id", "=", workerId).executeTakeFirst();
-    return row?.status === "approved";
-  }
-  async listIdsByWorker(workerId) {
-    const rows = await this.db.selectFrom("products").select("id").where("worker_id", "=", workerId).orderBy("created_at", "desc").execute();
-    return rows.map((row) => row.id);
-  }
-  async findOwnership(id) {
-    const row = await this.db.selectFrom("products").select(["id", "worker_id", "status"]).where("id", "=", id).executeTakeFirst();
-    return row ? { id: row.id, workerId: row.worker_id, status: row.status } : void 0;
-  }
-  async categoryExists(categoryId) {
-    const row = await this.db.selectFrom("categories").select("id").where("id", "=", categoryId).where("is_active", "=", true).executeTakeFirst();
-    return row !== void 0;
-  }
-  async create(workerId, input) {
-    const row = await this.db.insertInto("products").values({
-      worker_id: workerId,
-      category_id: input.categoryId,
-      title: input.title,
-      description: input.description,
-      retail_price: input.retailPrice,
-      wholesale_price: input.wholesalePrice,
-      wholesale_min_qty: input.wholesaleMinQty,
-      stock: input.stock,
-      status: input.status,
-      updated_at: /* @__PURE__ */ new Date()
-    }).returning("id").executeTakeFirstOrThrow();
-    return row.id;
-  }
-  async update(id, input) {
-    await this.db.updateTable("products").set({
-      category_id: input.categoryId,
-      title: input.title,
-      description: input.description,
-      retail_price: input.retailPrice,
-      wholesale_price: input.wholesalePrice,
-      wholesale_min_qty: input.wholesaleMinQty,
-      stock: input.stock,
-      status: input.status,
-      updated_at: /* @__PURE__ */ new Date()
-    }).where("id", "=", id).execute();
-  }
-  async setStock(id, stock) {
-    await this.db.updateTable("products").set({ stock, updated_at: /* @__PURE__ */ new Date() }).where("id", "=", id).execute();
-  }
-  async setStatus(id, status) {
-    await this.db.updateTable("products").set({ status, updated_at: /* @__PURE__ */ new Date() }).where("id", "=", id).execute();
-  }
-  async delete(id) {
-    await this.db.deleteFrom("products").where("id", "=", id).execute();
-  }
-  async listImages(productId) {
-    return this.db.selectFrom("product_images").selectAll().where("product_id", "=", productId).orderBy("position").execute();
-  }
-  async addImage(productId, url, position) {
-    await this.db.insertInto("product_images").values({ product_id: productId, url, position }).execute();
-  }
-  async removeImage(productId, imageId) {
-    const row = await this.db.deleteFrom("product_images").where("id", "=", imageId).where("product_id", "=", productId).returning("url").executeTakeFirst();
-    return row?.url;
-  }
-  async getModelUrl(productId) {
-    const row = await this.db.selectFrom("product_models").select("file_url").where("product_id", "=", productId).executeTakeFirst();
-    return row?.file_url;
-  }
-  async upsertModel(productId, fileUrl, fileSize, posterUrl) {
-    await this.db.insertInto("product_models").values({
-      product_id: productId,
-      file_url: fileUrl,
-      file_size: fileSize,
-      poster_url: posterUrl
-    }).onConflict(
-      (oc) => oc.column("product_id").doUpdateSet({
-        file_url: fileUrl,
-        file_size: fileSize,
-        poster_url: posterUrl
-      })
-    ).execute();
-  }
-  async removeModel(productId) {
-    await this.db.deleteFrom("product_models").where("product_id", "=", productId).execute();
-  }
-  filtered(filter) {
-    let query = this.db.selectFrom("products as p").innerJoin("workers as w", "w.id", "p.worker_id").innerJoin("categories as c", "c.id", "p.category_id");
-    if (filter.publishedOnly) {
-      query = query.where("p.status", "=", "published").where("w.status", "=", "approved").where("c.is_active", "=", true);
-    }
-    if (filter.categorySlug) query = query.where("c.slug", "=", filter.categorySlug);
-    if (filter.workerId) query = query.where("p.worker_id", "=", filter.workerId);
-    if (filter.q) {
-      const pattern = `%${escapeLike(normalizeSearch(filter.q))}%`;
-      query = query.where(sql`uz_normalize(p.title) like ${pattern}`);
-    }
-    return query;
-  }
-};
-function groupImages(rows) {
-  const map = /* @__PURE__ */ new Map();
-  for (const row of rows) {
-    const list = map.get(row.product_id) ?? [];
-    list.push({ id: row.id, url: row.url, position: row.position });
-    map.set(row.product_id, list);
-  }
-  return map;
-}
 
 // src/modules/catalog/catalog.service.ts
 var CATEGORIES_TTL_SECONDS = 600;
@@ -75179,7 +75258,7 @@ var OrderService = class {
 };
 
 // src/modules/orders/service-order.service.ts
-var HOUR_MS4 = 60 * 60 * 1e3;
+var HOUR_MS5 = 60 * 60 * 1e3;
 var NEW_REQUEST_SMS = "BarakaLi: yangi buyurtma / \u043D\u043E\u0432\u044B\u0439 \u0437\u0430\u043A\u0430\u0437";
 var IMAGE_CONTENT_TYPE = "image/webp";
 var ServiceOrderService = class {
@@ -75198,7 +75277,7 @@ var ServiceOrderService = class {
   async create(customerId, input) {
     const now = this.now();
     const start = new Date(input.startTime);
-    const end = new Date(start.getTime() + input.hours * HOUR_MS4);
+    const end = new Date(start.getTime() + input.hours * HOUR_MS5);
     if (start <= now) throw AppError.badRequest("SLOT_IN_PAST");
     await expireUnpaidOrders(this.ctx.db, now);
     const worker = await this.ctx.db.selectFrom("workers").select(["id", "user_id", "status"]).where("id", "=", input.workerId).executeTakeFirst();

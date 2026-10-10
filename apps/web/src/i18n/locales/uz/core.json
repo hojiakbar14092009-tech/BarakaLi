@@ -125,13 +125,15 @@
     "status": {
       "pending": "Ariza qabul qilindi, admin tekshiradi. Tasdiqlangunga qadar profilingiz katalogda koʻrinmaydi va buyurtma qabul qila olmaysiz.",
       "approved": "Profilingiz tasdiqlangan: katalogda koʻrinadi va buyurtma qabul qila olasiz.",
-      "rejected": "Arizangiz rad etildi. Profilingiz katalogda koʻrinmaydi va buyurtma qabul qila olmaysiz."
+      "rejected": "Arizangiz rad etildi. Profilingiz katalogda koʻrinmaydi va buyurtma qabul qila olmaysiz.",
+      "suspended": "Profilingiz vaqtincha toʻxtatilgan: katalogda koʻrinmaydi va yangi buyurtma qabul qila olmaysiz. Mavjud buyurtmalaringizni yakunlashingiz mumkin."
     },
     "notice": {
       "worker_application_received": "Ariza qabul qilindi, admin tekshiradi.",
       "worker_approved": "Arizangiz tasdiqlandi.",
       "worker_rejected": "Arizangiz rad etildi",
-      "order_new": "Yangi buyurtma keldi."
+      "order_new": "Yangi buyurtma keldi.",
+      "worker_suspended": "Profilingiz toʻxtatildi"
     }
   },
   "forbidden": {

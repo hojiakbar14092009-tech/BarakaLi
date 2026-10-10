@@ -258,5 +258,7 @@ export const complaintResolutionSchema = z.object({ status: z.enum(['resolved', 
 export const adminListQuerySchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
   status: z.string().trim().max(30).optional(),
+  /** Free text: a name, or the last digits of a phone number. */
+  q: z.string().trim().max(60).optional(),
 });
 export type AdminListQuery = z.infer<typeof adminListQuerySchema>;

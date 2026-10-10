@@ -7,6 +7,7 @@ const KINDS: NotificationKind[] = [
   'worker_application_received',
   'worker_approved',
   'worker_rejected',
+  'worker_suspended',
   'order_new',
 ];
 
@@ -40,7 +41,7 @@ export function ApplicationStatus() {
       >
         {t(`application.status.${status}`)}
       </p>
-      {status === 'rejected' && user.workerRejectReason && (
+      {(status === 'rejected' || status === 'suspended') && user.workerRejectReason && (
         <p>
           <span className="text-mocha">{t('application.reason')}: </span>
           {user.workerRejectReason}
@@ -51,7 +52,9 @@ export function ApplicationStatus() {
           {recent.map((item) => (
             <li key={item.id}>
               {t(`application.notice.${item.kind}`)}
-              {item.kind === 'worker_rejected' && item.detail ? `: ${item.detail}` : ''}
+              {(item.kind === 'worker_rejected' || item.kind === 'worker_suspended') && item.detail
+                ? `: ${item.detail}`
+                : ''}
             </li>
           ))}
         </ul>

@@ -1,6 +1,5 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
-import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
+import { Route, Routes } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import '../i18n';
 import AdminLayout from '../features/admin/AdminLayout';
@@ -11,39 +10,7 @@ import { SavingsGoal } from '../features/cabinet/SavingsGoal';
 import LessonsPage from '../features/lessons/LessonsPage';
 import MaterialsPage from '../features/materials/MaterialsPage';
 import { useAuthStore } from '../stores/auth';
-
-type Handler = (init: RequestInit | undefined) => unknown;
-
-function mockApi(routes: Record<string, Handler>) {
-  const fetchMock = vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
-    const url = String(input).replace(/^\/api/, '');
-    const key = `${init?.method ?? 'GET'} ${url.split('?')[0]}`;
-    const handler = routes[key];
-    const body = handler ? handler(init) : { error: { code: 'NOT_FOUND' } };
-    const status = handler ? (init?.method === 'POST' ? 201 : 200) : 404;
-    return Promise.resolve(
-      body === null
-        ? new Response(null, { status: 204 })
-        : new Response(JSON.stringify(body), {
-            status,
-            headers: { 'Content-Type': 'application/json' },
-          }),
-    );
-  });
-  vi.stubGlobal('fetch', fetchMock);
-  return fetchMock;
-}
-
-function renderApp(ui: React.ReactElement, path = '/') {
-  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-  return render(
-    <QueryClientProvider client={client}>
-      <MemoryRouter initialEntries={[path]}>{ui}</MemoryRouter>
-    </QueryClientProvider>,
-  );
-}
-
-const emptyPage = { items: [], page: 1, pageSize: 20, total: 0 };
+import { emptyPage, mockApi, renderApp, sampleWorker } from './adminTestUtils';
 
 const adminRoutes = (
   <Routes>
@@ -108,18 +75,7 @@ describe('admin route guard', () => {
 });
 
 describe('admin panel', () => {
-  const worker = {
-    id: 'w1',
-    displayName: 'Dilfuza',
-    phone: '+998901112233',
-    categorySlug: 'tikuvchilik',
-    status: 'pending',
-    rejectReason: null,
-    reviewedAt: null,
-    rating: 0,
-    reviewsCount: 0,
-    createdAt: '2026-01-01T00:00:00.000Z',
-  };
+  const worker = sampleWorker;
 
   it('approves a pending application and shows the filters in order', async () => {
     const fetchMock = mockApi({
@@ -165,6 +121,9 @@ describe('admin panel', () => {
     expect(screen.getByRole('button', { name: 'Rad etilgan' })).toBeInTheDocument();
     expect(screen.getByText(/\+998 90 111 22 33/)).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: /^Tasdiqlash: Dilfuza$/ }));
+    const dialog = screen.getByRole('dialog', { name: 'Hunarmandni tasdiqlash' });
+    expect(dialog).toHaveTextContent('Dilfuza');
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Hunarmandni tasdiqlash' }));
 
     await waitFor(() => {
       const call = fetchMock.mock.calls.find(([url]) =>
@@ -184,7 +143,7 @@ describe('admin panel', () => {
     renderApp(adminRoutes, '/admin/hunarmandlar');
     fireEvent.click(await screen.findByRole('button', { name: /^Rad etish: Dilfuza$/ }));
 
-    const confirm = screen.getByRole('button', { name: 'Rad etishni tasdiqlash' });
+    const confirm = screen.getByRole('button', { name: 'Hunarmandni rad etish' });
     expect(confirm).toBeDisabled();
     fireEvent.change(screen.getByLabelText('Rad etish sababi'), { target: { value: 'qisqa' } });
     expect(confirm).toBeDisabled();

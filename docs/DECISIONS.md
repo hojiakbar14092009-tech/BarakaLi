@@ -277,3 +277,18 @@ Brifdagi noaniqliklar bo'yicha qabul qilingan qarorlar. Yangi qaror oxiriga qo's
   kartada tegishli boʻlimga havola. Maʼlumot yoʻq boʻlsa bitta yoʻl-yoʻriqli boʻsh holat.
 - Mahsulotlar, Foydalanuvchilar, Xizmat turlari, Sozlamalar sahifalari hozircha "Bu boʻlim hali tayyor
   emas" holatini koʻrsatadi (keyingi bosqichlarda toʻldiriladi); havolalar buzilmaydi.
+
+## Hunarmandlarni tasdiqlash oqimi (2026-10-10)
+
+- Holatlar: `pending → approved | rejected`, `approved → suspended`, `rejected | suspended → approved`
+  (tasdiqlash qayta faollashtiradi). `suspended` migratsiya `1760001300000` bilan qoʻshildi; namuna va
+  mavjud hunarmandlar `approved` boʻlib qoladi.
+- Toʻxtatilgan hunarmand: katalog/tavsiya/profil 404, yangi buyurtma 404, `accept` 403; `start/ready/deliver`
+  ishlaydi, mavjud buyurtmalar tugaydi. Sabab (`reject_reason` ustuni rad etish va toʻxtatish uchun umumiy)
+  hunarmandga `worker_suspended` bildirishnomasi va kabinetdagi holat matni bilan koʻrsatiladi.
+- Roʻyxat: 4 filtr, standart "Kutilmoqda" eng eskisi birinchi; qidiruv ism yoki telefon oxiridagi raqamlar
+  (`q`), toʻliq raqam yozish shart emas. Tafsilot sahifasida Telegram (admin uchun), mahsulotlar soni va
+  havolasi, ariza sanasi, kim va qachon koʻrib chiqqani.
+- Har amal `ConfirmDialog` orqali: nomi aniq ("Hunarmandni tasdiqlash / rad etish / toʻxtatish"), rad etish
+  va toʻxtatishda sabab (≥10 belgi) majburiy; fokus dialog ichida, Esc yopadi, fokus tugmaga qaytadi.
+- "Tasdiqlangan" belgisi faqat `status === 'approved'` da (`isVerified` serverdan).

@@ -54,6 +54,16 @@ export function createAdminRouter(ctx: AppContext): Router {
     res.status(204).end();
   });
 
+  router.get('/admin/workers/:id', async (req, res) => {
+    res.json(await admin.getWorker(idParam(req)));
+  });
+
+  router.post('/admin/workers/:id/suspend', async (req, res) => {
+    const { reason } = workerRejectionSchema.parse(req.body);
+    await admin.suspendWorker(adminId(req), idParam(req), reason);
+    res.status(204).end();
+  });
+
   router.get('/admin/orders', async (req, res) => {
     res.json(await admin.listOrders(adminListQuerySchema.parse(req.query)));
   });

@@ -28,7 +28,10 @@ function toUserDto(row: UserRow): UserDto {
     workerId: row.worker_id,
     workerName: row.worker_name,
     workerStatus: row.worker_status,
-    workerRejectReason: row.worker_status === 'rejected' ? row.reject_reason : null,
+    workerRejectReason:
+      row.worker_status === 'rejected' || row.worker_status === 'suspended'
+        ? row.reject_reason
+        : null,
     workerTelegramUsername: row.worker_telegram_username,
   };
 }

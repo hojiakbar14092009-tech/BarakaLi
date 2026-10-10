@@ -16,10 +16,16 @@ import { apiRequest } from '../../lib/api';
 
 const ADMIN = ['admin'] as const;
 
-function usePaged<T>(name: string, path: string, page: number, status: string | undefined) {
+function usePaged<T>(
+  name: string,
+  path: string,
+  page: number,
+  status: string | undefined,
+  q?: string,
+) {
   return useQuery({
-    queryKey: [...ADMIN, name, page, status ?? ''],
-    queryFn: () => apiRequest<Page<T>>(path, { auth: true, query: { page, status } }),
+    queryKey: [...ADMIN, name, page, status ?? '', q ?? ''],
+    queryFn: () => apiRequest<Page<T>>(path, { auth: true, query: { page, status, q } }),
   });
 }
 
@@ -29,8 +35,15 @@ export const useAdminStats = () =>
     queryFn: () => apiRequest<AdminStatsDto>('/admin/stats', { auth: true }),
   });
 
-export const useAdminWorkers = (page: number, status?: string) =>
-  usePaged<AdminWorkerDto>('workers', '/admin/workers', page, status);
+export const useAdminWorkers = (page: number, status?: string, q?: string) =>
+  usePaged<AdminWorkerDto>('workers', '/admin/workers', page, status, q);
+
+export const useAdminWorker = (id: string) =>
+  useQuery({
+    queryKey: [...ADMIN, 'worker', id],
+    queryFn: () => apiRequest<AdminWorkerDto>(`/admin/workers/${id}`, { auth: true }),
+    enabled: id.length > 0,
+  });
 export const useAdminOrders = (page: number, status?: string) =>
   usePaged<AdminOrderDto>('orders', '/admin/orders', page, status);
 export const useAdminReviews = (page: number, status?: string) =>
@@ -79,6 +92,15 @@ export const useApproveWorker = () =>
 export const useRejectWorker = () =>
   useAdminAction(({ id, reason }: { id: string; reason: string }) =>
     apiRequest<void>(`/admin/workers/${id}/reject`, {
+      method: 'POST',
+      body: { reason },
+      auth: true,
+    }),
+  );
+
+export const useSuspendWorker = () =>
+  useAdminAction(({ id, reason }: { id: string; reason: string }) =>
+    apiRequest<void>(`/admin/workers/${id}/suspend`, {
       method: 'POST',
       body: { reason },
       auth: true,

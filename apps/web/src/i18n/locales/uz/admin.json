@@ -16,24 +16,65 @@
     "filter": {
       "pending": "Kutilmoqda",
       "approved": "Tasdiqlangan",
-      "rejected": "Rad etilgan"
+      "rejected": "Rad etilgan",
+      "suspended": "Toʻxtatilgan"
     },
     "status": {
       "pending": "Kutilmoqda",
       "approved": "Tasdiqlangan",
-      "rejected": "Rad etilgan"
+      "rejected": "Rad etilgan",
+      "suspended": "Toʻxtatilgan"
     },
     "empty": {
       "pending": "Tekshirilishi kutilayotgan ariza yoʻq.",
       "approved": "Tasdiqlangan hunarmand yoʻq.",
-      "rejected": "Rad etilgan ariza yoʻq."
+      "rejected": "Rad etilgan ariza yoʻq.",
+      "suspended": "Toʻxtatilgan hunarmand yoʻq."
     },
     "approve": "Tasdiqlash",
     "reject": "Rad etish",
-    "confirmReject": "Rad etishni tasdiqlash",
-    "reasonLabel": "Rad etish sababi",
+    "suspend": "Toʻxtatish",
     "reasonHint": "Kamida {{min}} ta belgi. Sabab hunarmandga koʻrsatiladi.",
-    "reason": "Sabab"
+    "reason": "Sabab",
+    "search": {
+      "label": "Hunarmandni qidirish",
+      "placeholder": "Ism yoki telefonning oxirgi 4 raqami",
+      "button": "Qidirish",
+      "empty": "Bunday hunarmand topilmadi. Ism yoki raqamning oxirgi raqamlarini tekshiring."
+    },
+    "dialog": {
+      "approve": {
+        "title": "Hunarmandni tasdiqlash",
+        "text": "{{name}} katalogda koʻrinadi va buyurtma qabul qila oladi.",
+        "confirm": "Hunarmandni tasdiqlash"
+      },
+      "reject": {
+        "title": "Hunarmandni rad etish",
+        "text": "{{name}} arizasi rad etiladi. Sabab hunarmandga koʻrsatiladi.",
+        "confirm": "Hunarmandni rad etish",
+        "reasonLabel": "Rad etish sababi"
+      },
+      "suspend": {
+        "title": "Hunarmandni toʻxtatish",
+        "text": "{{name}} katalogdan yashiriladi va yangi buyurtma qabul qilmaydi. Mavjud buyurtmalar tugaguncha ishlaydi.",
+        "confirm": "Hunarmandni toʻxtatish",
+        "reasonLabel": "Toʻxtatish sababi"
+      }
+    },
+    "detail": {
+      "back": "Hunarmandlar roʻyxatiga",
+      "category": "Yoʻnalish",
+      "phone": "Telefon",
+      "telegram": "Telegram",
+      "noTelegram": "Koʻrsatilmagan",
+      "bio": "Oʻzi haqida",
+      "products": "Mahsulotlar",
+      "submitted": "Ariza topshirilgan",
+      "reviewed": "Koʻrib chiqilgan",
+      "publicProfile": "Ommaviy profil",
+      "openProfile": "Profilni ochish",
+      "productsCount": "{{count}} ta mahsulot"
+    }
   },
   "orders": {
     "status": "Holat",
@@ -128,7 +169,8 @@
       "order.refund": "Buyurtma puli qaytarildi",
       "material.create": "Material qoʻshildi",
       "material.update": "Material yangilandi",
-      "material_order.deliver": "Material buyurtmasi topshirildi"
+      "material_order.deliver": "Material buyurtmasi topshirildi",
+      "worker.suspend": "Hunarmand toʻxtatildi"
     }
   },
   "notReady": {

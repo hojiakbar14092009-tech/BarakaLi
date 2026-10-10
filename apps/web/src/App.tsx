@@ -24,6 +24,7 @@ const LessonsPage = lazy(() => import('./features/lessons/LessonsPage'));
 const AdminLayout = lazy(() => import('./features/admin/AdminLayout'));
 const DashboardPage = lazy(() => import('./features/admin/DashboardPage'));
 const AuditPage = lazy(() => import('./features/admin/AuditPage'));
+const AdminWorkerDetailPage = lazy(() => import('./features/admin/AdminWorkerDetailPage'));
 const adminSection = (name: keyof typeof import('./features/admin/sectionPages')) =>
   lazy(() => import('./features/admin/sectionPages').then((m) => ({ default: m[name] })));
 const AdminWorkersPage = adminSection('AdminWorkersPage');
@@ -75,6 +76,7 @@ const router = createBrowserRouter([
             children: [
               { index: true, element: <DashboardPage /> },
               { path: 'hunarmandlar', element: <AdminWorkersPage /> },
+              { path: 'hunarmandlar/:id', element: <AdminWorkerDetailPage /> },
               { path: 'mahsulotlar', element: <AdminProductsPage /> },
               { path: 'buyurtmalar', element: <AdminOrdersPage /> },
               { path: 'foydalanuvchilar', element: <AdminUsersPage /> },

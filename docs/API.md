@@ -374,6 +374,14 @@ Xatolar: `MATERIAL_UNAVAILABLE` (404/409), `INSUFFICIENT_STOCK` (409), `MATERIAL
 
 Rol `ADMIN_PHONES` dan keladi (docs/DECISIONS.md). Har yozuvchi amal `audit_log` ga tushadi.
 
+Hunarmandlar: `GET /admin/workers?status=pending|approved|rejected|suspended&q=<ism yoki telefon oxiri>&page=1`
+(`pending` filtrida eng eski ariza birinchi; `q` ism boʻyicha `ilike` yoki telefon oxiridagi raqamlar),
+`GET /admin/workers/:id` → `AdminWorkerDto` (`userId, telegramUsername, bio, productsCount, reviewedByName` bilan),
+`POST /admin/workers/:id/approve` (rad etilgan yoki toʻxtatilganni ham qayta faollashtiradi),
+`POST /admin/workers/:id/reject` va `POST /admin/workers/:id/suspend` (`{ reason }`, 10–300 belgi; suspend faqat
+`approved` uchun, aks holda 409 `WORKER_NOT_APPROVED`). Toʻxtatilgan hunarmand katalogda koʻrinmaydi va yangi
+buyurtma ololmaydi (`accept` → 403), mavjud buyurtmalarini yakunlaydi; unga `worker_suspended` bildirishnomasi boradi.
+
 `GET /admin/audit?page=1` → `Page<AdminAuditEntryDto>` (`id, action, targetType, targetId, details, adminName, createdAt`); `details` da telefon yoʻq.
 
 Xatolar: 401 tokensiz, 403 `FORBIDDEN` admin boʻlmasa, 409 `CANNOT_ACT_ON_SELF` / `LAST_ADMIN` (admin hisoblariga nisbatan amallar).

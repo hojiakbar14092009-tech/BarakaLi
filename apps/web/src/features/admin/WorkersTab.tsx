@@ -1,71 +1,35 @@
-import { BadgeCheck } from 'lucide-react';
-import { useState } from 'react';
+import { BadgeCheck, Search } from 'lucide-react';
+import { useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  MAX_REJECT_REASON_LENGTH,
-  MIN_REJECT_REASON_LENGTH,
-  type AdminWorkerDto,
-  type WorkerStatus,
-} from '@barakali/shared';
+import { Link } from 'react-router-dom';
+import { WORKER_STATUSES, type WorkerStatus } from '@barakali/shared';
 import { Button } from '../../components/Button';
-import { TextAreaField } from '../../components/Field';
 import { EmptyState, ErrorState, LoadingState } from '../../components/StateViews';
 import { errorMessage } from '../../lib/errors';
-import { Pagination } from '../catalog/Pagination';
-import { useAdminWorkers, useApproveWorker, useRejectWorker } from './api';
 import { formatPhoneDisplay } from '../../lib/phone';
-
-const FILTERS: WorkerStatus[] = ['pending', 'approved', 'rejected'];
-
-function RejectForm({ worker, onDone }: { worker: AdminWorkerDto; onDone: () => void }) {
-  const { t } = useTranslation();
-  const [reason, setReason] = useState('');
-  const reject = useRejectWorker();
-  const trimmed = reason.trim();
-  const valid = trimmed.length >= MIN_REJECT_REASON_LENGTH;
-
-  return (
-    <form
-      className="w-full space-y-3 rounded-field bg-bisque/50 p-3"
-      onSubmit={(event) => {
-        event.preventDefault();
-        if (valid) reject.mutate({ id: worker.id, reason: trimmed }, { onSuccess: onDone });
-      }}
-    >
-      <TextAreaField
-        label={t('admin.workers.reasonLabel')}
-        hint={t('admin.workers.reasonHint', { min: MIN_REJECT_REASON_LENGTH })}
-        rows={3}
-        maxLength={MAX_REJECT_REASON_LENGTH}
-        value={reason}
-        onChange={(event) => setReason(event.target.value)}
-      />
-      {reject.isError && <p role="alert">{errorMessage(reject.error, t)}</p>}
-      <div className="flex gap-2">
-        <Button type="submit" disabled={!valid || reject.isPending}>
-          {t('admin.workers.confirmReject')}
-        </Button>
-        <Button variant="secondary" onClick={onDone}>
-          {t('common.cancel')}
-        </Button>
-      </div>
-    </form>
-  );
-}
+import { Pagination } from '../catalog/Pagination';
+import { useAdminWorkers } from './api';
+import { WorkerActions } from './WorkerActions';
 
 export function WorkersTab() {
   const { t, i18n } = useTranslation();
   const [filter, setFilter] = useState<WorkerStatus>('pending');
+  const [draft, setDraft] = useState('');
+  const [q, setQ] = useState('');
   const [page, setPage] = useState(1);
-  const [rejecting, setRejecting] = useState<string | null>(null);
-  const workers = useAdminWorkers(page, filter);
-  const approve = useApproveWorker();
+  const workers = useAdminWorkers(page, filter, q || undefined);
   const locale = i18n.language === 'ru' ? 'ru-RU' : 'uz-UZ';
 
+  const onSearch = (event: FormEvent) => {
+    event.preventDefault();
+    setQ(draft.trim());
+    setPage(1);
+  };
+
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       <div role="group" aria-label={t('admin.filter')} className="flex flex-wrap gap-2">
-        {FILTERS.map((value) => (
+        {WORKER_STATUSES.map((value) => (
           <button
             key={value}
             type="button"
@@ -73,7 +37,6 @@ export function WorkersTab() {
             onClick={() => {
               setFilter(value);
               setPage(1);
-              setRejecting(null);
             }}
             className={`min-h-12 rounded-full px-4 font-semibold ${
               filter === value ? 'bg-mocha text-sugar' : 'bg-bisque text-espresso'
@@ -83,6 +46,23 @@ export function WorkersTab() {
           </button>
         ))}
       </div>
+      <form role="search" onSubmit={onSearch} className="flex gap-2">
+        <label className="sr-only" htmlFor="worker-search">
+          {t('admin.workers.search.label')}
+        </label>
+        <input
+          id="worker-search"
+          type="search"
+          value={draft}
+          onChange={(event) => setDraft(event.target.value)}
+          placeholder={t('admin.workers.search.placeholder')}
+          className="min-h-12 w-full rounded-field border border-wheat bg-white/70 px-4 text-base text-espresso placeholder:text-mocha/70"
+        />
+        <Button type="submit" variant="secondary" className="shrink-0">
+          <Search className="size-5" strokeWidth={1.5} aria-hidden="true" />
+          {t('admin.workers.search.button')}
+        </Button>
+      </form>
       {workers.isPending && <LoadingState />}
       {workers.isError && (
         <ErrorState
@@ -91,7 +71,9 @@ export function WorkersTab() {
         />
       )}
       {workers.data && workers.data.items.length === 0 && (
-        <EmptyState title={t(`admin.workers.empty.${filter}`)} />
+        <EmptyState
+          title={q ? t('admin.workers.search.empty') : t(`admin.workers.empty.${filter}`)}
+        />
       )}
       <ul className="space-y-2">
         {workers.data?.items.map((worker) => (
@@ -101,14 +83,20 @@ export function WorkersTab() {
           >
             <div className="min-w-0">
               <p className="flex items-center gap-2 font-semibold">
-                {worker.displayName}
+                <Link
+                  to={`/admin/hunarmandlar/${worker.id}`}
+                  className="inline-flex min-h-12 items-center underline-offset-4 hover:underline"
+                >
+                  {worker.displayName}
+                </Link>
                 {worker.status === 'approved' && (
                   <BadgeCheck className="size-5 text-mocha" aria-label={t('home.verified')} />
                 )}
               </p>
               <p className="text-sm text-mocha">
                 {t(`categories.${worker.categorySlug}`, { defaultValue: worker.categorySlug })} ·{' '}
-                {formatPhoneDisplay(worker.phone)}
+                {formatPhoneDisplay(worker.phone)} ·{' '}
+                {t('admin.workers.detail.productsCount', { count: worker.productsCount })}
               </p>
               <p className="text-sm text-mocha">
                 {t(`admin.workers.status.${worker.status}`)}
@@ -123,33 +111,10 @@ export function WorkersTab() {
                 </p>
               )}
             </div>
-            <div className="flex flex-wrap gap-2">
-              {worker.status !== 'approved' && (
-                <Button
-                  disabled={approve.isPending}
-                  onClick={() => approve.mutate(worker.id)}
-                  aria-label={`${t('admin.workers.approve')}: ${worker.displayName}`}
-                >
-                  {t('admin.workers.approve')}
-                </Button>
-              )}
-              {worker.status !== 'rejected' && (
-                <Button
-                  variant="secondary"
-                  onClick={() => setRejecting(worker.id)}
-                  aria-label={`${t('admin.workers.reject')}: ${worker.displayName}`}
-                >
-                  {t('admin.workers.reject')}
-                </Button>
-              )}
-            </div>
-            {rejecting === worker.id && (
-              <RejectForm worker={worker} onDone={() => setRejecting(null)} />
-            )}
+            <WorkerActions worker={worker} />
           </li>
         ))}
       </ul>
-      {approve.isError && <p role="alert">{errorMessage(approve.error, t)}</p>}
       {workers.data && (
         <Pagination
           page={workers.data.page}

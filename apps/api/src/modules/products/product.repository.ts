@@ -30,7 +30,7 @@ export function normalizeSearch(value: string): string {
   return value.replace(UZ_APOSTROPHES, '').toLowerCase();
 }
 
-function escapeLike(value: string): string {
+export function escapeLike(value: string): string {
   return value.replace(/[\\%_]/g, (char) => `\\${char}`);
 }
 

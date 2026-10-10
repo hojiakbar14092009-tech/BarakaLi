@@ -52,7 +52,11 @@ export interface NotificationDto {
 }
 
 export type NotificationKind =
-  'order_new' | 'worker_application_received' | 'worker_approved' | 'worker_rejected';
+  | 'order_new'
+  | 'worker_application_received'
+  | 'worker_approved'
+  | 'worker_rejected'
+  | 'worker_suspended';
 
 export interface NotificationsDto {
   unread: number;
@@ -268,12 +272,19 @@ export interface AdminStatsDto {
 
 export interface AdminWorkerDto {
   id: string;
+  userId: string;
   displayName: string;
   phone: string;
+  /** Only administrators see the handle before an order is accepted. */
+  telegramUsername: string | null;
+  bio: string | null;
   categorySlug: string;
   status: WorkerStatus;
+  /** Reason given on rejection or suspension. */
   rejectReason: string | null;
   reviewedAt: string | null;
+  reviewedByName: string | null;
+  productsCount: number;
   rating: number;
   reviewsCount: number;
   createdAt: string;

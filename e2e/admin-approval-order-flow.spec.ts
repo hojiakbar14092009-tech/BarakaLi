@@ -82,6 +82,9 @@ test.describe('admin approval -> worker product -> customer order (360px)', () =
     });
     await expect(approveButton).toBeVisible();
     await approveButton.click();
+    const dialog = adminPage.getByRole('dialog', { name: t('admin.workers.dialog.approve.title') });
+    await expect(dialog).toContainText(workerName);
+    await dialog.getByRole('button', { name: t('admin.workers.dialog.approve.confirm') }).click();
     await expect(approveButton).toHaveCount(0);
     await adminContext.close();
 

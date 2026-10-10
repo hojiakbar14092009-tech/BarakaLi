@@ -280,3 +280,112 @@ describe('ordering requires an approved worker', () => {
     expect(accept.status).toBe(200);
   });
 });
+
+describe('suspension, search and detail', () => {
+  const suspend = (workerId: string, reason: unknown, who: Session = admin) =>
+    request(t.app).post(`/api/admin/workers/${workerId}/suspend`).set(bearer(who)).send({ reason });
+  const act = (who: Session, orderId: string, action: string) =>
+    request(t.app).post(`/api/orders/${orderId}/actions`).set(bearer(who)).send({ action });
+
+  it('suspends an approved worker: hidden from the catalog, no new orders, old orders finish', async () => {
+    const worker = await makeWorker(t, 'Toʻxtatiladigan');
+    const product = await publishedProductOf(worker);
+    const running = await placePaidOrder(t, customer, product.id);
+    expect((await act(worker, running, 'accept')).status).toBe(200);
+
+    expect((await suspend(worker.workerId, 'qisqa')).status).toBe(400);
+    expect((await suspend(worker.workerId, REASON)).status).toBe(204);
+
+    expect((await request(t.app).get(`/api/workers/${worker.workerId}`)).status).toBe(404);
+    expect((await request(t.app).get(`/api/products/${product.id}`)).status).toBe(404);
+    const blocked = await request(t.app)
+      .post('/api/orders')
+      .set(bearer(customer))
+      .send({ items: [{ productId: product.id, quantity: 1 }], fulfillment: 'pickup' });
+    expect(blocked.status).toBe(404);
+
+    for (const action of ['start', 'ready', 'deliver']) {
+      expect((await act(worker, running, action)).status, action).toBe(200);
+    }
+    const me = await request(t.app).get('/api/me').set(bearer(worker));
+    expect(me.body).toMatchObject({ workerStatus: 'suspended', workerRejectReason: REASON });
+    const note = (await inbox(worker)).items.find((n) => n.kind === 'worker_suspended');
+    expect(note?.detail).toBe(REASON);
+    const audit = await t.db
+      .selectFrom('audit_log')
+      .select(['action', 'admin_user_id'])
+      .where('target_id', '=', worker.workerId)
+      .orderBy('created_at', 'desc')
+      .executeTakeFirstOrThrow();
+    expect(audit).toEqual({ action: 'worker.suspend', admin_user_id: admin.userId });
+  });
+
+  it('only suspends approved workers, and approval reinstates a suspended one', async () => {
+    const pending = await makeWorker(t, 'Hali kutmoqda', { approved: false });
+    const res = await suspend(pending.workerId, REASON);
+    expect(res.status).toBe(409);
+    expect(res.body.error.code).toBe('WORKER_NOT_APPROVED');
+
+    const worker = await makeWorker(t, 'Qaytariladigan');
+    await suspend(worker.workerId, REASON);
+    expect((await approve(worker.workerId)).status).toBe(204);
+    const me = await request(t.app).get('/api/me').set(bearer(worker));
+    expect(me.body).toMatchObject({ workerStatus: 'approved', workerRejectReason: null });
+    expect((await request(t.app).get(`/api/workers/${worker.workerId}`)).status).toBe(200);
+  });
+
+  it('lists pending applications oldest first and filters suspended ones', async () => {
+    const older = await makeWorker(t, 'Avvalgi', { approved: false });
+    const newer = await makeWorker(t, 'Keyingi', { approved: false });
+    const list = await request(t.app).get('/api/admin/workers?status=pending').set(bearer(admin));
+    const ids = (list.body.items as { id: string }[]).map((w) => w.id);
+    expect(ids.indexOf(older.workerId)).toBeLessThan(ids.indexOf(newer.workerId));
+
+    const suspended = await makeWorker(t, 'Toʻxtagan');
+    await suspend(suspended.workerId, REASON);
+    const page = await request(t.app).get('/api/admin/workers?status=suspended').set(bearer(admin));
+    expect((page.body.items as { id: string }[]).map((w) => w.id)).toContain(suspended.workerId);
+  });
+
+  it('searches by name or the last digits of the phone number', async () => {
+    const worker = await makeWorker(t, 'Gulbahor Qidiruv', { approved: false });
+    const last4 = worker.phone.slice(-4);
+    const byName = await request(t.app).get('/api/admin/workers?q=qidiruv').set(bearer(admin));
+    expect((byName.body.items as { id: string }[]).map((w) => w.id)).toContain(worker.workerId);
+    const byDigits = await request(t.app).get(`/api/admin/workers?q=${last4}`).set(bearer(admin));
+    expect((byDigits.body.items as { id: string }[]).map((w) => w.id)).toContain(worker.workerId);
+    const miss = await request(t.app).get('/api/admin/workers?q=zzzz-yoq').set(bearer(admin));
+    expect(miss.body.total).toBe(0);
+  });
+
+  it('returns the detail with products count, Telegram handle and reviewer, 404 otherwise', async () => {
+    const worker = await makeWorker(t, 'Tafsilot Usta', { approved: false });
+    await publishedProductOf(worker);
+    await request(t.app)
+      .patch('/api/me/worker')
+      .set(bearer(worker))
+      .send({ telegramUsername: 'tafsilot_usta' });
+    await approve(worker.workerId);
+    const res = await request(t.app)
+      .get(`/api/admin/workers/${worker.workerId}`)
+      .set(bearer(admin));
+    expect(res.status).toBe(200);
+    expect(res.body).toMatchObject({
+      id: worker.workerId,
+      userId: worker.userId,
+      status: 'approved',
+      productsCount: 1,
+      telegramUsername: 'tafsilot_usta',
+      reviewedByName: 'Admin',
+    });
+    expect(res.body.reviewedAt).toBeTruthy();
+    const missing = await request(t.app)
+      .get('/api/admin/workers/00000000-0000-4000-8000-000000000000')
+      .set(bearer(admin));
+    expect(missing.status).toBe(404);
+    expect(
+      (await request(t.app).get(`/api/admin/workers/${worker.workerId}`).set(bearer(customer)))
+        .status,
+    ).toBe(403);
+  });
+});

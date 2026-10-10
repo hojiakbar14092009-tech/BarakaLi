@@ -5,6 +5,7 @@ import type { Database } from '../../db/schema.js';
 export type AuditAction =
   | 'worker.approve'
   | 'worker.reject'
+  | 'worker.suspend'
   | 'review.hide'
   | 'review.show'
   | 'complaint.resolve'

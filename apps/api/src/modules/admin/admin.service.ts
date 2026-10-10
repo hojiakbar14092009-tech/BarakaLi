@@ -19,11 +19,16 @@ import {
 import type { AppContext } from '../../context.js';
 import { AppError } from '../../errors.js';
 import { refundPaidOrder } from '../payments/payment.service.js';
+import { escapeLike } from '../products/product.repository.js';
 import { nextRating } from '../feedback/feedback.service.js';
 import { writeAudit } from './audit.js';
 
 const RATING_DECIMALS = 100;
 const FEATURED_CACHE_KEY = 'workers:featured';
+
+type AdminWorkerRow = Awaited<
+  ReturnType<ReturnType<AdminService['workerQuery']>['execute']>
+>[number];
 const HOUR_MS = 3_600_000;
 
 /** Midnight of the current Tashkent day (fixed UTC+5, no DST) as a UTC instant. */
@@ -110,52 +115,93 @@ export class AdminService {
     };
   }
 
-  async listWorkers(query: AdminListQuery): Promise<Page<AdminWorkerDto>> {
-    const offset = (query.page - 1) * ADMIN_PAGE_SIZE;
-    const base = this.ctx.db
+  private workerQuery() {
+    return this.ctx.db
       .selectFrom('workers as w')
       .innerJoin('users as u', 'u.id', 'w.user_id')
-      .innerJoin('categories as c', 'c.id', 'w.category_id');
+      .innerJoin('categories as c', 'c.id', 'w.category_id')
+      .leftJoin('users as rb', 'rb.id', 'w.reviewed_by')
+      .select([
+        'w.id',
+        'w.user_id',
+        'w.display_name',
+        'u.phone',
+        'w.telegram_username',
+        'w.bio',
+        'c.slug as category_slug',
+        'w.status',
+        'w.reject_reason',
+        'w.reviewed_at',
+        'rb.name as reviewed_by_name',
+        'w.rating',
+        'w.reviews_count',
+        'w.created_at',
+        sql<number>`(select count(*) from products p where p.worker_id = w.id)`.as(
+          'products_count',
+        ),
+      ]);
+  }
+
+  private toAdminWorker(row: AdminWorkerRow): AdminWorkerDto {
+    return {
+      id: row.id,
+      userId: row.user_id,
+      displayName: row.display_name,
+      phone: row.phone,
+      telegramUsername: row.telegram_username,
+      bio: row.bio,
+      categorySlug: row.category_slug,
+      status: row.status,
+      rejectReason: row.reject_reason,
+      reviewedAt: row.reviewed_at ? row.reviewed_at.toISOString() : null,
+      reviewedByName: row.reviewed_by_name,
+      productsCount: Number(row.products_count),
+      rating: row.rating,
+      reviewsCount: row.reviews_count,
+      createdAt: row.created_at.toISOString(),
+    } satisfies AdminWorkerDto;
+  }
+
+  /**
+   * Search matches the display name or the end of the phone number (an administrator reads the
+   * last four digits off a call); the full number is never needed, so it is never typed.
+   */
+  async listWorkers(query: AdminListQuery): Promise<Page<AdminWorkerDto>> {
+    const offset = (query.page - 1) * ADMIN_PAGE_SIZE;
     const status = WORKER_STATUSES.find((value) => value === query.status);
-    const filtered = status ? base.where('w.status', '=', status) : base;
+    let filtered = status ? this.workerQuery().where('w.status', '=', status) : this.workerQuery();
+    const q = query.q?.trim();
+    if (q) {
+      const digits = q.replace(/\D/g, '');
+      filtered = filtered.where((eb) =>
+        eb.or([
+          eb('w.display_name', 'ilike', `%${escapeLike(q)}%`),
+          ...(digits ? [eb('u.phone', 'like', `%${digits}`)] : []),
+        ]),
+      );
+    }
+    const ordered =
+      status === 'pending'
+        ? filtered.orderBy('w.created_at', 'asc')
+        : filtered.orderBy(sql`(w.status = 'pending')`, 'desc').orderBy('w.created_at', 'desc');
     const [rows, total] = await Promise.all([
+      ordered.limit(ADMIN_PAGE_SIZE).offset(offset).execute(),
       filtered
-        .select([
-          'w.id',
-          'w.display_name',
-          'u.phone',
-          'c.slug as category_slug',
-          'w.status',
-          'w.reject_reason',
-          'w.reviewed_at',
-          'w.rating',
-          'w.reviews_count',
-          'w.created_at',
-        ])
-        // Applications waiting for a decision come first, oldest first.
-        .orderBy(sql`(w.status = 'pending')`, 'desc')
-        .orderBy('w.created_at', 'desc')
-        .limit(ADMIN_PAGE_SIZE)
-        .offset(offset)
-        .execute(),
-      filtered.select((eb) => eb.fn.countAll().as('n')).executeTakeFirstOrThrow(),
+        .clearSelect()
+        .select((eb) => eb.fn.countAll().as('n'))
+        .executeTakeFirstOrThrow(),
     ]);
     return paged(
-      rows.map((row) => ({
-        id: row.id,
-        displayName: row.display_name,
-        phone: row.phone,
-        categorySlug: row.category_slug,
-        status: row.status,
-        rejectReason: row.reject_reason,
-        reviewedAt: row.reviewed_at ? row.reviewed_at.toISOString() : null,
-        rating: row.rating,
-        reviewsCount: row.reviews_count,
-        createdAt: row.created_at.toISOString(),
-      })),
+      rows.map((row) => this.toAdminWorker(row)),
       Number(total.n),
       query.page,
     );
+  }
+
+  async getWorker(workerId: string): Promise<AdminWorkerDto> {
+    const row = await this.workerQuery().where('w.id', '=', workerId).executeTakeFirst();
+    if (!row) throw AppError.notFound();
+    return this.toAdminWorker(row);
   }
 
   /**
@@ -165,8 +211,18 @@ export class AdminService {
   private async decide(
     adminId: string,
     workerId: string,
-    decision: { status: 'approved' | 'rejected'; reason: string | null },
+    decision: { status: 'approved' | 'rejected' | 'suspended'; reason: string | null },
   ): Promise<void> {
+    const kinds = {
+      approved: 'worker_approved',
+      rejected: 'worker_rejected',
+      suspended: 'worker_suspended',
+    } as const;
+    const actions = {
+      approved: 'worker.approve',
+      rejected: 'worker.reject',
+      suspended: 'worker.suspend',
+    } as const;
     await this.ctx.db.transaction().execute(async (trx) => {
       const worker = await trx
         .updateTable('workers')
@@ -184,13 +240,13 @@ export class AdminService {
         .insertInto('notifications')
         .values({
           user_id: worker.user_id,
-          kind: decision.status === 'approved' ? 'worker_approved' : 'worker_rejected',
+          kind: kinds[decision.status],
           detail: decision.reason,
         })
         .execute();
       await writeAudit(trx, {
         adminId,
-        action: decision.status === 'approved' ? 'worker.approve' : 'worker.reject',
+        action: actions[decision.status],
         targetType: 'worker',
         targetId: workerId,
         details: { status: decision.status, reason: decision.reason },
@@ -199,12 +255,25 @@ export class AdminService {
     this.ctx.cache.delete(FEATURED_CACHE_KEY);
   }
 
+  /** Also reinstates a rejected or suspended worker. */
   approveWorker(adminId: string, workerId: string): Promise<void> {
     return this.decide(adminId, workerId, { status: 'approved', reason: null });
   }
 
   rejectWorker(adminId: string, workerId: string, reason: string): Promise<void> {
     return this.decide(adminId, workerId, { status: 'rejected', reason });
+  }
+
+  /** Only an approved worker can be suspended; orders already placed keep running. */
+  async suspendWorker(adminId: string, workerId: string, reason: string): Promise<void> {
+    const current = await this.ctx.db
+      .selectFrom('workers')
+      .select('status')
+      .where('id', '=', workerId)
+      .executeTakeFirst();
+    if (!current) throw AppError.notFound();
+    if (current.status !== 'approved') throw AppError.conflict('WORKER_NOT_APPROVED');
+    await this.decide(adminId, workerId, { status: 'suspended', reason });
   }
 
   async listOrders(query: AdminListQuery): Promise<Page<AdminOrderDto>> {
