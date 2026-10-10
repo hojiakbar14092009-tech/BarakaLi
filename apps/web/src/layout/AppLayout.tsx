@@ -1,4 +1,4 @@
-import { LogIn, ShoppingBasket, UtensilsCrossed } from 'lucide-react';
+import { ShoppingBasket, UtensilsCrossed } from 'lucide-react';
 import { Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, NavLink, Outlet } from 'react-router-dom';
@@ -35,33 +35,25 @@ function Header() {
   return (
     <header className="sticky top-0 z-30 border-b border-bisque bg-sugar/95 pt-[env(safe-area-inset-top)] backdrop-blur">
       <div className="mx-auto flex min-h-16 max-w-6xl items-center justify-between gap-2 px-4 lg:max-w-7xl 2xl:max-w-[96rem]">
-        <Link
-          to="/"
-          className="inline-flex min-h-12 items-center text-xl sm:text-2xl"
-          aria-label="BarakaLi"
-        >
+        <Link to="/" className="inline-flex min-h-12 items-center text-2xl" aria-label="BarakaLi">
           <Logo />
         </Link>
-        <div className="flex items-center gap-0.5 sm:gap-1">
+        <div className="flex items-center gap-1">
+          {/* Catering is a desktop-only page (see docs/DECISIONS.md). */}
           <NavLink
             to="/catering"
-            aria-label={t('header.catering')}
             className={({ isActive }) =>
-              `inline-flex min-h-12 min-w-12 items-center justify-center gap-2 rounded-field font-semibold hover:bg-bisque/60 sm:px-3 ${isActive ? 'bg-bisque/60 text-espresso' : 'text-mocha'}`
+              `hidden min-h-12 items-center gap-2 rounded-field px-3 font-semibold hover:bg-bisque/60 lg:inline-flex ${isActive ? 'bg-bisque/60 text-espresso' : 'text-mocha'}`
             }
           >
-            <UtensilsCrossed className="size-6 sm:size-5" strokeWidth={1.5} aria-hidden="true" />
-            <span className="hidden sm:inline">{t('header.catering')}</span>
+            <UtensilsCrossed className="size-5" strokeWidth={1.5} aria-hidden="true" />
+            {t('header.catering')}
           </NavLink>
           <LanguageSwitch />
           <CartLink />
           {status === 'ready' && !user && (
-            <Link
-              to="/kirish"
-              className={buttonClasses('primary', 'md', 'min-w-12 px-0! min-[400px]:px-3!')}
-            >
-              <LogIn className="size-6 min-[400px]:hidden" strokeWidth={1.5} aria-hidden="true" />
-              <span className="sr-only min-[400px]:not-sr-only">{t('header.signIn')}</span>
+            <Link to="/kirish" className={buttonClasses('primary', 'md', 'px-3!')}>
+              {t('header.signIn')}
             </Link>
           )}
         </div>

@@ -1,6 +1,15 @@
 import { expect, test, type Page } from '@playwright/test';
-import { VIEWPORTS, hasHorizontalScroll, smallTouchTargets } from './helpers';
+import { hasHorizontalScroll, smallTouchTargets } from './helpers';
 import { translator, type Language } from './i18n';
+
+const DESKTOPS = [
+  { width: 1280, height: 800 },
+  { width: 1536, height: 864 },
+] as const;
+const SMALL_SCREENS = [
+  { name: 'phone', width: 360, height: 780 },
+  { name: 'tablet', width: 768, height: 1024 },
+] as const;
 
 async function useLanguage(page: Page, language: Language): Promise<void> {
   await page.addInitScript((lang) => {
@@ -19,11 +28,11 @@ async function heroTitleLines(page: Page): Promise<number> {
 for (const language of ['uz', 'ru'] as const) {
   const t = translator(language);
 
-  for (const viewport of VIEWPORTS) {
-    test.describe(`catering hero, ${language}, ${viewport.width}px`, () => {
-      test.use({ viewport: { width: viewport.width, height: viewport.height } });
+  for (const viewport of DESKTOPS) {
+    test.describe(`catering on desktop, ${language}, ${viewport.width}px`, () => {
+      test.use({ viewport });
 
-      test('is the first section, fits in three lines, and keeps the page within the screen', async ({
+      test('opens first, fits in three lines and keeps the page within the screen', async ({
         page,
       }) => {
         await useLanguage(page, language);
@@ -33,10 +42,9 @@ for (const language of ['uz', 'ru'] as const) {
         await expect(title).toBeInViewport();
         expect(await heroTitleLines(page)).toBeLessThanOrEqual(3);
 
-        const catalog = page.locator('#katalog');
         const [titleTop, catalogTop] = await Promise.all([
           title.evaluate((el) => el.getBoundingClientRect().top),
-          catalog.evaluate((el) => el.getBoundingClientRect().top),
+          page.locator('#katalog').evaluate((el) => el.getBoundingClientRect().top),
         ]);
         expect(titleTop).toBeLessThan(catalogTop);
 
@@ -51,9 +59,37 @@ for (const language of ['uz', 'ru'] as const) {
   }
 }
 
-test.describe('catering hero actions', () => {
+for (const screen of SMALL_SCREENS) {
+  test.describe(`catering is desktop-only (${screen.name} ${screen.width}px)`, () => {
+    const t = translator('uz');
+    test.use({ viewport: { width: screen.width, height: screen.height } });
+
+    test('home opens on the marketplace and /catering goes back to it', async ({ page }) => {
+      const cateringRequests: string[] = [];
+      page.on('request', (req) => {
+        if (/CateringLanding|\/catering\/.+\.webp/.test(req.url())) {
+          cateringRequests.push(req.url());
+        }
+      });
+      await page.goto('/');
+      await page.waitForLoadState('networkidle');
+      await expect(page.getByRole('heading', { level: 1 })).toHaveCount(0);
+      await expect(
+        page.getByRole('link', { name: t('header.catering'), exact: true }),
+      ).toBeHidden();
+      await expect(page.locator('#katalog')).toBeVisible();
+      expect(cateringRequests, 'catering code or images loaded on a small screen').toEqual([]);
+
+      await page.goto('/catering');
+      await expect(page).toHaveURL(/\/$/);
+      expect(await hasHorizontalScroll(page)).toBe(false);
+    });
+  });
+}
+
+test.describe('catering actions on desktop', () => {
   const t = translator('uz');
-  test.use({ viewport: { width: 360, height: 780 } });
+  test.use({ viewport: { width: 1280, height: 800 } });
 
   test('"Katalogga o\'tish" scrolls to the catalog without leaving the page', async ({ page }) => {
     await page.goto('/');
@@ -72,11 +108,6 @@ test.describe('catering hero actions', () => {
     await expect(page).toHaveURL(/\/#katalog$/);
     await expect(page.locator('#katalog')).toBeInViewport();
   });
-});
-
-test.describe('why BarakaLi', () => {
-  const t = translator('uz');
-  test.use({ viewport: { width: 360, height: 780 } });
 
   test('switches between the customer and worker tabs with the keyboard', async ({ page }) => {
     await page.goto('/');

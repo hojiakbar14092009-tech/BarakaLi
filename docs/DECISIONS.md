@@ -237,3 +237,14 @@ Brifdagi noaniqliklar bo'yicha qabul qilingan qarorlar. Yangi qaror oxiriga qo's
   shuning uchun hunarmand `counterpart.telegramUsername` doim `null` koʻradi.
 - Buyurtma sahifasida: telefon `tel:` havolasi (avvalgidek), handle boʻlsa yonida "Telegramda
   yozish" tugmasi `https://t.me/<username>` ga ochiladi; boʻlmasa tugma koʻrinmaydi.
+
+## Catering sahifasi faqat kompyuterda (2026-10-10)
+
+- Foydalanuvchi qarori: catering boʻlimi faqat noutbuk va kompyuterda (`min-width: 1024px`, Tailwind
+  `lg`) koʻrsatiladi. Bu `CLAUDE.md` 7-boʻlimdagi "hech bir funksiya faqat kompyuterda emas" qoidasidan
+  ongli istisno.
+- Telefon va planshetda bosh sahifa avvalgidek katalog bilan ochiladi, sarlavhadagi "Catering"
+  havolasi yashirin, `/catering` esa `/` ga yoʻnaltiriladi.
+- Catering kodi va rasmlari alohida chunk (`CateringLanding`) sifatida faqat kompyuterda yuklanadi
+  (`useIsDesktop`, `matchMedia`), shuning uchun mobil foydalanuvchi ularni yuklab olmaydi.
+- Catering soʻrovi API'si (`POST /api/catering-requests`) qurilmaga bogʻliq emas; cheklov faqat UI'da.

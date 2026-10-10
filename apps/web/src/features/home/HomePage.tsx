@@ -1,21 +1,30 @@
+import { lazy, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { buttonClasses } from '../../components/Button';
-import { CateringLanding } from '../catering/CateringLanding';
 import { CATALOG_SECTION_ID, useHashScroll } from '../catering/sectionScroll';
 import { CategoryGrid } from './CategoryGrid';
 import { FeaturedWorkers } from './FeaturedWorkers';
 import { HowItWorks } from './HowItWorks';
 import { Lessons } from './Lessons';
 import { SearchBar } from './SearchBar';
+import { useIsDesktop } from '../../lib/useIsDesktop';
+
+// Desktop only, and a separate chunk so phones and tablets never download it.
+const CateringLanding = lazy(() => import('../catering/CateringLanding'));
 
 /** Part of the main bundle on purpose: it is the first screen, so no extra chunk round trip. */
 export function HomePage() {
   const { t } = useTranslation();
+  const isDesktop = useIsDesktop();
   useHashScroll();
   return (
-    <div className="flex flex-col gap-16 lg:gap-28">
-      <CateringLanding />
+    <div className="flex flex-col gap-28">
+      {isDesktop && (
+        <Suspense fallback={<div className="min-h-[40rem]" />}>
+          <CateringLanding />
+        </Suspense>
+      )}
       <section
         id={CATALOG_SECTION_ID}
         aria-label={t('home.catalogLabel')}

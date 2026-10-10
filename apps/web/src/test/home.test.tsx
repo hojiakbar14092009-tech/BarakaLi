@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import '../i18n';
 import { Logo } from '../components/Logo';
 import { HomePage } from '../features/home/HomePage';
@@ -13,10 +13,20 @@ vi.mock('framer-motion', async (importOriginal) => ({
   LazyMotion: ({ children }: { children: React.ReactNode }) => children,
 }));
 
-vi.stubGlobal(
-  'fetch',
-  vi.fn(() => Promise.resolve(new Response(JSON.stringify([]), { status: 200 }))),
-);
+const fetchStub = vi.fn(() => Promise.resolve(new Response(JSON.stringify([]), { status: 200 })));
+vi.stubGlobal('fetch', fetchStub);
+
+/** Pretends the viewport is a laptop: the desktop media query (and only it) matches. */
+function useDesktop() {
+  vi.stubGlobal('matchMedia', (query: string) => ({
+    matches: query.includes('min-width: 1024px'),
+    media: query,
+    addEventListener: () => undefined,
+    removeEventListener: () => undefined,
+    addListener: () => undefined,
+    removeListener: () => undefined,
+  }));
+}
 
 function renderHome() {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -30,15 +40,28 @@ function renderHome() {
 }
 
 describe('home page', () => {
-  it('opens on the catering hero, before the marketplace', () => {
+  afterEach(() => {
+    cleanup();
+    vi.unstubAllGlobals();
+    vi.stubGlobal('fetch', fetchStub);
+  });
+
+  it('opens on the marketplace without catering on phones and tablets', () => {
     renderHome();
-    const hero = screen.getByRole('heading', { level: 1 });
+    expect(screen.queryByRole('heading', { level: 1 })).not.toBeInTheDocument();
+    expect(screen.getByRole('region', { name: 'Katalog' })).toHaveAttribute('id', 'katalog');
+    expect(screen.queryByRole('link', { name: 'Catering soʻrovi' })).not.toBeInTheDocument();
+  });
+
+  it('opens on the catering hero, before the marketplace, on desktop', async () => {
+    useDesktop();
+    renderHome();
+    const hero = await screen.findByRole('heading', { level: 1 });
     expect(hero).toHaveTextContent(
       'Uyda tayyorlangan catering, qoʻl mehnati va dizayn, bitta joyda',
     );
     const catalog = screen.getByRole('region', { name: 'Katalog' });
     expect(hero.compareDocumentPosition(catalog) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    expect(catalog).toHaveAttribute('id', 'katalog');
     expect(screen.getByRole('link', { name: /Katalogga oʻtish/ })).toHaveAttribute(
       'href',
       '/#katalog',
@@ -49,11 +72,12 @@ describe('home page', () => {
     );
   });
 
-  it('scrolls to the catalog in place instead of navigating', () => {
+  it('scrolls to the catalog in place instead of navigating', async () => {
+    useDesktop();
     const scrollIntoView = vi.fn();
     Element.prototype.scrollIntoView = scrollIntoView;
     renderHome();
-    fireEvent.click(screen.getByRole('link', { name: /Katalogga oʻtish/ }));
+    fireEvent.click(await screen.findByRole('link', { name: /Katalogga oʻtish/ }));
     expect(scrollIntoView).toHaveBeenCalledWith({ behavior: 'smooth', block: 'start' });
   });
 
