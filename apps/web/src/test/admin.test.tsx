@@ -76,10 +76,17 @@ describe('admin route guard', () => {
     expect(screen.getByText('Kirish sahifasi')).toBeInTheDocument();
   });
 
-  it('keeps customers out and lets admins in', () => {
+  it('shows customers a 403 page with a way home and lets admins in', async () => {
     useAuthStore.setState({ user: user('customer') });
     const first = renderApp(guarded, '/admin');
-    expect(screen.getByText('Bosh sahifa')).toBeInTheDocument();
+    expect(
+      await screen.findByRole('heading', { name: 'Bu sahifaga kirish mumkin emas' }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Bosh sahifaga qaytish' })).toHaveAttribute(
+      'href',
+      '/',
+    );
+    expect(screen.queryByText('Panel')).not.toBeInTheDocument();
     first.unmount();
 
     useAuthStore.setState({ user: user('admin') });

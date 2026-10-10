@@ -43,5 +43,7 @@
   "COMPLAINT_NOT_OPEN": "Bu shikoyat allaqachon koʻrib chiqilgan.",
   "ORDER_WORKER_MISMATCH": "Savatdagi mahsulot egasi mos kelmadi. Savatni yangilab, qayta urinib koʻring.",
   "WORKER_NOT_APPROVED": "Profilingiz hali tasdiqlanmagan, shuning uchun buyurtmani qabul qila olmaysiz.",
-  "INVALID_TELEGRAM_USERNAME": "Telegram foydalanuvchi nomi notoʻgʻri: 5–32 belgi, faqat harf, raqam va pastki chiziq (_)."
+  "INVALID_TELEGRAM_USERNAME": "Telegram foydalanuvchi nomi notoʻgʻri: 5–32 belgi, faqat harf, raqam va pastki chiziq (_).",
+  "CANNOT_ACT_ON_SELF": "Bu amalni oʻzingizga nisbatan bajarib boʻlmaydi.",
+  "LAST_ADMIN": "Yagona administratorni olib tashlab boʻlmaydi."
 }

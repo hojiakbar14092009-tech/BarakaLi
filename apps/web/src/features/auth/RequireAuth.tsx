@@ -1,5 +1,8 @@
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
+import { lazy } from 'react';
 import { LoadingState } from '../../components/StateViews';
+
+const ForbiddenPage = lazy(() => import('../../pages/ForbiddenPage'));
 import { useAuthStore } from '../../stores/auth';
 
 interface RequireAuthProps {
@@ -20,6 +23,6 @@ export function RequireAuth({ role }: RequireAuthProps) {
   if (role === 'worker' && !user.workerId) {
     return <Navigate to="/royxatdan-otish?rol=hunarmand" replace />;
   }
-  if (role === 'admin' && user.role !== 'admin') return <Navigate to="/" replace />;
+  if (role === 'admin' && user.role !== 'admin') return <ForbiddenPage />;
   return <Outlet />;
 }

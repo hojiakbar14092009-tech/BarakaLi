@@ -119,16 +119,28 @@ export class AuthService {
     if (!(await this.repo.consumeCode(stored.id))) throw new AppError('INVALID_CODE', 400);
   }
 
+  /**
+   * ADMIN_PHONES is the only source of the admin role: a listed number is promoted on every
+   * sign-in, a number that left the list is demoted back to its ordinary role, and an empty list
+   * means nobody is an administrator.
+   */
   private async findOrCreateUser(input: VerifyCodeInput): Promise<UserDto> {
-    const isAdminPhone = this.ctx.config.adminPhones.includes(input.phone);
+    const { adminPhones, adminName } = this.ctx.config;
+    const isAdminPhone = adminPhones.includes(input.phone);
     const existing = await this.repo.findUserByPhone(input.phone);
     if (existing) {
-      if (isAdminPhone && existing.role !== 'admin') await this.repo.setRole(existing.id, 'admin');
+      if (isAdminPhone && existing.role !== 'admin') {
+        await this.repo.setRole(existing.id, 'admin');
+        if (!existing.name) await this.repo.updateProfile(existing.id, adminName);
+      }
+      if (!isAdminPhone && existing.role === 'admin') {
+        await this.repo.setRole(existing.id, existing.workerId ? 'worker' : 'customer');
+      }
       return this.getUser(existing.id);
     }
     const id = await this.repo.createUser(
       input.phone,
-      input.name ?? null,
+      input.name ?? (isAdminPhone ? adminName : null),
       isAdminPhone ? 'admin' : 'customer',
     );
     return this.getUser(id);

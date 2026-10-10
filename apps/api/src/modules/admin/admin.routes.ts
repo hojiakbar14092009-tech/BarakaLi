@@ -11,6 +11,7 @@ import { AppError } from '../../errors.js';
 import { createAuthMiddleware } from '../../middleware/auth.js';
 import { MaterialService } from '../materials/material.service.js';
 import { AdminService } from './admin.service.js';
+import { listAudit, writeAudit } from './audit.js';
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -28,6 +29,11 @@ export function createAdminRouter(ctx: AppContext): Router {
   const { requireAdmin } = createAuthMiddleware(ctx);
 
   router.use('/admin', requireAdmin);
+  const adminId = (req: Request) => req.auth?.userId ?? '';
+
+  router.get('/admin/audit', async (req, res) => {
+    res.json(await listAudit(ctx.db, adminListQuerySchema.parse(req.query).page));
+  });
 
   router.get('/admin/stats', async (_req, res) => {
     res.json(await admin.stats());
@@ -53,7 +59,7 @@ export function createAdminRouter(ctx: AppContext): Router {
   });
 
   router.post('/admin/orders/:id/refund', async (req, res) => {
-    await admin.refundOrder(idParam(req));
+    await admin.refundOrder(adminId(req), idParam(req));
     res.status(204).end();
   });
 
@@ -63,7 +69,7 @@ export function createAdminRouter(ctx: AppContext): Router {
 
   router.patch('/admin/reviews/:id', async (req, res) => {
     const { status } = reviewModerationSchema.parse(req.body);
-    await admin.setReviewStatus(idParam(req), status);
+    await admin.setReviewStatus(adminId(req), idParam(req), status);
     res.status(204).end();
   });
 
@@ -73,7 +79,7 @@ export function createAdminRouter(ctx: AppContext): Router {
 
   router.patch('/admin/complaints/:id', async (req, res) => {
     const { status } = complaintResolutionSchema.parse(req.body);
-    await admin.resolveComplaint(idParam(req), status);
+    await admin.resolveComplaint(adminId(req), idParam(req), status);
     res.status(204).end();
   });
 
@@ -82,11 +88,27 @@ export function createAdminRouter(ctx: AppContext): Router {
   });
 
   router.post('/admin/materials', async (req, res) => {
-    res.status(201).json(await materials.create(materialInputSchema.parse(req.body)));
+    const created = await materials.create(materialInputSchema.parse(req.body));
+    await writeAudit(ctx.db, {
+      adminId: adminId(req),
+      action: 'material.create',
+      targetType: 'material',
+      targetId: created.id,
+      details: { name: created.name },
+    });
+    res.status(201).json(created);
   });
 
   router.put('/admin/materials/:id', async (req, res) => {
-    res.json(await materials.update(idParam(req), materialInputSchema.parse(req.body)));
+    const updated = await materials.update(idParam(req), materialInputSchema.parse(req.body));
+    await writeAudit(ctx.db, {
+      adminId: adminId(req),
+      action: 'material.update',
+      targetType: 'material',
+      targetId: updated.id,
+      details: { name: updated.name, isActive: updated.isActive },
+    });
+    res.json(updated);
   });
 
   router.get('/admin/material-orders', async (_req, res) => {
@@ -95,6 +117,12 @@ export function createAdminRouter(ctx: AppContext): Router {
 
   router.post('/admin/material-orders/:id/deliver', async (req, res) => {
     await materials.markDelivered(idParam(req));
+    await writeAudit(ctx.db, {
+      adminId: adminId(req),
+      action: 'material_order.deliver',
+      targetType: 'material_order',
+      targetId: idParam(req),
+    });
     res.status(204).end();
   });
 

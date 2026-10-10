@@ -19,6 +19,7 @@ import type { AppContext } from '../../context.js';
 import { AppError } from '../../errors.js';
 import { refundPaidOrder } from '../payments/payment.service.js';
 import { nextRating } from '../feedback/feedback.service.js';
+import { writeAudit } from './audit.js';
 
 const RATING_DECIMALS = 100;
 const FEATURED_CACHE_KEY = 'workers:featured';
@@ -171,6 +172,13 @@ export class AdminService {
           detail: decision.reason,
         })
         .execute();
+      await writeAudit(trx, {
+        adminId,
+        action: decision.status === 'approved' ? 'worker.approve' : 'worker.reject',
+        targetType: 'worker',
+        targetId: workerId,
+        details: { status: decision.status, reason: decision.reason },
+      });
     });
     this.ctx.cache.delete(FEATURED_CACHE_KEY);
   }
@@ -276,7 +284,7 @@ export class AdminService {
    * Hides or restores a review and moves the worker's rating in the same transaction. A review that
    * is already in the requested state changes nothing, so a repeated click cannot drift the rating.
    */
-  async setReviewStatus(reviewId: string, status: ReviewStatus): Promise<void> {
+  async setReviewStatus(adminId: string, reviewId: string, status: ReviewStatus): Promise<void> {
     await this.ctx.db.transaction().execute(async (trx) => {
       const review = await trx
         .selectFrom('reviews')
@@ -304,6 +312,13 @@ export class AdminService {
         .where('id', '=', review.worker_id)
         .execute();
       await trx.updateTable('reviews').set({ status }).where('id', '=', reviewId).execute();
+      await writeAudit(trx, {
+        adminId,
+        action: hiding ? 'review.hide' : 'review.show',
+        targetType: 'review',
+        targetId: reviewId,
+        details: { status },
+      });
     });
     this.ctx.cache.delete(FEATURED_CACHE_KEY);
   }
@@ -356,14 +371,29 @@ export class AdminService {
     );
   }
 
-  async resolveComplaint(id: string, status: 'resolved' | 'dismissed'): Promise<void> {
-    const result = await this.ctx.db
-      .updateTable('complaints')
-      .set({ status })
-      .where('id', '=', id)
-      .where('status', '=', 'open')
-      .executeTakeFirst();
-    if (Number(result.numUpdatedRows) === 1) return;
+  async resolveComplaint(
+    adminId: string,
+    id: string,
+    status: 'resolved' | 'dismissed',
+  ): Promise<void> {
+    const updated = await this.ctx.db.transaction().execute(async (trx) => {
+      const result = await trx
+        .updateTable('complaints')
+        .set({ status })
+        .where('id', '=', id)
+        .where('status', '=', 'open')
+        .executeTakeFirst();
+      if (Number(result.numUpdatedRows) !== 1) return false;
+      await writeAudit(trx, {
+        adminId,
+        action: status === 'resolved' ? 'complaint.resolve' : 'complaint.dismiss',
+        targetType: 'complaint',
+        targetId: id,
+        details: { status },
+      });
+      return true;
+    });
+    if (updated) return;
     const exists = await this.ctx.db
       .selectFrom('complaints')
       .select('id')
@@ -373,7 +403,7 @@ export class AdminService {
   }
 
   /** Manual refund after a complaint: money back through the provider, stock restored, order closed. */
-  async refundOrder(orderId: string): Promise<void> {
+  async refundOrder(adminId: string, orderId: string): Promise<void> {
     await this.ctx.db.transaction().execute(async (trx) => {
       const order = await trx
         .selectFrom('orders')
@@ -398,6 +428,13 @@ export class AdminService {
         .set({ status: 'refunded', updated_at: this.now() })
         .where('id', '=', orderId)
         .execute();
+      await writeAudit(trx, {
+        adminId,
+        action: 'order.refund',
+        targetType: 'order',
+        targetId: orderId,
+        details: { from: order.status, to: 'refunded' },
+      });
     });
   }
 }

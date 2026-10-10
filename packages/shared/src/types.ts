@@ -241,6 +241,16 @@ export interface PublicReviewDto {
   createdAt: string;
 }
 
+export interface AdminAuditEntryDto {
+  id: string;
+  action: string;
+  targetType: string;
+  targetId: string | null;
+  details: Record<string, unknown>;
+  adminName: string | null;
+  createdAt: string;
+}
+
 export interface AdminStatsDto {
   users: number;
   workers: number;

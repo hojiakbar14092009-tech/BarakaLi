@@ -66688,7 +66688,7 @@ var migrations_default = [{ "name": "1760000000000_core.sql", "up": "CREATE EXTE
 -- chosen for new workers or products.
 ALTER TABLE categories ADD COLUMN is_active boolean NOT NULL DEFAULT true;
 
-UPDATE categories SET is_active = false WHERE slug = 'masofaviy-ishlar';` }, { "name": "1760001000000_catering_requests.sql", "up": "-- Catering enquiries from the landing page. Not an order: no price, no payment; the team calls back.\n-- service_type_id mirrors CATERING_SERVICE_IDS in packages/shared.\nCREATE TABLE catering_requests (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  name text NOT NULL,\n  phone text NOT NULL,\n  service_type_id text NOT NULL\n    CHECK (service_type_id IN ('tikuvchilik', 'pishiriq', 'qolmehnat', 'dizayn', 'boshqa')),\n  event_date date NOT NULL,\n  guests_count integer NOT NULL CHECK (guests_count >= 1),\n  note text NOT NULL DEFAULT '',\n  status text NOT NULL DEFAULT 'new' CHECK (status IN ('new', 'contacted', 'closed')),\n  created_at timestamptz NOT NULL DEFAULT now()\n);\n\nCREATE INDEX catering_requests_status_created_idx ON catering_requests (status, created_at DESC);" }, { "name": "1760001100000_drop_catering_requests.sql", "up": "-- The catering section was removed. The table is dropped only when it holds no rows; if enquiries\n-- exist they are left untouched for the team to export first (nothing in the app reads them).\nDO $$\nBEGIN\n  IF to_regclass('public.catering_requests') IS NOT NULL THEN\n    IF (SELECT count(*) FROM catering_requests) = 0 THEN\n      DROP TABLE catering_requests;\n    ELSE\n      RAISE NOTICE 'catering_requests has rows; table kept';\n    END IF;\n  END IF;\nEND\n$$;" }];
+UPDATE categories SET is_active = false WHERE slug = 'masofaviy-ishlar';` }, { "name": "1760001000000_catering_requests.sql", "up": "-- Catering enquiries from the landing page. Not an order: no price, no payment; the team calls back.\n-- service_type_id mirrors CATERING_SERVICE_IDS in packages/shared.\nCREATE TABLE catering_requests (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  name text NOT NULL,\n  phone text NOT NULL,\n  service_type_id text NOT NULL\n    CHECK (service_type_id IN ('tikuvchilik', 'pishiriq', 'qolmehnat', 'dizayn', 'boshqa')),\n  event_date date NOT NULL,\n  guests_count integer NOT NULL CHECK (guests_count >= 1),\n  note text NOT NULL DEFAULT '',\n  status text NOT NULL DEFAULT 'new' CHECK (status IN ('new', 'contacted', 'closed')),\n  created_at timestamptz NOT NULL DEFAULT now()\n);\n\nCREATE INDEX catering_requests_status_created_idx ON catering_requests (status, created_at DESC);" }, { "name": "1760001100000_drop_catering_requests.sql", "up": "-- The catering section was removed. The table is dropped only when it holds no rows; if enquiries\n-- exist they are left untouched for the team to export first (nothing in the app reads them).\nDO $$\nBEGIN\n  IF to_regclass('public.catering_requests') IS NOT NULL THEN\n    IF (SELECT count(*) FROM catering_requests) = 0 THEN\n      DROP TABLE catering_requests;\n    ELSE\n      RAISE NOTICE 'catering_requests has rows; table kept';\n    END IF;\n  END IF;\nEND\n$$;" }, { "name": "1760001200000_audit_log.sql", "up": "-- Every administrator action, who did it and to what. `details` holds only ids, statuses and\n-- reasons: never a phone number, a code or a token.\nCREATE TABLE audit_log (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  admin_user_id uuid NOT NULL REFERENCES users (id),\n  action text NOT NULL,\n  target_type text NOT NULL,\n  target_id uuid,\n  details jsonb NOT NULL DEFAULT '{}'::jsonb,\n  created_at timestamptz NOT NULL DEFAULT now()\n);\n\nCREATE INDEX audit_log_created_idx ON audit_log (created_at DESC);\nCREATE INDEX audit_log_target_idx ON audit_log (target_type, target_id);" }];
 
 // src/app.ts
 var import_cookie_parser = __toESM(require_cookie_parser(), 1);
@@ -71303,6 +71303,293 @@ var coerce = {
 };
 var NEVER = INVALID;
 
+// ../../packages/shared/src/constants.ts
+var COMMISSION_RATE_PERCENT = 2;
+var COMMISSION_RATE = COMMISSION_RATE_PERCENT / 100;
+var MAX_ORDER_IMAGES = 5;
+var MAX_PRODUCT_IMAGES = 8;
+var MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+var ALLOWED_IMAGE_MIME_TYPES = ["image/jpeg", "image/png", "image/webp"];
+var MAX_MODEL_BYTES = 10 * 1024 * 1024;
+var MAX_MODEL_TEXTURE_SIZE = 2048;
+var MAX_MODEL_TRIANGLES = 2e5;
+var ALLOWED_MODEL_EXTENSIONS = [
+  "KHR_materials_",
+  "KHR_texture_transform",
+  "KHR_draco_mesh_compression",
+  "EXT_meshopt_compression"
+];
+var MODEL_MIME_TYPE = "model/gltf-binary";
+var USER_ROLES = ["customer", "worker", "admin"];
+var WORKER_STATUSES = ["pending", "approved", "rejected"];
+var MIN_REJECT_REASON_LENGTH = 10;
+var MAX_REJECT_REASON_LENGTH = 500;
+var PRODUCT_STATUSES = ["draft", "published", "hidden"];
+var FULFILLMENT_TYPES = ["pickup", "delivery"];
+var ALL_CATEGORIES_SLUG = "barchasi";
+var DEFAULT_PAGE_SIZE = 12;
+var MAX_PAGE_SIZE = 20;
+var PHONE_COUNTRY_PREFIX = "+998";
+var SMS_CODE_LENGTH = 6;
+var SMS_CODE_TTL_MINUTES = 5;
+var SMS_MAX_ATTEMPTS = 5;
+var ACCESS_TOKEN_TTL_SECONDS = 15 * 60;
+var REFRESH_TOKEN_TTL_DAYS = 30;
+var UNPAID_ORDER_TTL_MINUTES = 15;
+var WORKER_ACCEPT_TTL_HOURS = 24;
+var REVIEW_STATUSES = ["visible", "hidden"];
+var MIN_REVIEW_RATING = 1;
+var MAX_REVIEW_RATING = 5;
+var MAX_REVIEW_COMMENT_LENGTH = 1e3;
+var MIN_COMPLAINT_REASON_LENGTH = 5;
+var MAX_COMPLAINT_REASON_LENGTH = 1e3;
+var MIN_NAME_LENGTH = 2;
+var MAX_NAME_LENGTH = 80;
+var MIN_TELEGRAM_USERNAME_LENGTH = 5;
+var MAX_TELEGRAM_USERNAME_LENGTH = 32;
+var MAX_TITLE_LENGTH = 120;
+var MAX_DESCRIPTION_LENGTH = 2e3;
+var MAX_ADDRESS_LENGTH = 300;
+var MAX_CART_ITEMS = 30;
+var MAX_ITEM_QUANTITY = 1e4;
+var MAX_PRICE_SOM = 1e9;
+var TASHKENT_UTC_OFFSET_HOURS = 5;
+var MAX_SERVICE_HOURS = 8;
+var MAX_AVAILABILITY_HOURS = 16;
+var AVAILABILITY_HORIZON_DAYS = 60;
+var MAX_ORDER_DESCRIPTION_LENGTH = 1e3;
+var MAX_DISCOUNT_PERCENT = 90;
+var MAX_MATERIAL_NAME_LENGTH = 120;
+var ADMIN_PAGE_SIZE = 20;
+var REVIEWS_PAGE_SIZE = 10;
+
+// ../../packages/shared/src/money.ts
+function calculateCommission(total) {
+  return Math.round(total * COMMISSION_RATE_PERCENT / 100);
+}
+function splitOrderAmount(total) {
+  const commission = calculateCommission(total);
+  return { total, commission, workerAmount: total - commission, commissionRate: COMMISSION_RATE };
+}
+function resolveLinePrice(product, quantity) {
+  const isWholesale = product.wholesalePrice !== null && product.wholesaleMinQty !== null && quantity >= product.wholesaleMinQty;
+  const unitPrice = isWholesale ? product.wholesalePrice : product.retailPrice;
+  return {
+    unitPrice,
+    priceType: isWholesale ? "wholesale" : "retail",
+    lineTotal: unitPrice * quantity
+  };
+}
+function discountedPrice(price, discountPercent) {
+  return Math.max(1, Math.round(price * (100 - discountPercent) / 100));
+}
+
+// ../../packages/shared/src/order-status.ts
+var ORDER_STATUS_TRANSITIONS = {
+  awaiting_payment: ["new", "cancelled"],
+  // `refunded` from a started order is reachable only through the admin refund (complaints).
+  new: ["accepted", "refunded", "cancelled"],
+  accepted: ["in_progress", "refunded"],
+  in_progress: ["ready", "refunded"],
+  ready: ["delivered", "refunded"],
+  delivered: [],
+  cancelled: [],
+  refunded: []
+};
+function canTransition(from, to) {
+  return ORDER_STATUS_TRANSITIONS[from].includes(to);
+}
+var PHONE_VISIBLE_STATUSES = [
+  "accepted",
+  "in_progress",
+  "ready",
+  "delivered"
+];
+var SLOT_HOLDING_STATUSES = [
+  "awaiting_payment",
+  "new",
+  "accepted",
+  "in_progress"
+];
+
+// ../../packages/shared/src/phone.ts
+var LOCAL_DIGITS = 9;
+var COUNTRY_DIGITS = "998";
+function normalizePhone(input) {
+  const digits = input.replace(/\D/g, "");
+  if (digits.length === LOCAL_DIGITS) return `${PHONE_COUNTRY_PREFIX}${digits}`;
+  if (digits.length === COUNTRY_DIGITS.length + LOCAL_DIGITS && digits.startsWith(COUNTRY_DIGITS)) {
+    return `+${digits}`;
+  }
+  return null;
+}
+
+// ../../packages/shared/src/schemas.ts
+var phoneSchema = external_exports.string().trim().transform((value, ctx) => {
+  const normalized = normalizePhone(value);
+  if (!normalized) {
+    ctx.addIssue({ code: external_exports.ZodIssueCode.custom, message: "INVALID_PHONE" });
+    return external_exports.NEVER;
+  }
+  return normalized;
+});
+var nameSchema = external_exports.string().trim().min(MIN_NAME_LENGTH).max(MAX_NAME_LENGTH);
+var moneySchema = external_exports.number().int().positive().max(MAX_PRICE_SOM);
+var requestCodeSchema = external_exports.object({ phone: phoneSchema });
+var verifyCodeSchema = external_exports.object({
+  phone: phoneSchema,
+  code: external_exports.string().regex(new RegExp(`^\\d{${SMS_CODE_LENGTH}}$`), "INVALID_CODE"),
+  role: external_exports.enum(["customer", "worker"]).optional(),
+  name: nameSchema.optional()
+});
+var updateProfileSchema = external_exports.object({
+  name: nameSchema,
+  language: external_exports.enum(["uz", "ru"]).optional()
+});
+var becomeWorkerSchema = external_exports.object({
+  displayName: nameSchema,
+  categoryId: external_exports.string().uuid(),
+  bio: external_exports.string().trim().max(MAX_DESCRIPTION_LENGTH).optional()
+});
+var TELEGRAM_USERNAME_PATTERN = new RegExp(
+  `^[A-Za-z0-9_]{${MIN_TELEGRAM_USERNAME_LENGTH},${MAX_TELEGRAM_USERNAME_LENGTH}}$`
+);
+var telegramUsernameSchema = external_exports.string().trim().transform((value) => value.startsWith("@") ? value.slice(1) : value).pipe(external_exports.string().regex(TELEGRAM_USERNAME_PATTERN, "INVALID_TELEGRAM_USERNAME"));
+var workerProfileSchema = external_exports.object({
+  telegramUsername: telegramUsernameSchema.nullable()
+});
+var productInputSchema = external_exports.object({
+  title: external_exports.string().trim().min(MIN_NAME_LENGTH).max(MAX_TITLE_LENGTH),
+  description: external_exports.string().trim().max(MAX_DESCRIPTION_LENGTH).default(""),
+  categoryId: external_exports.string().uuid(),
+  retailPrice: moneySchema,
+  wholesalePrice: moneySchema.nullable().default(null),
+  wholesaleMinQty: external_exports.number().int().min(2).max(MAX_ITEM_QUANTITY).nullable().default(null),
+  stock: external_exports.number().int().min(0).max(MAX_ITEM_QUANTITY),
+  status: external_exports.enum(PRODUCT_STATUSES).default("draft")
+}).superRefine((value, ctx) => {
+  const hasPrice = value.wholesalePrice !== null;
+  const hasQty = value.wholesaleMinQty !== null;
+  if (hasPrice !== hasQty) {
+    ctx.addIssue({
+      code: external_exports.ZodIssueCode.custom,
+      path: [hasPrice ? "wholesaleMinQty" : "wholesalePrice"],
+      message: "WHOLESALE_INCOMPLETE"
+    });
+  }
+  if (value.wholesalePrice !== null && value.wholesalePrice >= value.retailPrice) {
+    ctx.addIssue({
+      code: external_exports.ZodIssueCode.custom,
+      path: ["wholesalePrice"],
+      message: "WHOLESALE_NOT_LOWER"
+    });
+  }
+});
+var stockUpdateSchema = external_exports.object({
+  stock: external_exports.number().int().min(0).max(MAX_ITEM_QUANTITY)
+});
+var productStatusSchema = external_exports.object({ status: external_exports.enum(PRODUCT_STATUSES) });
+var cartItemSchema = external_exports.object({
+  productId: external_exports.string().uuid(),
+  quantity: external_exports.number().int().min(1).max(MAX_ITEM_QUANTITY)
+});
+var createOrdersSchema = external_exports.object({
+  items: external_exports.array(cartItemSchema).min(1).max(MAX_CART_ITEMS),
+  fulfillment: external_exports.enum(FULFILLMENT_TYPES),
+  deliveryAddress: external_exports.string().trim().max(MAX_ADDRESS_LENGTH).optional()
+}).superRefine((value, ctx) => {
+  if (value.fulfillment === "delivery" && !value.deliveryAddress) {
+    ctx.addIssue({
+      code: external_exports.ZodIssueCode.custom,
+      path: ["deliveryAddress"],
+      message: "ADDRESS_REQUIRED"
+    });
+  }
+});
+var cardPaymentSchema = external_exports.object({
+  cardNumber: external_exports.string().transform((v) => v.replace(/\s/g, "")).pipe(external_exports.string().regex(/^\d{16}$/, "INVALID_CARD")),
+  expiry: external_exports.string().regex(/^(0[1-9]|1[0-2])\/\d{2}$/, "INVALID_EXPIRY"),
+  cvc: external_exports.string().regex(/^\d{3}$/, "INVALID_CVC")
+});
+var reviewInputSchema = external_exports.object({
+  rating: external_exports.number().int().min(MIN_REVIEW_RATING).max(MAX_REVIEW_RATING),
+  comment: external_exports.string().trim().max(MAX_REVIEW_COMMENT_LENGTH).optional()
+});
+var complaintInputSchema = external_exports.object({
+  reason: external_exports.string().trim().min(MIN_COMPLAINT_REASON_LENGTH).max(MAX_COMPLAINT_REASON_LENGTH)
+});
+var isoInstant = external_exports.string().datetime({ offset: true });
+var availabilityInputSchema = external_exports.object({
+  startTime: isoInstant,
+  endTime: isoInstant
+});
+var createServiceOrderSchema = external_exports.object({
+  workerId: external_exports.string().uuid(),
+  description: external_exports.string().trim().min(MIN_NAME_LENGTH).max(MAX_ORDER_DESCRIPTION_LENGTH),
+  deadline: external_exports.string().regex(/^\d{4}-\d{2}-\d{2}$/, "INVALID_DATE").nullable().default(null),
+  startTime: isoInstant,
+  hours: external_exports.number().int().min(1).max(MAX_SERVICE_HOURS),
+  imageUrls: external_exports.array(external_exports.string().max(300)).max(MAX_ORDER_IMAGES).default([])
+});
+var orderActionSchema = external_exports.object({
+  action: external_exports.enum(["accept", "reject", "start", "ready", "deliver"])
+});
+var listQuerySchema = external_exports.object({
+  page: external_exports.coerce.number().int().min(1).default(1),
+  pageSize: external_exports.coerce.number().int().min(1).max(MAX_PAGE_SIZE).default(DEFAULT_PAGE_SIZE),
+  q: external_exports.string().trim().max(100).optional(),
+  category: external_exports.string().trim().max(60).optional(),
+  workerId: external_exports.string().uuid().optional(),
+  sort: external_exports.enum(["new", "price_asc", "price_desc"]).default("new")
+});
+function isValidCardNumber(cardNumber) {
+  let sum = 0;
+  let double = false;
+  for (let i = cardNumber.length - 1; i >= 0; i -= 1) {
+    let digit = Number(cardNumber[i]);
+    if (double) {
+      digit *= 2;
+      if (digit > 9) digit -= 9;
+    }
+    sum += digit;
+    double = !double;
+  }
+  return sum % 10 === 0;
+}
+var materialInputSchema = external_exports.object({
+  name: external_exports.string().trim().min(MIN_NAME_LENGTH).max(MAX_MATERIAL_NAME_LENGTH),
+  description: external_exports.string().trim().max(MAX_DESCRIPTION_LENGTH).default(""),
+  price: moneySchema,
+  discountPercent: external_exports.number().int().min(0).max(MAX_DISCOUNT_PERCENT).default(0),
+  stock: external_exports.number().int().min(0).max(MAX_ITEM_QUANTITY),
+  isActive: external_exports.boolean().default(true)
+});
+var materialOrderSchema = external_exports.object({
+  items: external_exports.array(
+    external_exports.object({
+      materialId: external_exports.string().uuid(),
+      quantity: external_exports.number().int().min(1).max(MAX_ITEM_QUANTITY)
+    })
+  ).min(1).max(MAX_CART_ITEMS)
+});
+var savingsGoalSchema = external_exports.object({ targetAmount: moneySchema });
+var workerRejectionSchema = external_exports.object({
+  reason: external_exports.string().trim().min(MIN_REJECT_REASON_LENGTH).max(MAX_REJECT_REASON_LENGTH)
+});
+var reviewModerationSchema = external_exports.object({ status: external_exports.enum(REVIEW_STATUSES) });
+var complaintResolutionSchema = external_exports.object({ status: external_exports.enum(["resolved", "dismissed"]) });
+var adminListQuerySchema = external_exports.object({
+  page: external_exports.coerce.number().int().min(1).default(1),
+  status: external_exports.string().trim().max(30).optional()
+});
+
+// ../../packages/shared/src/slots.ts
+var HOUR_MS = 60 * 60 * 1e3;
+var OFFSET_MS = TASHKENT_UTC_OFFSET_HOURS * HOUR_MS;
+function rangeContains(outer, inner) {
+  return outer.start <= inner.start && inner.end <= outer.end;
+}
+
 // src/config.ts
 var DEV_ACCESS_SECRET = "dev-only-access-secret-change-me-0000";
 var DEV_REFRESH_SECRET = "dev-only-refresh-secret-change-me-000";
@@ -71314,7 +71601,16 @@ var envSchema = external_exports.object({
   DATABASE_URL: external_exports.string().optional(),
   JWT_ACCESS_SECRET: external_exports.string().min(32).optional(),
   JWT_REFRESH_SECRET: external_exports.string().min(32).optional(),
-  ADMIN_PHONES: external_exports.string().default(""),
+  ADMIN_PHONES: external_exports.string().default("").transform(splitList).pipe(
+    external_exports.array(
+      external_exports.string().transform((value, ctx) => {
+        const phone = normalizePhone(value);
+        if (!phone) ctx.addIssue({ code: external_exports.ZodIssueCode.custom, message: "ADMIN_PHONES must hold +998 numbers" });
+        return phone ?? "";
+      })
+    )
+  ),
+  ADMIN_NAME: external_exports.string().trim().min(1).default("Hojiakbar"),
   SMS_PROVIDER: external_exports.enum(["console"]).default("console"),
   EXPOSE_SMS_CODE: booleanString,
   SEED_SAMPLE_DATA: booleanString,
@@ -71341,7 +71637,8 @@ function loadConfig(env = process.env) {
     databaseUrl: parsed.DATABASE_URL || void 0,
     jwtAccessSecret: parsed.JWT_ACCESS_SECRET ?? DEV_ACCESS_SECRET,
     jwtRefreshSecret: parsed.JWT_REFRESH_SECRET ?? DEV_REFRESH_SECRET,
-    adminPhones: splitList(parsed.ADMIN_PHONES),
+    adminPhones: parsed.ADMIN_PHONES,
+    adminName: parsed.ADMIN_NAME,
     smsProvider: parsed.SMS_PROVIDER,
     exposeSmsCode: parsed.EXPOSE_SMS_CODE,
     seedSampleData: parsed.SEED_SAMPLE_DATA,
@@ -72547,293 +72844,6 @@ var smsLimiter = (enabled) => enabled ? limiter(8, (req) => {
 // src/modules/auth/auth.routes.ts
 var import_express = __toESM(require_express2(), 1);
 
-// ../../packages/shared/src/constants.ts
-var COMMISSION_RATE_PERCENT = 2;
-var COMMISSION_RATE = COMMISSION_RATE_PERCENT / 100;
-var MAX_ORDER_IMAGES = 5;
-var MAX_PRODUCT_IMAGES = 8;
-var MAX_IMAGE_BYTES = 5 * 1024 * 1024;
-var ALLOWED_IMAGE_MIME_TYPES = ["image/jpeg", "image/png", "image/webp"];
-var MAX_MODEL_BYTES = 10 * 1024 * 1024;
-var MAX_MODEL_TEXTURE_SIZE = 2048;
-var MAX_MODEL_TRIANGLES = 2e5;
-var ALLOWED_MODEL_EXTENSIONS = [
-  "KHR_materials_",
-  "KHR_texture_transform",
-  "KHR_draco_mesh_compression",
-  "EXT_meshopt_compression"
-];
-var MODEL_MIME_TYPE = "model/gltf-binary";
-var USER_ROLES = ["customer", "worker", "admin"];
-var WORKER_STATUSES = ["pending", "approved", "rejected"];
-var MIN_REJECT_REASON_LENGTH = 10;
-var MAX_REJECT_REASON_LENGTH = 500;
-var PRODUCT_STATUSES = ["draft", "published", "hidden"];
-var FULFILLMENT_TYPES = ["pickup", "delivery"];
-var ALL_CATEGORIES_SLUG = "barchasi";
-var DEFAULT_PAGE_SIZE = 12;
-var MAX_PAGE_SIZE = 20;
-var PHONE_COUNTRY_PREFIX = "+998";
-var SMS_CODE_LENGTH = 6;
-var SMS_CODE_TTL_MINUTES = 5;
-var SMS_MAX_ATTEMPTS = 5;
-var ACCESS_TOKEN_TTL_SECONDS = 15 * 60;
-var REFRESH_TOKEN_TTL_DAYS = 30;
-var UNPAID_ORDER_TTL_MINUTES = 15;
-var WORKER_ACCEPT_TTL_HOURS = 24;
-var REVIEW_STATUSES = ["visible", "hidden"];
-var MIN_REVIEW_RATING = 1;
-var MAX_REVIEW_RATING = 5;
-var MAX_REVIEW_COMMENT_LENGTH = 1e3;
-var MIN_COMPLAINT_REASON_LENGTH = 5;
-var MAX_COMPLAINT_REASON_LENGTH = 1e3;
-var MIN_NAME_LENGTH = 2;
-var MAX_NAME_LENGTH = 80;
-var MIN_TELEGRAM_USERNAME_LENGTH = 5;
-var MAX_TELEGRAM_USERNAME_LENGTH = 32;
-var MAX_TITLE_LENGTH = 120;
-var MAX_DESCRIPTION_LENGTH = 2e3;
-var MAX_ADDRESS_LENGTH = 300;
-var MAX_CART_ITEMS = 30;
-var MAX_ITEM_QUANTITY = 1e4;
-var MAX_PRICE_SOM = 1e9;
-var TASHKENT_UTC_OFFSET_HOURS = 5;
-var MAX_SERVICE_HOURS = 8;
-var MAX_AVAILABILITY_HOURS = 16;
-var AVAILABILITY_HORIZON_DAYS = 60;
-var MAX_ORDER_DESCRIPTION_LENGTH = 1e3;
-var MAX_DISCOUNT_PERCENT = 90;
-var MAX_MATERIAL_NAME_LENGTH = 120;
-var ADMIN_PAGE_SIZE = 20;
-var REVIEWS_PAGE_SIZE = 10;
-
-// ../../packages/shared/src/money.ts
-function calculateCommission(total) {
-  return Math.round(total * COMMISSION_RATE_PERCENT / 100);
-}
-function splitOrderAmount(total) {
-  const commission = calculateCommission(total);
-  return { total, commission, workerAmount: total - commission, commissionRate: COMMISSION_RATE };
-}
-function resolveLinePrice(product, quantity) {
-  const isWholesale = product.wholesalePrice !== null && product.wholesaleMinQty !== null && quantity >= product.wholesaleMinQty;
-  const unitPrice = isWholesale ? product.wholesalePrice : product.retailPrice;
-  return {
-    unitPrice,
-    priceType: isWholesale ? "wholesale" : "retail",
-    lineTotal: unitPrice * quantity
-  };
-}
-function discountedPrice(price, discountPercent) {
-  return Math.max(1, Math.round(price * (100 - discountPercent) / 100));
-}
-
-// ../../packages/shared/src/order-status.ts
-var ORDER_STATUS_TRANSITIONS = {
-  awaiting_payment: ["new", "cancelled"],
-  // `refunded` from a started order is reachable only through the admin refund (complaints).
-  new: ["accepted", "refunded", "cancelled"],
-  accepted: ["in_progress", "refunded"],
-  in_progress: ["ready", "refunded"],
-  ready: ["delivered", "refunded"],
-  delivered: [],
-  cancelled: [],
-  refunded: []
-};
-function canTransition(from, to) {
-  return ORDER_STATUS_TRANSITIONS[from].includes(to);
-}
-var PHONE_VISIBLE_STATUSES = [
-  "accepted",
-  "in_progress",
-  "ready",
-  "delivered"
-];
-var SLOT_HOLDING_STATUSES = [
-  "awaiting_payment",
-  "new",
-  "accepted",
-  "in_progress"
-];
-
-// ../../packages/shared/src/phone.ts
-var LOCAL_DIGITS = 9;
-var COUNTRY_DIGITS = "998";
-function normalizePhone(input) {
-  const digits = input.replace(/\D/g, "");
-  if (digits.length === LOCAL_DIGITS) return `${PHONE_COUNTRY_PREFIX}${digits}`;
-  if (digits.length === COUNTRY_DIGITS.length + LOCAL_DIGITS && digits.startsWith(COUNTRY_DIGITS)) {
-    return `+${digits}`;
-  }
-  return null;
-}
-
-// ../../packages/shared/src/schemas.ts
-var phoneSchema = external_exports.string().trim().transform((value, ctx) => {
-  const normalized = normalizePhone(value);
-  if (!normalized) {
-    ctx.addIssue({ code: external_exports.ZodIssueCode.custom, message: "INVALID_PHONE" });
-    return external_exports.NEVER;
-  }
-  return normalized;
-});
-var nameSchema = external_exports.string().trim().min(MIN_NAME_LENGTH).max(MAX_NAME_LENGTH);
-var moneySchema = external_exports.number().int().positive().max(MAX_PRICE_SOM);
-var requestCodeSchema = external_exports.object({ phone: phoneSchema });
-var verifyCodeSchema = external_exports.object({
-  phone: phoneSchema,
-  code: external_exports.string().regex(new RegExp(`^\\d{${SMS_CODE_LENGTH}}$`), "INVALID_CODE"),
-  role: external_exports.enum(["customer", "worker"]).optional(),
-  name: nameSchema.optional()
-});
-var updateProfileSchema = external_exports.object({
-  name: nameSchema,
-  language: external_exports.enum(["uz", "ru"]).optional()
-});
-var becomeWorkerSchema = external_exports.object({
-  displayName: nameSchema,
-  categoryId: external_exports.string().uuid(),
-  bio: external_exports.string().trim().max(MAX_DESCRIPTION_LENGTH).optional()
-});
-var TELEGRAM_USERNAME_PATTERN = new RegExp(
-  `^[A-Za-z0-9_]{${MIN_TELEGRAM_USERNAME_LENGTH},${MAX_TELEGRAM_USERNAME_LENGTH}}$`
-);
-var telegramUsernameSchema = external_exports.string().trim().transform((value) => value.startsWith("@") ? value.slice(1) : value).pipe(external_exports.string().regex(TELEGRAM_USERNAME_PATTERN, "INVALID_TELEGRAM_USERNAME"));
-var workerProfileSchema = external_exports.object({
-  telegramUsername: telegramUsernameSchema.nullable()
-});
-var productInputSchema = external_exports.object({
-  title: external_exports.string().trim().min(MIN_NAME_LENGTH).max(MAX_TITLE_LENGTH),
-  description: external_exports.string().trim().max(MAX_DESCRIPTION_LENGTH).default(""),
-  categoryId: external_exports.string().uuid(),
-  retailPrice: moneySchema,
-  wholesalePrice: moneySchema.nullable().default(null),
-  wholesaleMinQty: external_exports.number().int().min(2).max(MAX_ITEM_QUANTITY).nullable().default(null),
-  stock: external_exports.number().int().min(0).max(MAX_ITEM_QUANTITY),
-  status: external_exports.enum(PRODUCT_STATUSES).default("draft")
-}).superRefine((value, ctx) => {
-  const hasPrice = value.wholesalePrice !== null;
-  const hasQty = value.wholesaleMinQty !== null;
-  if (hasPrice !== hasQty) {
-    ctx.addIssue({
-      code: external_exports.ZodIssueCode.custom,
-      path: [hasPrice ? "wholesaleMinQty" : "wholesalePrice"],
-      message: "WHOLESALE_INCOMPLETE"
-    });
-  }
-  if (value.wholesalePrice !== null && value.wholesalePrice >= value.retailPrice) {
-    ctx.addIssue({
-      code: external_exports.ZodIssueCode.custom,
-      path: ["wholesalePrice"],
-      message: "WHOLESALE_NOT_LOWER"
-    });
-  }
-});
-var stockUpdateSchema = external_exports.object({
-  stock: external_exports.number().int().min(0).max(MAX_ITEM_QUANTITY)
-});
-var productStatusSchema = external_exports.object({ status: external_exports.enum(PRODUCT_STATUSES) });
-var cartItemSchema = external_exports.object({
-  productId: external_exports.string().uuid(),
-  quantity: external_exports.number().int().min(1).max(MAX_ITEM_QUANTITY)
-});
-var createOrdersSchema = external_exports.object({
-  items: external_exports.array(cartItemSchema).min(1).max(MAX_CART_ITEMS),
-  fulfillment: external_exports.enum(FULFILLMENT_TYPES),
-  deliveryAddress: external_exports.string().trim().max(MAX_ADDRESS_LENGTH).optional()
-}).superRefine((value, ctx) => {
-  if (value.fulfillment === "delivery" && !value.deliveryAddress) {
-    ctx.addIssue({
-      code: external_exports.ZodIssueCode.custom,
-      path: ["deliveryAddress"],
-      message: "ADDRESS_REQUIRED"
-    });
-  }
-});
-var cardPaymentSchema = external_exports.object({
-  cardNumber: external_exports.string().transform((v) => v.replace(/\s/g, "")).pipe(external_exports.string().regex(/^\d{16}$/, "INVALID_CARD")),
-  expiry: external_exports.string().regex(/^(0[1-9]|1[0-2])\/\d{2}$/, "INVALID_EXPIRY"),
-  cvc: external_exports.string().regex(/^\d{3}$/, "INVALID_CVC")
-});
-var reviewInputSchema = external_exports.object({
-  rating: external_exports.number().int().min(MIN_REVIEW_RATING).max(MAX_REVIEW_RATING),
-  comment: external_exports.string().trim().max(MAX_REVIEW_COMMENT_LENGTH).optional()
-});
-var complaintInputSchema = external_exports.object({
-  reason: external_exports.string().trim().min(MIN_COMPLAINT_REASON_LENGTH).max(MAX_COMPLAINT_REASON_LENGTH)
-});
-var isoInstant = external_exports.string().datetime({ offset: true });
-var availabilityInputSchema = external_exports.object({
-  startTime: isoInstant,
-  endTime: isoInstant
-});
-var createServiceOrderSchema = external_exports.object({
-  workerId: external_exports.string().uuid(),
-  description: external_exports.string().trim().min(MIN_NAME_LENGTH).max(MAX_ORDER_DESCRIPTION_LENGTH),
-  deadline: external_exports.string().regex(/^\d{4}-\d{2}-\d{2}$/, "INVALID_DATE").nullable().default(null),
-  startTime: isoInstant,
-  hours: external_exports.number().int().min(1).max(MAX_SERVICE_HOURS),
-  imageUrls: external_exports.array(external_exports.string().max(300)).max(MAX_ORDER_IMAGES).default([])
-});
-var orderActionSchema = external_exports.object({
-  action: external_exports.enum(["accept", "reject", "start", "ready", "deliver"])
-});
-var listQuerySchema = external_exports.object({
-  page: external_exports.coerce.number().int().min(1).default(1),
-  pageSize: external_exports.coerce.number().int().min(1).max(MAX_PAGE_SIZE).default(DEFAULT_PAGE_SIZE),
-  q: external_exports.string().trim().max(100).optional(),
-  category: external_exports.string().trim().max(60).optional(),
-  workerId: external_exports.string().uuid().optional(),
-  sort: external_exports.enum(["new", "price_asc", "price_desc"]).default("new")
-});
-function isValidCardNumber(cardNumber) {
-  let sum = 0;
-  let double = false;
-  for (let i = cardNumber.length - 1; i >= 0; i -= 1) {
-    let digit = Number(cardNumber[i]);
-    if (double) {
-      digit *= 2;
-      if (digit > 9) digit -= 9;
-    }
-    sum += digit;
-    double = !double;
-  }
-  return sum % 10 === 0;
-}
-var materialInputSchema = external_exports.object({
-  name: external_exports.string().trim().min(MIN_NAME_LENGTH).max(MAX_MATERIAL_NAME_LENGTH),
-  description: external_exports.string().trim().max(MAX_DESCRIPTION_LENGTH).default(""),
-  price: moneySchema,
-  discountPercent: external_exports.number().int().min(0).max(MAX_DISCOUNT_PERCENT).default(0),
-  stock: external_exports.number().int().min(0).max(MAX_ITEM_QUANTITY),
-  isActive: external_exports.boolean().default(true)
-});
-var materialOrderSchema = external_exports.object({
-  items: external_exports.array(
-    external_exports.object({
-      materialId: external_exports.string().uuid(),
-      quantity: external_exports.number().int().min(1).max(MAX_ITEM_QUANTITY)
-    })
-  ).min(1).max(MAX_CART_ITEMS)
-});
-var savingsGoalSchema = external_exports.object({ targetAmount: moneySchema });
-var workerRejectionSchema = external_exports.object({
-  reason: external_exports.string().trim().min(MIN_REJECT_REASON_LENGTH).max(MAX_REJECT_REASON_LENGTH)
-});
-var reviewModerationSchema = external_exports.object({ status: external_exports.enum(REVIEW_STATUSES) });
-var complaintResolutionSchema = external_exports.object({ status: external_exports.enum(["resolved", "dismissed"]) });
-var adminListQuerySchema = external_exports.object({
-  page: external_exports.coerce.number().int().min(1).default(1),
-  status: external_exports.string().trim().max(30).optional()
-});
-
-// ../../packages/shared/src/slots.ts
-var HOUR_MS = 60 * 60 * 1e3;
-var OFFSET_MS = TASHKENT_UTC_OFFSET_HOURS * HOUR_MS;
-function rangeContains(outer, inner) {
-  return outer.start <= inner.start && inner.end <= outer.end;
-}
-
 // src/modules/auth/tokens.ts
 var import_node_crypto2 = require("node:crypto");
 var import_jsonwebtoken = __toESM(require_jsonwebtoken(), 1);
@@ -73196,16 +73206,28 @@ var AuthService = class {
     }
     if (!await this.repo.consumeCode(stored.id)) throw new AppError("INVALID_CODE", 400);
   }
+  /**
+   * ADMIN_PHONES is the only source of the admin role: a listed number is promoted on every
+   * sign-in, a number that left the list is demoted back to its ordinary role, and an empty list
+   * means nobody is an administrator.
+   */
   async findOrCreateUser(input) {
-    const isAdminPhone = this.ctx.config.adminPhones.includes(input.phone);
+    const { adminPhones, adminName } = this.ctx.config;
+    const isAdminPhone = adminPhones.includes(input.phone);
     const existing = await this.repo.findUserByPhone(input.phone);
     if (existing) {
-      if (isAdminPhone && existing.role !== "admin") await this.repo.setRole(existing.id, "admin");
+      if (isAdminPhone && existing.role !== "admin") {
+        await this.repo.setRole(existing.id, "admin");
+        if (!existing.name) await this.repo.updateProfile(existing.id, adminName);
+      }
+      if (!isAdminPhone && existing.role === "admin") {
+        await this.repo.setRole(existing.id, existing.workerId ? "worker" : "customer");
+      }
       return this.getUser(existing.id);
     }
     const id = await this.repo.createUser(
       input.phone,
-      input.name ?? null,
+      input.name ?? (isAdminPhone ? adminName : null),
       isAdminPhone ? "admin" : "customer"
     );
     return this.getUser(id);
@@ -73863,6 +73885,46 @@ var FeedbackService = class {
   }
 };
 
+// src/modules/admin/audit.ts
+async function writeAudit(db2, entry) {
+  await db2.insertInto("audit_log").values({
+    admin_user_id: entry.adminId,
+    action: entry.action,
+    target_type: entry.targetType,
+    target_id: entry.targetId,
+    details: JSON.stringify(entry.details ?? {})
+  }).execute();
+}
+async function listAudit(db2, page) {
+  const offset = (page - 1) * ADMIN_PAGE_SIZE;
+  const [rows, total] = await Promise.all([
+    db2.selectFrom("audit_log as a").innerJoin("users as u", "u.id", "a.admin_user_id").select([
+      "a.id",
+      "a.action",
+      "a.target_type",
+      "a.target_id",
+      "a.details",
+      "a.created_at",
+      "u.name as admin_name"
+    ]).orderBy("a.created_at", "desc").limit(ADMIN_PAGE_SIZE).offset(offset).execute(),
+    db2.selectFrom("audit_log").select((eb) => eb.fn.countAll().as("n")).executeTakeFirstOrThrow()
+  ]);
+  return {
+    items: rows.map((row) => ({
+      id: row.id,
+      action: row.action,
+      targetType: row.target_type,
+      targetId: row.target_id,
+      details: typeof row.details === "string" ? JSON.parse(row.details) : row.details,
+      adminName: row.admin_name,
+      createdAt: row.created_at.toISOString()
+    })),
+    page,
+    pageSize: ADMIN_PAGE_SIZE,
+    total: Number(total.n)
+  };
+}
+
 // src/modules/admin/admin.service.ts
 var RATING_DECIMALS2 = 100;
 var FEATURED_CACHE_KEY2 = "workers:featured";
@@ -73967,6 +74029,13 @@ var AdminService = class {
         kind: decision.status === "approved" ? "worker_approved" : "worker_rejected",
         detail: decision.reason
       }).execute();
+      await writeAudit(trx, {
+        adminId,
+        action: decision.status === "approved" ? "worker.approve" : "worker.reject",
+        targetType: "worker",
+        targetId: workerId,
+        details: { status: decision.status, reason: decision.reason }
+      });
     });
     this.ctx.cache.delete(FEATURED_CACHE_KEY2);
   }
@@ -74048,7 +74117,7 @@ var AdminService = class {
    * Hides or restores a review and moves the worker's rating in the same transaction. A review that
    * is already in the requested state changes nothing, so a repeated click cannot drift the rating.
    */
-  async setReviewStatus(reviewId, status) {
+  async setReviewStatus(adminId, reviewId, status) {
     await this.ctx.db.transaction().execute(async (trx) => {
       const review = await trx.selectFrom("reviews").select(["id", "worker_id", "rating", "status"]).where("id", "=", reviewId).forUpdate().executeTakeFirst();
       if (!review) throw AppError.notFound();
@@ -74060,6 +74129,13 @@ var AdminService = class {
         reviews_count: Math.max(0, worker.reviews_count + (hiding ? -1 : 1))
       }).where("id", "=", review.worker_id).execute();
       await trx.updateTable("reviews").set({ status }).where("id", "=", reviewId).execute();
+      await writeAudit(trx, {
+        adminId,
+        action: hiding ? "review.hide" : "review.show",
+        targetType: "review",
+        targetId: reviewId,
+        details: { status }
+      });
     });
     this.ctx.cache.delete(FEATURED_CACHE_KEY2);
   }
@@ -74100,14 +74176,25 @@ var AdminService = class {
       query.page
     );
   }
-  async resolveComplaint(id, status) {
-    const result = await this.ctx.db.updateTable("complaints").set({ status }).where("id", "=", id).where("status", "=", "open").executeTakeFirst();
-    if (Number(result.numUpdatedRows) === 1) return;
+  async resolveComplaint(adminId, id, status) {
+    const updated = await this.ctx.db.transaction().execute(async (trx) => {
+      const result = await trx.updateTable("complaints").set({ status }).where("id", "=", id).where("status", "=", "open").executeTakeFirst();
+      if (Number(result.numUpdatedRows) !== 1) return false;
+      await writeAudit(trx, {
+        adminId,
+        action: status === "resolved" ? "complaint.resolve" : "complaint.dismiss",
+        targetType: "complaint",
+        targetId: id,
+        details: { status }
+      });
+      return true;
+    });
+    if (updated) return;
     const exists = await this.ctx.db.selectFrom("complaints").select("id").where("id", "=", id).executeTakeFirst();
     throw exists ? AppError.conflict("COMPLAINT_NOT_OPEN") : AppError.notFound();
   }
   /** Manual refund after a complaint: money back through the provider, stock restored, order closed. */
-  async refundOrder(orderId3) {
+  async refundOrder(adminId, orderId3) {
     await this.ctx.db.transaction().execute(async (trx) => {
       const order = await trx.selectFrom("orders").select(["id", "status"]).where("id", "=", orderId3).forUpdate().executeTakeFirst();
       if (!order) throw AppError.notFound();
@@ -74118,6 +74205,13 @@ var AdminService = class {
       if (!paid) throw AppError.conflict("ORDER_NOT_REFUNDABLE");
       await refundPaidOrder(trx, this.ctx.payments, orderId3);
       await trx.updateTable("orders").set({ status: "refunded", updated_at: this.now() }).where("id", "=", orderId3).execute();
+      await writeAudit(trx, {
+        adminId,
+        action: "order.refund",
+        targetType: "order",
+        targetId: orderId3,
+        details: { from: order.status, to: "refunded" }
+      });
     });
   }
 };
@@ -74135,6 +74229,10 @@ function createAdminRouter(ctx) {
   const materials = new MaterialService(ctx);
   const { requireAdmin } = createAuthMiddleware(ctx);
   router.use("/admin", requireAdmin);
+  const adminId = (req) => req.auth?.userId ?? "";
+  router.get("/admin/audit", async (req, res) => {
+    res.json(await listAudit(ctx.db, adminListQuerySchema.parse(req.query).page));
+  });
   router.get("/admin/stats", async (_req, res) => {
     res.json(await admin.stats());
   });
@@ -74154,7 +74252,7 @@ function createAdminRouter(ctx) {
     res.json(await admin.listOrders(adminListQuerySchema.parse(req.query)));
   });
   router.post("/admin/orders/:id/refund", async (req, res) => {
-    await admin.refundOrder(idParam(req));
+    await admin.refundOrder(adminId(req), idParam(req));
     res.status(204).end();
   });
   router.get("/admin/reviews", async (req, res) => {
@@ -74162,7 +74260,7 @@ function createAdminRouter(ctx) {
   });
   router.patch("/admin/reviews/:id", async (req, res) => {
     const { status } = reviewModerationSchema.parse(req.body);
-    await admin.setReviewStatus(idParam(req), status);
+    await admin.setReviewStatus(adminId(req), idParam(req), status);
     res.status(204).end();
   });
   router.get("/admin/complaints", async (req, res) => {
@@ -74170,23 +74268,45 @@ function createAdminRouter(ctx) {
   });
   router.patch("/admin/complaints/:id", async (req, res) => {
     const { status } = complaintResolutionSchema.parse(req.body);
-    await admin.resolveComplaint(idParam(req), status);
+    await admin.resolveComplaint(adminId(req), idParam(req), status);
     res.status(204).end();
   });
   router.get("/admin/materials", async (_req, res) => {
     res.json(await materials.listAll());
   });
   router.post("/admin/materials", async (req, res) => {
-    res.status(201).json(await materials.create(materialInputSchema.parse(req.body)));
+    const created = await materials.create(materialInputSchema.parse(req.body));
+    await writeAudit(ctx.db, {
+      adminId: adminId(req),
+      action: "material.create",
+      targetType: "material",
+      targetId: created.id,
+      details: { name: created.name }
+    });
+    res.status(201).json(created);
   });
   router.put("/admin/materials/:id", async (req, res) => {
-    res.json(await materials.update(idParam(req), materialInputSchema.parse(req.body)));
+    const updated = await materials.update(idParam(req), materialInputSchema.parse(req.body));
+    await writeAudit(ctx.db, {
+      adminId: adminId(req),
+      action: "material.update",
+      targetType: "material",
+      targetId: updated.id,
+      details: { name: updated.name, isActive: updated.isActive }
+    });
+    res.json(updated);
   });
   router.get("/admin/material-orders", async (_req, res) => {
     res.json(await materials.adminList());
   });
   router.post("/admin/material-orders/:id/deliver", async (req, res) => {
     await materials.markDelivered(idParam(req));
+    await writeAudit(ctx.db, {
+      adminId: adminId(req),
+      action: "material_order.deliver",
+      targetType: "material_order",
+      targetId: idParam(req)
+    });
     res.status(204).end();
   });
   return router;

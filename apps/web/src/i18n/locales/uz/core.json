@@ -133,5 +133,10 @@
       "worker_rejected": "Arizangiz rad etildi",
       "order_new": "Yangi buyurtma keldi."
     }
+  },
+  "forbidden": {
+    "title": "Bu sahifaga kirish mumkin emas",
+    "text": "Bu boʻlim faqat administrator uchun. Sizning hisobingizda bunday huquq yoʻq.",
+    "home": "Bosh sahifaga qaytish"
   }
 }

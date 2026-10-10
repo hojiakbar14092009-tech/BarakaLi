@@ -372,6 +372,12 @@ Xatolar: `MATERIAL_UNAVAILABLE` (404/409), `INSUFFICIENT_STOCK` (409), `MATERIAL
 
 ## Admin (`/admin/*`, faqat `admin`)
 
+Rol `ADMIN_PHONES` dan keladi (docs/DECISIONS.md). Har yozuvchi amal `audit_log` ga tushadi.
+
+`GET /admin/audit?page=1` → `Page<AdminAuditEntryDto>` (`id, action, targetType, targetId, details, adminName, createdAt`); `details` da telefon yoʻq.
+
+Xatolar: 401 tokensiz, 403 `FORBIDDEN` admin boʻlmasa, 409 `CANNOT_ACT_ON_SELF` / `LAST_ADMIN` (admin hisoblariga nisbatan amallar).
+
 Ro'yxatlar `?page` (20 tadan) va `?status` qabul qiladi.
 
 | Yo'l                                                    | So'rov                                | Javob / ta'siri                                                                                |

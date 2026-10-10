@@ -248,3 +248,19 @@ Brifdagi noaniqliklar bo'yicha qabul qilingan qarorlar. Yangi qaror oxiriga qo's
 - `catering_requests` jadvali migratsiya `1760001100000` bilan faqat **boʻsh** boʻlsa oʻchiriladi;
   qator boʻlsa tegilmaydi (`RAISE NOTICE`) va jamoa avval eksport qiladi. Ikkala holat testlangan.
 - `categories.is_active` va "Masofaviy ishlar" qarori oʻzgarmadi.
+
+## Admin roli va audit jurnali (2026-10-10)
+
+- Admin roli faqat `ADMIN_PHONES` dan keladi (vergul bilan ajratilgan `+998` raqamlar, zod bilan
+  tekshiriladi, notoʻgʻri qiymatda server ishga tushmaydi). Har kirishda: roʻyxatdagi raqam `admin`
+  boʻladi, roʻyxatdan chiqqan raqam `customer`/`worker` ga qaytadi, boʻsh roʻyxat = admin yoʻq.
+  Qiymatni hosting muhitida foydalanuvchi oʻzi qoʻyadi; `.env.example` da faqat `+998XXXXXXXXX`.
+- Admin hisobida ism boʻlmasa `ADMIN_NAME` (standart "Hojiakbar") beriladi; mavjud ism oʻzgartirilmaydi.
+- `audit_log` (`admin_user_id, action, target_type, target_id, details jsonb, created_at`): har admin
+  amali yoziladi, oʻzgarish bilan bitta tranzaksiyada (tasdiqlash/rad etish, sharh, shikoyat, qaytarish);
+  `details` da faqat holat, sabab va id — telefon, kod yoki token hech qachon yoʻq. `GET /admin/audit`.
+- Himoya: `assertCanActOnAdmin` — admin oʻziga nisbatan amal bajara olmaydi (`CANNOT_ACT_ON_SELF`),
+  oxirgi adminni olib tashlab boʻlmaydi (`LAST_ADMIN`). Bloklash endpointi keyingi bosqichda shu
+  tekshiruvdan oʻtadi.
+- Oddiy foydalanuvchi `/admin` ga kirsa 403 sahifasi va "Bosh sahifaga qaytish" tugmasi; admin kirgach
+  `next` boʻlmasa `/admin` ga yoʻnaltiriladi. Haqiqiy himoya serverda (`requireAdmin`, `/api/admin/*`).

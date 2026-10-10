@@ -17,6 +17,11 @@ function safeNext(value: string | null): string {
   return value && value.startsWith('/') && !value.startsWith('//') ? value : '/';
 }
 
+/** An administrator who did not ask for a specific page lands on the admin panel. */
+function landingFor(role: string, next: string): string {
+  return role === 'admin' && next === '/' ? '/admin' : next;
+}
+
 export default function AuthPage({ mode }: AuthPageProps) {
   const status = useAuthStore((s) => s.status);
   if (status !== 'ready') return <LoadingState />;
@@ -38,7 +43,9 @@ function AuthFlow({ mode }: AuthPageProps) {
   const [exposedCode, setExposedCode] = useState<string | undefined>();
   const [name, setName] = useState(initialUser?.name ?? '');
 
-  if (initialUser && !needsWorkerOnly) return <Navigate to={next} replace />;
+  if (initialUser && !needsWorkerOnly) {
+    return <Navigate to={landingFor(initialUser.role, next)} replace />;
+  }
 
   const title = wantsWorker
     ? t('auth.workerSignUpTitle')
@@ -73,7 +80,10 @@ function AuthFlow({ mode }: AuthPageProps) {
           onVerified={(verifiedName, hasWorker) => {
             setName(verifiedName);
             if (wantsWorker && !hasWorker) setStep('worker');
-            else navigate(next, { replace: true });
+            else
+              navigate(landingFor(useAuthStore.getState().user?.role ?? '', next), {
+                replace: true,
+              });
           }}
         />
       )}

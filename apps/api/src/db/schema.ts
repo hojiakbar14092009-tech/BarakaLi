@@ -240,6 +240,16 @@ export interface NotificationsTable {
   created_at: CreatedAt;
 }
 
+export interface AuditLogTable {
+  id: Generated<string>;
+  admin_user_id: string;
+  action: string;
+  target_type: string;
+  target_id: string | null;
+  details: ColumnType<unknown, string, string>;
+  created_at: CreatedAt;
+}
+
 export interface Database {
   categories: CategoriesTable;
   users: UsersTable;
@@ -264,4 +274,5 @@ export interface Database {
   material_payments: MaterialPaymentsTable;
   savings_goals: SavingsGoalsTable;
   notifications: NotificationsTable;
+  audit_log: AuditLogTable;
 }

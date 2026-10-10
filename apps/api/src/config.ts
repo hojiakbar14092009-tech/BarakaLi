@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { normalizePhone } from '@barakali/shared';
 
 const DEV_ACCESS_SECRET = 'dev-only-access-secret-change-me-0000';
 const DEV_REFRESH_SECRET = 'dev-only-refresh-secret-change-me-000';
@@ -15,7 +16,24 @@ const envSchema = z.object({
   DATABASE_URL: z.string().optional(),
   JWT_ACCESS_SECRET: z.string().min(32).optional(),
   JWT_REFRESH_SECRET: z.string().min(32).optional(),
-  ADMIN_PHONES: z.string().default(''),
+  ADMIN_PHONES: z
+    .string()
+    .default('')
+    .transform(splitList)
+    .pipe(
+      z.array(
+        z.string().transform((value, ctx) => {
+          const phone = normalizePhone(value);
+          if (!phone)
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: 'ADMIN_PHONES must hold +998 numbers',
+            });
+          return phone ?? '';
+        }),
+      ),
+    ),
+  ADMIN_NAME: z.string().trim().min(1).default('Hojiakbar'),
   SMS_PROVIDER: z.enum(['console']).default('console'),
   EXPOSE_SMS_CODE: booleanString,
   SEED_SAMPLE_DATA: booleanString,
@@ -32,6 +50,7 @@ export interface AppConfig {
   jwtAccessSecret: string;
   jwtRefreshSecret: string;
   adminPhones: string[];
+  adminName: string;
   smsProvider: 'console';
   exposeSmsCode: boolean;
   seedSampleData: boolean;
@@ -63,7 +82,8 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
     databaseUrl: parsed.DATABASE_URL || undefined,
     jwtAccessSecret: parsed.JWT_ACCESS_SECRET ?? DEV_ACCESS_SECRET,
     jwtRefreshSecret: parsed.JWT_REFRESH_SECRET ?? DEV_REFRESH_SECRET,
-    adminPhones: splitList(parsed.ADMIN_PHONES),
+    adminPhones: parsed.ADMIN_PHONES,
+    adminName: parsed.ADMIN_NAME,
     smsProvider: parsed.SMS_PROVIDER,
     exposeSmsCode: parsed.EXPOSE_SMS_CODE,
     seedSampleData: parsed.SEED_SAMPLE_DATA,

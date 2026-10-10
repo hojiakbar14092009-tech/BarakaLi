@@ -39,12 +39,13 @@ export interface Session {
 export async function login(
   app: Express,
   phone = nextPhone(),
-  name = 'Test User',
+  name: string | null = 'Test User',
 ): Promise<Session> {
   const codeRes = await request(app).post('/api/auth/request-code').send({ phone });
+  // A null name is the plain sign-in form, which never asks for one.
   const verify = await request(app)
     .post('/api/auth/verify')
-    .send({ phone, code: codeRes.body.code, name });
+    .send({ phone, code: codeRes.body.code, ...(name === null ? {} : { name }) });
   const body = verify.body as AuthResponse;
   return { token: body.accessToken, userId: body.user.id, phone };
 }
