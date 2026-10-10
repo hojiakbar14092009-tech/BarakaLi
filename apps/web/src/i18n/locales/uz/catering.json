@@ -89,5 +89,30 @@
         "text": "Moliyaviy savodxonlik va tadbirkorlik boʻyicha qisqa darslar."
       }
     }
+  },
+  "form": {
+    "eyebrow": "Catering soʻrovi",
+    "title": "Tadbiringiz haqida yozing",
+    "lead": "Soʻrov buyurtma emas va toʻlov talab qilmaydi. Narx va tafsilotlar suhbatda kelishiladi.",
+    "steps": {
+      "send": "Soʻrov yuborasiz",
+      "call": "Jamoa siz bilan bogʻlanadi",
+      "agree": "Tafsilot va narxni birga kelishasiz"
+    },
+    "name": "Ismingiz",
+    "phone": "Telefon raqami",
+    "service": "Xizmat turi",
+    "servicePlaceholder": "Tanlang",
+    "serviceOther": "Boshqa",
+    "date": "Tadbir sanasi",
+    "guests": "Mehmonlar soni",
+    "note": "Izoh",
+    "noteHint": "Ixtiyoriy: tadbir turi, joyi yoki istaklaringiz.",
+    "privacy": "Raqamingizdan faqat shu soʻrov boʻyicha bogʻlanish uchun foydalanamiz.",
+    "submit": "Soʻrov yuborish",
+    "sending": "Yuborilmoqda…",
+    "successTitle": "Soʻrovingiz qabul qilindi.",
+    "successText": "Jamoa siz bilan bogʻlanadi.",
+    "again": "Yana soʻrov yuborish"
   }
 }

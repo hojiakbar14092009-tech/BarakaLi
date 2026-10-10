@@ -16,6 +16,7 @@ import { createAuthRouter } from './modules/auth/auth.routes.js';
 import { createAdminRouter } from './modules/admin/admin.routes.js';
 import { createCalendarRouter } from './modules/calendar/calendar.routes.js';
 import { createCatalogRouter } from './modules/catalog/catalog.routes.js';
+import { createCateringRouter } from './modules/catering/catering.routes.js';
 import { createFeedbackRouter } from './modules/feedback/feedback.routes.js';
 import { createFilesRouter } from './modules/files/files.routes.js';
 import { createNotificationRouter } from './modules/notifications/notification.routes.js';
@@ -86,6 +87,7 @@ export function createApp(options: AppOptions): Express {
   api.use(createAuthRouter(ctx));
   if (options.requestDrivenJobs) api.use(requestDrivenMaintenance(ctx));
   api.use(createCatalogRouter(ctx));
+  api.use(createCateringRouter(ctx));
   api.use(createCalendarRouter(ctx));
   api.use(createProductRouter(ctx));
   api.use(createOrderRouter(ctx));

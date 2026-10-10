@@ -21472,11 +21472,11 @@ var require_router = __commonJS({
     var slice = Array.prototype.slice;
     var flatten = Array.prototype.flat;
     var methods = METHODS.map((method) => method.toLowerCase());
-    module2.exports = Router12;
+    module2.exports = Router13;
     module2.exports.Route = Route;
-    function Router12(options) {
-      if (!(this instanceof Router12)) {
-        return new Router12(options);
+    function Router13(options) {
+      if (!(this instanceof Router13)) {
+        return new Router13(options);
       }
       const opts = options || {};
       function router(req, res, next) {
@@ -21490,9 +21490,9 @@ var require_router = __commonJS({
       router.stack = [];
       return router;
     }
-    Router12.prototype = function() {
+    Router13.prototype = function() {
     };
-    Router12.prototype.param = function param(name, fn) {
+    Router13.prototype.param = function param(name, fn) {
       if (!name) {
         throw new TypeError("argument name is required");
       }
@@ -21512,7 +21512,7 @@ var require_router = __commonJS({
       params.push(fn);
       return this;
     };
-    Router12.prototype.handle = function handle(req, res, callback) {
+    Router13.prototype.handle = function handle(req, res, callback) {
       if (!callback) {
         throw new TypeError("argument callback is required");
       }
@@ -21639,7 +21639,7 @@ var require_router = __commonJS({
         }
       }
     };
-    Router12.prototype.use = function use(handler) {
+    Router13.prototype.use = function use(handler) {
       let offset = 0;
       let path = "/";
       if (typeof handler !== "function") {
@@ -21672,7 +21672,7 @@ var require_router = __commonJS({
       }
       return this;
     };
-    Router12.prototype.route = function route(path) {
+    Router13.prototype.route = function route(path) {
       const route2 = new Route(path);
       const layer = new Layer(path, {
         sensitive: this.caseSensitive,
@@ -21687,7 +21687,7 @@ var require_router = __commonJS({
       return route2;
     };
     methods.concat("all").forEach(function(method) {
-      Router12.prototype[method] = function(path) {
+      Router13.prototype[method] = function(path) {
         const route = this.route(path);
         route[method].apply(route, slice.call(arguments, 1));
         return this;
@@ -21870,7 +21870,7 @@ var require_application = __commonJS({
     var compileTrust = require_utils3().compileTrust;
     var resolve = require("node:path").resolve;
     var once = require_once();
-    var Router12 = require_router();
+    var Router13 = require_router();
     var slice = Array.prototype.slice;
     var flatten = Array.prototype.flat;
     var app = exports2 = module2.exports = {};
@@ -21886,7 +21886,7 @@ var require_application = __commonJS({
         enumerable: true,
         get: function getrouter() {
           if (router === null) {
-            router = new Router12({
+            router = new Router13({
               caseSensitive: this.enabled("case sensitive routing"),
               strict: this.enabled("strict routing")
             });
@@ -24240,7 +24240,7 @@ var require_express = __commonJS({
     var EventEmitter = require("node:events").EventEmitter;
     var mixin = require_merge_descriptors();
     var proto = require_application();
-    var Router12 = require_router();
+    var Router13 = require_router();
     var req = require_request();
     var res = require_response();
     exports2 = module2.exports = createApplication;
@@ -24262,8 +24262,8 @@ var require_express = __commonJS({
     exports2.application = proto;
     exports2.request = req;
     exports2.response = res;
-    exports2.Route = Router12.Route;
-    exports2.Router = Router12;
+    exports2.Route = Router13.Route;
+    exports2.Router = Router13;
     exports2.json = bodyParser.json;
     exports2.raw = bodyParser.raw;
     exports2.static = require_serve_static();
@@ -66693,7 +66693,7 @@ UPDATE categories SET is_active = false WHERE slug = 'masofaviy-ishlar';` }, { "
 // src/app.ts
 var import_cookie_parser = __toESM(require_cookie_parser(), 1);
 var import_cors = __toESM(require_lib(), 1);
-var import_express12 = __toESM(require_express2(), 1);
+var import_express13 = __toESM(require_express2(), 1);
 
 // ../../node_modules/.pnpm/helmet@8.3.0/node_modules/helmet/index.mjs
 var dashify = (str) => str.replace(/[A-Z]/g, (capitalLetter) => "-" + capitalLetter.toLowerCase());
@@ -72543,6 +72543,8 @@ var smsLimiter = (enabled) => enabled ? limiter(8, (req) => {
   const phone = typeof req.body?.phone === "string" ? req.body.phone : "";
   return `${ipKeyGenerator(req.ip ?? "")}|${phone.replace(/\D/g, "")}`;
 }) : (_req, _res, next) => next();
+var CATERING_REQUESTS_PER_WINDOW = 5;
+var cateringLimiter = (enabled) => enabled ? limiter(CATERING_REQUESTS_PER_WINDOW) : (_req, _res, next) => next();
 
 // src/modules/auth/auth.routes.ts
 var import_express = __toESM(require_express2(), 1);
@@ -74692,8 +74694,42 @@ function createCatalogRouter(ctx) {
   return router;
 }
 
-// src/modules/feedback/feedback.routes.ts
+// src/modules/catering/catering.routes.ts
 var import_express5 = __toESM(require_express2(), 1);
+
+// src/modules/catering/catering.service.ts
+var CateringService = class {
+  db;
+  constructor(ctx) {
+    this.db = ctx.db;
+  }
+  /** Stores an enquiry for the team to call back; nothing is ordered or paid at this point. */
+  async createRequest(input) {
+    return this.db.insertInto("catering_requests").values({
+      name: input.name,
+      phone: input.phone,
+      service_type_id: input.serviceTypeId,
+      event_date: input.eventDate,
+      guests_count: input.guestsCount,
+      note: input.note
+    }).returning("id").executeTakeFirstOrThrow();
+  }
+};
+
+// src/modules/catering/catering.routes.ts
+function createCateringRouter(ctx) {
+  const router = (0, import_express5.Router)();
+  const catering = new CateringService(ctx);
+  const limited = ctx.config.nodeEnv !== "test";
+  router.post("/catering-requests", cateringLimiter(limited), async (req, res) => {
+    const input = cateringRequestSchema.parse(req.body);
+    res.status(201).json(await catering.createRequest(input));
+  });
+  return router;
+}
+
+// src/modules/feedback/feedback.routes.ts
+var import_express6 = __toESM(require_express2(), 1);
 var idSchema = external_exports.string().uuid();
 function orderId(req) {
   const parsed = idSchema.safeParse(req.params.id);
@@ -74701,7 +74737,7 @@ function orderId(req) {
   return parsed.data;
 }
 function createFeedbackRouter(ctx) {
-  const router = (0, import_express5.Router)();
+  const router = (0, import_express6.Router)();
   const feedback = new FeedbackService(ctx);
   const { requireAuth } = createAuthMiddleware(ctx);
   router.post("/orders/:id/review", requireAuth, async (req, res) => {
@@ -74716,11 +74752,11 @@ function createFeedbackRouter(ctx) {
 }
 
 // src/modules/files/files.routes.ts
-var import_express6 = __toESM(require_express2(), 1);
+var import_express7 = __toESM(require_express2(), 1);
 var FILE_NAME_PATTERN = /^[a-f0-9-]{36}\.(webp|glb)$/;
 var ONE_YEAR_SECONDS = 31536e3;
 function createFilesRouter(ctx) {
-  const router = (0, import_express6.Router)();
+  const router = (0, import_express7.Router)();
   router.get("/files/:name", async (req, res) => {
     const name = req.params.name ?? "";
     if (!FILE_NAME_PATTERN.test(name)) throw AppError.notFound();
@@ -74736,7 +74772,7 @@ function createFilesRouter(ctx) {
 }
 
 // src/modules/notifications/notification.routes.ts
-var import_express7 = __toESM(require_express2(), 1);
+var import_express8 = __toESM(require_express2(), 1);
 var UUID_PATTERN4 = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 function orderIdParam(req) {
   const value = req.params.orderId;
@@ -74744,7 +74780,7 @@ function orderIdParam(req) {
   return value;
 }
 function createNotificationRouter(ctx) {
-  const router = (0, import_express7.Router)();
+  const router = (0, import_express8.Router)();
   const service = new NotificationService(ctx);
   const { requireAuth } = createAuthMiddleware(ctx);
   const userId = (req) => req.auth?.userId ?? "";
@@ -74763,7 +74799,7 @@ function createNotificationRouter(ctx) {
 }
 
 // src/modules/materials/material.routes.ts
-var import_express8 = __toESM(require_express2(), 1);
+var import_express9 = __toESM(require_express2(), 1);
 var UUID_PATTERN5 = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 function idParam3(req) {
   const value = req.params.id;
@@ -74771,7 +74807,7 @@ function idParam3(req) {
   return value;
 }
 function createMaterialRouter(ctx) {
-  const router = (0, import_express8.Router)();
+  const router = (0, import_express9.Router)();
   const service = new MaterialService(ctx);
   const { requireWorker } = createAuthMiddleware(ctx);
   const workerId = (req) => req.workerId ?? "";
@@ -74799,7 +74835,7 @@ function createMaterialRouter(ctx) {
 }
 
 // src/modules/savings/savings.routes.ts
-var import_express9 = __toESM(require_express2(), 1);
+var import_express10 = __toESM(require_express2(), 1);
 
 // src/modules/savings/savings.service.ts
 var SavingsService = class {
@@ -74830,7 +74866,7 @@ var SavingsService = class {
 
 // src/modules/savings/savings.routes.ts
 function createSavingsRouter(ctx) {
-  const router = (0, import_express9.Router)();
+  const router = (0, import_express10.Router)();
   const service = new SavingsService(ctx);
   const { requireWorker } = createAuthMiddleware(ctx);
   const workerId = (req) => req.workerId ?? "";
@@ -74850,7 +74886,7 @@ function createSavingsRouter(ctx) {
 
 // src/modules/orders/order.routes.ts
 var import_node_crypto4 = require("node:crypto");
-var import_express10 = __toESM(require_express2(), 1);
+var import_express11 = __toESM(require_express2(), 1);
 
 // src/middleware/upload.ts
 var import_multer = __toESM(require_multer(), 1);
@@ -75191,7 +75227,7 @@ function orderId2(req) {
   return parsed.data;
 }
 function createOrderRouter(ctx) {
-  const router = (0, import_express10.Router)();
+  const router = (0, import_express11.Router)();
   const orders = new OrderService(ctx);
   const serviceOrders = new ServiceOrderService(ctx);
   const payments = new PaymentService(ctx);
@@ -75362,7 +75398,7 @@ function createPaymentProvider(config2) {
 }
 
 // src/modules/products/product.routes.ts
-var import_express11 = __toESM(require_express2(), 1);
+var import_express12 = __toESM(require_express2(), 1);
 
 // src/modules/products/product.service.ts
 var import_node_crypto6 = require("node:crypto");
@@ -80522,7 +80558,7 @@ function idParam4(req, name = "id") {
   return value;
 }
 function createProductRouter(ctx) {
-  const router = (0, import_express11.Router)();
+  const router = (0, import_express12.Router)();
   const service = new ProductService(ctx);
   const { requireWorker } = createAuthMiddleware(ctx);
   const workerId = (req) => req.workerId ?? "";
@@ -80597,15 +80633,15 @@ function createApp(options) {
   if (config2.isProduction && ctx.payments.name === "internal") {
     logger.warn("Real payment provider is not connected: PAYMENT_PROVIDER=internal");
   }
-  const app = (0, import_express12.default)();
+  const app = (0, import_express13.default)();
   app.set("trust proxy", 1);
   app.disable("x-powered-by");
   app.use(helmet({ crossOriginResourcePolicy: { policy: "same-site" } }));
   app.use((0, import_cors.default)({ origin: config2.allowedOrigins, credentials: true }));
   app.use(originGuard(config2.allowedOrigins));
-  app.use(import_express12.default.json({ limit: "100kb" }));
+  app.use(import_express13.default.json({ limit: "100kb" }));
   app.use((0, import_cookie_parser.default)());
-  const api = import_express12.default.Router();
+  const api = import_express13.default.Router();
   api.get("/health", (_req, res) => {
     res.json({ status: "ok" });
   });
@@ -80614,6 +80650,7 @@ function createApp(options) {
   api.use(createAuthRouter(ctx));
   if (options.requestDrivenJobs) api.use(requestDrivenMaintenance(ctx));
   api.use(createCatalogRouter(ctx));
+  api.use(createCateringRouter(ctx));
   api.use(createCalendarRouter(ctx));
   api.use(createProductRouter(ctx));
   api.use(createOrderRouter(ctx));

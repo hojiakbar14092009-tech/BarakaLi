@@ -111,7 +111,15 @@
     "IMAGE_REQUIRED": "Chop etish uchun kamida bitta rasm qoʻshing.",
     "NOT_FOUND": "Tanlangan qiymat topilmadi.",
     "INVALID_DATE": "Sanani toʻgʻri kiriting.",
-    "INVALID_TELEGRAM_USERNAME": "Telegram foydalanuvchi nomi notoʻgʻri: 5–32 belgi, faqat harf, raqam va pastki chiziq (_)."
+    "INVALID_TELEGRAM_USERNAME": "Telegram foydalanuvchi nomi notoʻgʻri: 5–32 belgi, faqat harf, raqam va pastki chiziq (_).",
+    "NAME_TOO_SHORT": "Ismingizni kamida 2 harf bilan yozing.",
+    "NAME_TOO_LONG": "Ismni 80 belgigacha qisqartiring.",
+    "SERVICE_REQUIRED": "Roʻyxatdan xizmat turini tanlang.",
+    "DATE_REQUIRED": "Tadbir sanasini tanlang.",
+    "DATE_NOT_IN_FUTURE": "Ertangi yoki undan keyingi sanani tanlang.",
+    "GUESTS_MIN": "Mehmonlar sonini kiriting: kamida 1 kishi.",
+    "GUESTS_MAX": "{{max}} tagacha mehmon sonini kiriting.",
+    "NOTE_TOO_LONG": "Izohni 1000 belgigacha qisqartiring."
   },
   "application": {
     "title": "Ariza holati",

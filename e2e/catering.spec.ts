@@ -143,3 +143,53 @@ test.describe('catering motion respects reduced motion', () => {
     expect(await transforms()).toBe(before);
   });
 });
+
+test.describe('catering request form (desktop)', () => {
+  const t = translator('uz');
+  test.use({ viewport: { width: 1280, height: 800 } });
+
+  function inDays(days: number): string {
+    const date = new Date(Date.now() + 5 * 3_600_000);
+    date.setUTCDate(date.getUTCDate() + days);
+    return date.toISOString().slice(0, 10);
+  }
+
+  test('a service card opens the form with that type, and the request is accepted', async ({
+    page,
+  }) => {
+    await page.goto('/');
+    const title = t('catering.services.ctaLabel').replace('{{service}}', 'Pishiriq va tort');
+    await page.getByRole('link', { name: title }).click();
+    const form = page.locator('#catering-sorov');
+    await expect(form).toBeInViewport();
+    await expect(page.getByLabel(t('catering.form.service'))).toHaveValue('pishiriq');
+    await expect(page).toHaveURL(/\/$/);
+
+    await page.getByLabel(t('catering.form.name')).fill('Malika');
+    await page.getByLabel(t('catering.form.phone')).fill('901234567');
+    await page.getByLabel(t('catering.form.date')).fill(inDays(14));
+    await page.getByLabel(t('catering.form.guests')).fill('35');
+    await page.getByLabel(t('catering.form.note')).fill('Tugʻilgan kun');
+    const sent = page.waitForResponse((res) => res.url().endsWith('/api/catering-requests'));
+    await form.getByRole('button', { name: t('catering.form.submit') }).click();
+    expect((await sent).status()).toBe(201);
+    await expect(
+      page.getByRole('heading', { name: t('catering.form.successTitle') }),
+    ).toBeVisible();
+    await expect(page.getByText(t('catering.form.successText'))).toBeVisible();
+    expect(page.url()).not.toMatch(/901234567|Malika/);
+  });
+
+  test('explains on blur how to fix the guest count and the phone', async ({ page }) => {
+    await page.goto('/#catering-sorov');
+    const guests = page.getByLabel(t('catering.form.guests'));
+    await guests.fill('0');
+    await guests.blur();
+    await expect(page.getByText(t('validation.GUESTS_MIN'))).toBeVisible();
+    const phone = page.getByLabel(t('catering.form.phone'));
+    await phone.fill('9012');
+    await phone.blur();
+    await expect(page.getByText(t('validation.INVALID_PHONE'))).toBeVisible();
+    await expect(guests).toHaveAttribute('aria-invalid', 'true');
+  });
+});
