@@ -1,4 +1,12 @@
-import { Home, LayoutGrid, Receipt, Store, UserRound, Wallet, type LucideIcon } from 'lucide-react';
+import {
+  CalendarDays,
+  Home,
+  Receipt,
+  Store,
+  UserRound,
+  Wallet,
+  type LucideIcon,
+} from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { NavLink } from 'react-router-dom';
 import { useAuthStore } from '../stores/auth';
@@ -19,7 +27,7 @@ function useNavItems(): NavItem[] {
     return [
       { to: '/hunarmand/panel', labelKey: 'nav.cabinet', icon: Store },
       orders,
-      { to: '/ishlar', labelKey: 'nav.products', icon: LayoutGrid },
+      { to: '/hunarmand/kalendar', labelKey: 'nav.calendar', icon: CalendarDays },
       { to: '/daromad', labelKey: 'nav.earnings', icon: Wallet },
       profile,
     ];

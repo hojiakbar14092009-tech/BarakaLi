@@ -52,6 +52,8 @@ export interface WorkerSummaryDto {
   rating: number;
   reviewsCount: number;
   isVerified: boolean;
+  /** Price of one hour of service work; null while the worker takes no service orders. */
+  hourlyRate: number | null;
   minPrice: number | null;
   productsCount: number;
 }
@@ -129,7 +131,28 @@ export interface OrderDto {
   review: ReviewDto | null;
   /** The requesting user's own most recent complaint on this order. */
   complaint: ComplaintDto | null;
+  /** Service orders only: booked slot, brief and reference photos. */
+  startTime: string | null;
+  endTime: string | null;
+  description: string | null;
+  deadline: string | null;
+  images: string[];
   createdAt: string;
+}
+
+export interface TimeRangeDto {
+  startTime: string;
+  endTime: string;
+}
+
+export interface AvailabilityWindowDto extends TimeRangeDto {
+  id: string;
+}
+
+/** Free windows plus slots already taken inside them; carries no customer data. */
+export interface AvailabilityDto {
+  windows: AvailabilityWindowDto[];
+  booked: TimeRangeDto[];
 }
 
 export interface PaymentSessionDto {

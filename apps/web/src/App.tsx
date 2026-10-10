@@ -16,6 +16,8 @@ const OrderDetailPage = lazy(() => import('./features/orders/OrderDetailPage'));
 const CabinetPage = lazy(() => import('./features/cabinet/CabinetPage'));
 const MyProductsPage = lazy(() => import('./features/cabinet/MyProductsPage'));
 const EarningsPage = lazy(() => import('./features/cabinet/EarningsPage'));
+const CalendarPage = lazy(() => import('./features/calendar/CalendarPage'));
+const NewServiceOrderPage = lazy(() => import('./features/orders/NewServiceOrderPage'));
 const ProfilePage = lazy(() => import('./features/profile/ProfilePage'));
 const AuthPage = lazy(() => import('./features/auth/AuthPage'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
@@ -39,6 +41,7 @@ const router = createBrowserRouter([
         element: <RequireAuth role="worker" />,
         children: [
           { path: '/hunarmand/panel', element: <CabinetPage /> },
+          { path: '/hunarmand/kalendar', element: <CalendarPage /> },
           { path: '/ishlar', element: <MyProductsPage /> },
           { path: '/daromad', element: <EarningsPage /> },
         ],
@@ -47,6 +50,7 @@ const router = createBrowserRouter([
       {
         element: <RequireAuth />,
         children: [
+          { path: '/buyurtma/yangi', element: <NewServiceOrderPage /> },
           { path: '/tolov/:orderId', element: <PaymentPage /> },
           { path: '/buyurtmalar', element: <OrdersPage /> },
           { path: '/buyurtmalar/:id', element: <OrderDetailPage /> },

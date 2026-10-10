@@ -1,7 +1,9 @@
 import { BadgeCheck, Star } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
+import { buttonClasses } from '../../components/Button';
+import { formatPrice } from '../../lib/format';
 import { EmptyState, ErrorState, LoadingState } from '../../components/StateViews';
 import { errorMessage } from '../../lib/errors';
 import { Pagination } from '../catalog/Pagination';
@@ -49,6 +51,21 @@ export default function WorkerPage() {
             </span>
           </div>
           {data.bio && <p className="max-w-2xl pt-1">{data.bio}</p>}
+          {data.hourlyRate !== null && (
+            <div className="flex flex-wrap items-center gap-3 pt-2">
+              <span className="font-semibold">
+                {t('serviceOrder.rate', {
+                  price: formatPrice(data.hourlyRate, t('common.currency')),
+                })}
+              </span>
+              <Link
+                to={`/buyurtma/yangi?hunarmand=${data.id}`}
+                className={buttonClasses('primary', 'md')}
+              >
+                {t('catalog.orderService')}
+              </Link>
+            </div>
+          )}
         </div>
       </header>
 

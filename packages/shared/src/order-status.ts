@@ -39,3 +39,11 @@ export const PHONE_VISIBLE_STATUSES: readonly OrderStatus[] = [
   'ready',
   'delivered',
 ];
+
+/** Statuses in which a service order still holds its time slot (mirrors the DB exclusion constraint). */
+export const SLOT_HOLDING_STATUSES = [
+  'awaiting_payment',
+  'new',
+  'accepted',
+  'in_progress',
+] as const satisfies readonly OrderStatus[];

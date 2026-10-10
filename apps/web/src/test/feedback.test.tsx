@@ -21,6 +21,11 @@ const baseOrder: OrderDto = {
   paymentStatus: 'paid',
   review: null,
   complaint: null,
+  startTime: null,
+  endTime: null,
+  description: null,
+  deadline: null,
+  images: [],
   createdAt: '2026-01-01T00:00:00.000Z',
 };
 

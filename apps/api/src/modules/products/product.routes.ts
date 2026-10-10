@@ -1,16 +1,15 @@
-import { Router, type Request, type RequestHandler } from 'express';
-import multer, { MulterError } from 'multer';
+import { Router, type Request } from 'express';
 import {
   MAX_IMAGE_BYTES,
   MAX_MODEL_BYTES,
   productInputSchema,
   productStatusSchema,
   stockUpdateSchema,
-  type ErrorCode,
 } from '@barakali/shared';
 import type { AppContext } from '../../context.js';
 import { AppError } from '../../errors.js';
 import { createAuthMiddleware } from '../../middleware/auth.js';
+import { fileOf, singleFile } from '../../middleware/upload.js';
 import { ProductService } from './product.service.js';
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -19,31 +18,6 @@ function idParam(req: Request, name = 'id'): string {
   const value = req.params[name];
   if (typeof value !== 'string' || !UUID_PATTERN.test(value)) throw AppError.notFound();
   return value;
-}
-
-/** Parses one in-memory file and maps multer failures to coded API errors. */
-function singleFile(field: string, maxBytes: number, tooLarge: ErrorCode): RequestHandler {
-  const upload = multer({
-    storage: multer.memoryStorage(),
-    limits: { fileSize: maxBytes, files: 1 },
-  });
-  return (req, res, next) => {
-    upload.single(field)(req, res, (error?: unknown) => {
-      if (error instanceof MulterError) {
-        return next(
-          error.code === 'LIMIT_FILE_SIZE'
-            ? new AppError(tooLarge, 413)
-            : AppError.badRequest('UPLOAD_MISSING_FILE'),
-        );
-      }
-      return next(error);
-    });
-  };
-}
-
-function fileOf(req: Request): Buffer {
-  if (!req.file) throw AppError.badRequest('UPLOAD_MISSING_FILE');
-  return req.file.buffer;
 }
 
 export function createProductRouter(ctx: AppContext): Router {

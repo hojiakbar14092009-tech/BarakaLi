@@ -18,5 +18,6 @@
   "workerNotFound": "Hunarmand topilmadi.",
   "productsCount": "Ishlar soni: {{count}}",
   "wholesaleFrom": "{{qty}} dona: {{price}}",
-  "inStock": "Zaxirada: {{count}}"
+  "inStock": "Zaxirada: {{count}}",
+  "orderService": "Xizmatga buyurtma berish"
 }

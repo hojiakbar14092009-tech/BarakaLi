@@ -1,13 +1,23 @@
+import { randomUUID } from 'node:crypto';
 import { Router, type Request } from 'express';
 import { z } from 'zod';
-import { cardPaymentSchema, createOrdersSchema, orderActionSchema } from '@barakali/shared';
+import {
+  MAX_IMAGE_BYTES,
+  cardPaymentSchema,
+  createOrdersSchema,
+  createServiceOrderSchema,
+  orderActionSchema,
+} from '@barakali/shared';
 import type { AppContext } from '../../context.js';
 import { AppError } from '../../errors.js';
 import { createAuthMiddleware } from '../../middleware/auth.js';
+import { fileOf, singleFile } from '../../middleware/upload.js';
+import { processImage } from '../uploads/image.js';
 import { WorkersRepository } from '../workers/workers.repository.js';
 import { PaymentService } from '../payments/payment.service.js';
 import type { OrderViewer } from './order.repository.js';
 import { OrderService } from './order.service.js';
+import { ServiceOrderService } from './service-order.service.js';
 
 const idSchema = z.string().uuid();
 const listQuery = z.object({ as: z.enum(['customer', 'worker']).default('customer') });
@@ -21,6 +31,7 @@ function orderId(req: Request): string {
 export function createOrderRouter(ctx: AppContext): Router {
   const router = Router();
   const orders = new OrderService(ctx);
+  const serviceOrders = new ServiceOrderService(ctx);
   const payments = new PaymentService(ctx);
   const workers = new WorkersRepository(ctx.db);
   const { requireAuth, requireWorker } = createAuthMiddleware(ctx);
@@ -34,6 +45,22 @@ export function createOrderRouter(ctx: AppContext): Router {
     const input = createOrdersSchema.parse(req.body);
     res.status(201).json(await orders.createOrders(req.auth?.userId ?? '', input));
   });
+
+  router.post('/orders/service', requireAuth, async (req, res) => {
+    const input = createServiceOrderSchema.parse(req.body);
+    res.status(201).json(await serviceOrders.create(req.auth?.userId ?? '', input));
+  });
+
+  router.post(
+    '/uploads/order-image',
+    requireAuth,
+    singleFile('image', MAX_IMAGE_BYTES, 'IMAGE_TOO_LARGE'),
+    async (req, res) => {
+      const webp = await processImage(fileOf(req));
+      const url = await ctx.storage.put(`${randomUUID()}.webp`, webp, 'image/webp');
+      res.status(201).json({ url });
+    },
+  );
 
   router.get('/orders', requireAuth, async (req, res) => {
     const { as } = listQuery.parse(req.query);

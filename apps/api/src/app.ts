@@ -13,21 +13,27 @@ import { logger } from './logger.js';
 import { originGuard } from './middleware/origin.js';
 import { generalLimiter } from './middleware/rate-limit.js';
 import { createAuthRouter } from './modules/auth/auth.routes.js';
+import { createCalendarRouter } from './modules/calendar/calendar.routes.js';
 import { createCatalogRouter } from './modules/catalog/catalog.routes.js';
 import { createFeedbackRouter } from './modules/feedback/feedback.routes.js';
 import { createFilesRouter } from './modules/files/files.routes.js';
 import { createOrderRouter } from './modules/orders/order.routes.js';
+import { requestDrivenMaintenance } from './modules/jobs/maintenance.js';
 import { createPaymentProvider } from './modules/payments/provider-factory.js';
 import type { PaymentProvider } from './modules/payments/payment-provider.js';
 import { createProductRouter } from './modules/products/product.routes.js';
 
 export interface AppOptions {
   db: Db;
+  /** Pre-built context, for callers that also need it outside the HTTP app (background jobs). */
+  context?: AppContext;
   config?: AppConfig;
   cache?: Cache;
   storage?: StorageProvider;
   sms?: SmsProvider;
   payments?: PaymentProvider;
+  /** Serverless hosting: run the order sweep on incoming requests instead of a timer. */
+  requestDrivenJobs?: boolean;
   /** Requests wait for this to resolve (e.g. migrations on a serverless cold start). */
   ready?: () => Promise<unknown>;
 }
@@ -52,7 +58,7 @@ function waitFor(ready: AppOptions['ready']): RequestHandler {
 }
 
 export function createApp(options: AppOptions): Express {
-  const ctx = buildContext(options);
+  const ctx = options.context ?? buildContext(options);
   const { config } = ctx;
   if (config.isProduction && ctx.payments.name === 'internal') {
     logger.warn('Real payment provider is not connected: PAYMENT_PROVIDER=internal');
@@ -74,7 +80,9 @@ export function createApp(options: AppOptions): Express {
   api.use(waitFor(options.ready));
   api.use(generalLimiter(config.nodeEnv !== 'test'));
   api.use(createAuthRouter(ctx));
+  if (options.requestDrivenJobs) api.use(requestDrivenMaintenance(ctx));
   api.use(createCatalogRouter(ctx));
+  api.use(createCalendarRouter(ctx));
   api.use(createProductRouter(ctx));
   api.use(createOrderRouter(ctx));
   api.use(createFeedbackRouter(ctx));

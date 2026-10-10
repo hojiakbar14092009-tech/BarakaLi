@@ -11,6 +11,7 @@ interface WorkerRow {
   reviews_count: number;
   is_verified: boolean;
   category_slug: string;
+  hourly_rate: number | null;
   min_price: number | null;
   products_count: number;
 }
@@ -25,6 +26,7 @@ function toDto(row: WorkerRow): WorkerSummaryDto {
     rating: row.rating,
     reviewsCount: row.reviews_count,
     isVerified: row.is_verified,
+    hourlyRate: row.hourly_rate === null ? null : Number(row.hourly_rate),
     minPrice: row.min_price === null ? null : Number(row.min_price),
     productsCount: Number(row.products_count),
   };
@@ -101,6 +103,7 @@ export class WorkersRepository {
         'w.rating',
         'w.reviews_count',
         'w.is_verified',
+        'w.hourly_rate',
         'c.slug as category_slug',
         sql<number | null>`min(p.retail_price)`.as('min_price'),
         sql<number>`count(p.id)`.as('products_count'),

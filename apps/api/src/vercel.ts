@@ -38,4 +38,4 @@ function ensureMigrated(): Promise<void> {
   return migrated;
 }
 
-export default createApp({ db, config, ready: ensureMigrated });
+export default createApp({ db, config, ready: ensureMigrated, requestDrivenJobs: true });

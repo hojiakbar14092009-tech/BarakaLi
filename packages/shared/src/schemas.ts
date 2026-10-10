@@ -18,6 +18,9 @@ import {
   PRODUCT_STATUSES,
   SMS_CODE_LENGTH,
   DEFAULT_PAGE_SIZE,
+  MAX_ORDER_DESCRIPTION_LENGTH,
+  MAX_ORDER_IMAGES,
+  MAX_SERVICE_HOURS,
 } from './constants.js';
 import { normalizePhone } from './phone.js';
 
@@ -141,6 +144,31 @@ export const complaintInputSchema = z.object({
   reason: z.string().trim().min(MIN_COMPLAINT_REASON_LENGTH).max(MAX_COMPLAINT_REASON_LENGTH),
 });
 export type ComplaintInput = z.infer<typeof complaintInputSchema>;
+
+const isoInstant = z.string().datetime({ offset: true });
+
+export const availabilityInputSchema = z.object({
+  startTime: isoInstant,
+  endTime: isoInstant,
+});
+export type AvailabilityInput = z.infer<typeof availabilityInputSchema>;
+
+export const hourlyRateSchema = z.object({ hourlyRate: moneySchema.nullable() });
+
+export const createServiceOrderSchema = z.object({
+  workerId: z.string().uuid(),
+  description: z.string().trim().min(MIN_NAME_LENGTH).max(MAX_ORDER_DESCRIPTION_LENGTH),
+  deadline: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, 'INVALID_DATE')
+    .nullable()
+    .default(null),
+  startTime: isoInstant,
+  hours: z.number().int().min(1).max(MAX_SERVICE_HOURS),
+  imageUrls: z.array(z.string().max(300)).max(MAX_ORDER_IMAGES).default([]),
+});
+export type CreateServiceOrderInput = z.infer<typeof createServiceOrderSchema>;
+export type CreateServiceOrderRaw = z.input<typeof createServiceOrderSchema>;
 
 export const orderActionSchema = z.object({
   action: z.enum(['accept', 'reject', 'start', 'ready', 'deliver']),

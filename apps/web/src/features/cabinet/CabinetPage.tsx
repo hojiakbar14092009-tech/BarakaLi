@@ -68,8 +68,12 @@ export default function CabinetPage() {
         <Card title={t('cabinet.myWorks')} icon={<Package className="size-6" />} to="/ishlar">
           {t('cabinet.myWorksText')}
         </Card>
-        <Card title={t('cabinet.calendar')} icon={<CalendarDays className="size-6" />}>
-          {t('cabinet.soon')}
+        <Card
+          title={t('cabinet.calendar')}
+          icon={<CalendarDays className="size-6" />}
+          to="/hunarmand/kalendar"
+        >
+          {t('cabinet.calendarText')}
         </Card>
         <Card title={t('cabinet.materials')} icon={<Wheat className="size-6" />}>
           {t('cabinet.materialsText')} {t('cabinet.soon')}

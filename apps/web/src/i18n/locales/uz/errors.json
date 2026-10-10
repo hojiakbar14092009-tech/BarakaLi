@@ -29,5 +29,13 @@
   "OWN_PRODUCT": "Oʻz mahsulotingizni sotib ololmaysiz.",
   "ORDER_NOT_REVIEWABLE": "Buyurtmani faqat topshirilgandan keyin baholash mumkin.",
   "REVIEW_ALREADY_EXISTS": "Bu buyurtma allaqachon baholangan.",
-  "COMPLAINT_ALREADY_OPEN": "Bu buyurtma boʻyicha shikoyatingiz allaqachon ochiq."
+  "COMPLAINT_ALREADY_OPEN": "Bu buyurtma boʻyicha shikoyatingiz allaqachon ochiq.",
+  "ORDER_SLOT_TAKEN": "Bu vaqt band, boshqasini tanlang.",
+  "SLOT_OUTSIDE_AVAILABILITY": "Tanlangan vaqt hunarmandning boʻsh vaqtlariga kirmaydi.",
+  "SLOT_IN_PAST": "Oʻtib ketgan vaqtga buyurtma berib boʻlmaydi.",
+  "SERVICE_RATE_MISSING": "Bu hunarmand hozircha xizmat buyurtmasini qabul qilmaydi.",
+  "AVAILABILITY_OVERLAP": "Bu vaqt oraligʻi allaqachon belgilangan.",
+  "AVAILABILITY_INVALID": "Vaqt oraligʻi notoʻgʻri: kelajakdagi vaqtni va 16 soatgacha boʻlgan oraliqni tanlang.",
+  "OWN_SERVICE": "Oʻzingizning xizmatingizga buyurtma bera olmaysiz.",
+  "ORDER_IMAGE_INVALID": "Rasmlardan biri topilmadi. Rasmni qayta yuklang."
 }

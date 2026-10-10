@@ -71,5 +71,6 @@
     "empty": "Hozircha daromad yoʻq. Birinchi buyurtma topshirilgach shu yerda koʻrinadi.",
     "commissionLine": "Komissiya: {{amount}}",
     "received": "Hunarmandga tegdi: {{amount}}"
-  }
+  },
+  "calendarText": "Boʻsh vaqtingiz va xizmat narxini belgilang."
 }

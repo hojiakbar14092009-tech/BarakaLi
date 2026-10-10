@@ -25,7 +25,8 @@
     "profile": "Profil",
     "cart": "Savat",
     "main": "Asosiy navigatsiya",
-    "cabinet": "Kabinet"
+    "cabinet": "Kabinet",
+    "calendar": "Kalendar"
   },
   "header": {
     "signIn": "Kirish",
@@ -102,6 +103,7 @@
     "INVALID_EXPIRY": "Muddatni OO/YY koʻrinishida kiriting.",
     "INVALID_CVC": "CVC 3 ta raqamdan iborat.",
     "IMAGE_REQUIRED": "Chop etish uchun kamida bitta rasm qoʻshing.",
-    "NOT_FOUND": "Tanlangan qiymat topilmadi."
+    "NOT_FOUND": "Tanlangan qiymat topilmadi.",
+    "INVALID_DATE": "Sanani toʻgʻri kiriting."
   }
 }

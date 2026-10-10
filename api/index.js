@@ -21472,11 +21472,11 @@ var require_router = __commonJS({
     var slice = Array.prototype.slice;
     var flatten = Array.prototype.flat;
     var methods = METHODS.map((method) => method.toLowerCase());
-    module2.exports = Router7;
+    module2.exports = Router8;
     module2.exports.Route = Route;
-    function Router7(options) {
-      if (!(this instanceof Router7)) {
-        return new Router7(options);
+    function Router8(options) {
+      if (!(this instanceof Router8)) {
+        return new Router8(options);
       }
       const opts = options || {};
       function router(req, res, next) {
@@ -21490,9 +21490,9 @@ var require_router = __commonJS({
       router.stack = [];
       return router;
     }
-    Router7.prototype = function() {
+    Router8.prototype = function() {
     };
-    Router7.prototype.param = function param(name, fn) {
+    Router8.prototype.param = function param(name, fn) {
       if (!name) {
         throw new TypeError("argument name is required");
       }
@@ -21512,7 +21512,7 @@ var require_router = __commonJS({
       params.push(fn);
       return this;
     };
-    Router7.prototype.handle = function handle(req, res, callback) {
+    Router8.prototype.handle = function handle(req, res, callback) {
       if (!callback) {
         throw new TypeError("argument callback is required");
       }
@@ -21639,7 +21639,7 @@ var require_router = __commonJS({
         }
       }
     };
-    Router7.prototype.use = function use(handler) {
+    Router8.prototype.use = function use(handler) {
       let offset = 0;
       let path = "/";
       if (typeof handler !== "function") {
@@ -21672,7 +21672,7 @@ var require_router = __commonJS({
       }
       return this;
     };
-    Router7.prototype.route = function route(path) {
+    Router8.prototype.route = function route(path) {
       const route2 = new Route(path);
       const layer = new Layer(path, {
         sensitive: this.caseSensitive,
@@ -21687,7 +21687,7 @@ var require_router = __commonJS({
       return route2;
     };
     methods.concat("all").forEach(function(method) {
-      Router7.prototype[method] = function(path) {
+      Router8.prototype[method] = function(path) {
         const route = this.route(path);
         route[method].apply(route, slice.call(arguments, 1));
         return this;
@@ -21870,7 +21870,7 @@ var require_application = __commonJS({
     var compileTrust = require_utils3().compileTrust;
     var resolve = require("node:path").resolve;
     var once = require_once();
-    var Router7 = require_router();
+    var Router8 = require_router();
     var slice = Array.prototype.slice;
     var flatten = Array.prototype.flat;
     var app = exports2 = module2.exports = {};
@@ -21886,7 +21886,7 @@ var require_application = __commonJS({
         enumerable: true,
         get: function getrouter() {
           if (router === null) {
-            router = new Router7({
+            router = new Router8({
               caseSensitive: this.enabled("case sensitive routing"),
               strict: this.enabled("strict routing")
             });
@@ -24240,7 +24240,7 @@ var require_express = __commonJS({
     var EventEmitter = require("node:events").EventEmitter;
     var mixin = require_merge_descriptors();
     var proto = require_application();
-    var Router7 = require_router();
+    var Router8 = require_router();
     var req = require_request();
     var res = require_response();
     exports2 = module2.exports = createApplication;
@@ -24262,8 +24262,8 @@ var require_express = __commonJS({
     exports2.application = proto;
     exports2.request = req;
     exports2.response = res;
-    exports2.Route = Router7.Route;
-    exports2.Router = Router7;
+    exports2.Route = Router8.Route;
+    exports2.Router = Router8;
     exports2.json = bodyParser.json;
     exports2.raw = bodyParser.raw;
     exports2.static = require_serve_static();
@@ -66683,12 +66683,12 @@ __export(vercel_exports, {
 module.exports = __toCommonJS(vercel_exports);
 
 // embedded-migrations:migrations
-var migrations_default = [{ "name": "1760000000000_core.sql", "up": "CREATE EXTENSION IF NOT EXISTS pg_trgm;\n\nCREATE TABLE categories (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  slug text NOT NULL UNIQUE,\n  name_uz text NOT NULL,\n  name_ru text NOT NULL,\n  position integer NOT NULL DEFAULT 0\n);\n\nINSERT INTO categories (slug, name_uz, name_ru, position) VALUES\n  ('tikuvchilik', 'Tikuvchilik', '\u0428\u0438\u0442\u044C\u0451', 1),\n  ('pishiriq', 'Pishiriq', '\u0412\u044B\u043F\u0435\u0447\u043A\u0430', 2),\n  ('qol-mehnati', 'Qo''l mehnati', '\u0420\u0443\u043A\u043E\u0434\u0435\u043B\u0438\u0435', 3),\n  ('dizayn', 'Dizayn', '\u0414\u0438\u0437\u0430\u0439\u043D', 4),\n  ('masofaviy-ishlar', 'Masofaviy ishlar', '\u0423\u0434\u0430\u043B\u0451\u043D\u043D\u0430\u044F \u0440\u0430\u0431\u043E\u0442\u0430', 5);\n\nCREATE TABLE users (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  phone text NOT NULL UNIQUE,\n  name text,\n  role text NOT NULL DEFAULT 'customer' CHECK (role IN ('customer', 'worker', 'admin')),\n  language text NOT NULL DEFAULT 'uz' CHECK (language IN ('uz', 'ru')),\n  created_at timestamptz NOT NULL DEFAULT now()\n);\n\nCREATE TABLE workers (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  user_id uuid NOT NULL UNIQUE REFERENCES users (id) ON DELETE CASCADE,\n  category_id uuid NOT NULL REFERENCES categories (id),\n  display_name text NOT NULL,\n  bio text,\n  avatar_url text,\n  rating numeric(3, 2) NOT NULL DEFAULT 0,\n  reviews_count integer NOT NULL DEFAULT 0,\n  is_verified boolean NOT NULL DEFAULT false,\n  created_at timestamptz NOT NULL DEFAULT now()\n);\nCREATE INDEX workers_category_idx ON workers (category_id);\n\nCREATE TABLE products (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  worker_id uuid NOT NULL REFERENCES workers (id) ON DELETE CASCADE,\n  category_id uuid NOT NULL REFERENCES categories (id),\n  title text NOT NULL,\n  description text NOT NULL DEFAULT '',\n  retail_price bigint NOT NULL CHECK (retail_price > 0),\n  wholesale_price bigint CHECK (wholesale_price IS NULL OR wholesale_price > 0),\n  wholesale_min_qty integer CHECK (wholesale_min_qty IS NULL OR wholesale_min_qty >= 2),\n  stock integer NOT NULL DEFAULT 0 CHECK (stock >= 0),\n  status text NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'published', 'hidden')),\n  created_at timestamptz NOT NULL DEFAULT now(),\n  updated_at timestamptz NOT NULL DEFAULT now(),\n  CONSTRAINT products_wholesale_pair CHECK (\n    (wholesale_price IS NULL) = (wholesale_min_qty IS NULL)\n  ),\n  CONSTRAINT products_wholesale_lower CHECK (\n    wholesale_price IS NULL OR wholesale_price < retail_price\n  )\n);\nCREATE INDEX products_worker_status_idx ON products (worker_id, status);\nCREATE INDEX products_category_status_idx ON products (category_id, status);\n-- Uzbek apostrophe variants (' \u02BB \u02BC \u2019 \u2018 `) collapse to one form for search.\nCREATE FUNCTION uz_normalize(value text) RETURNS text\n  LANGUAGE sql IMMUTABLE PARALLEL SAFE\n  AS $$ SELECT lower(translate(value, '''\u02BB\u02BC\u2019\u2018`', '')) $$;\nCREATE INDEX products_title_trgm_idx ON products USING gin (uz_normalize(title) gin_trgm_ops);\n\nCREATE TABLE product_images (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  product_id uuid NOT NULL REFERENCES products (id) ON DELETE CASCADE,\n  url text NOT NULL,\n  position integer NOT NULL DEFAULT 0\n);\nCREATE INDEX product_images_product_idx ON product_images (product_id, position);\n\nCREATE TABLE product_models (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  product_id uuid NOT NULL UNIQUE REFERENCES products (id) ON DELETE CASCADE,\n  file_url text NOT NULL,\n  file_size integer NOT NULL,\n  poster_url text,\n  created_at timestamptz NOT NULL DEFAULT now()\n);\n\nCREATE TABLE orders (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  type text NOT NULL CHECK (type IN ('service', 'product')),\n  customer_id uuid NOT NULL REFERENCES users (id),\n  worker_id uuid NOT NULL REFERENCES workers (id),\n  status text NOT NULL DEFAULT 'awaiting_payment' CHECK (\n    status IN ('awaiting_payment', 'new', 'accepted', 'in_progress', 'ready', 'delivered', 'cancelled', 'refunded')\n  ),\n  total bigint NOT NULL CHECK (total >= 0),\n  commission bigint NOT NULL CHECK (commission >= 0),\n  worker_amount bigint NOT NULL CHECK (worker_amount >= 0),\n  fulfillment text NOT NULL DEFAULT 'pickup' CHECK (fulfillment IN ('pickup', 'delivery')),\n  delivery_address text,\n  start_time timestamptz,\n  end_time timestamptz,\n  created_at timestamptz NOT NULL DEFAULT now(),\n  updated_at timestamptz NOT NULL DEFAULT now()\n);\nCREATE INDEX orders_type_idx ON orders (type);\nCREATE INDEX orders_customer_idx ON orders (customer_id, created_at DESC);\nCREATE INDEX orders_worker_status_idx ON orders (worker_id, status);\n\nCREATE TABLE order_items (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  order_id uuid NOT NULL REFERENCES orders (id) ON DELETE CASCADE,\n  product_id uuid REFERENCES products (id) ON DELETE SET NULL,\n  title_snapshot text NOT NULL,\n  unit_price bigint NOT NULL CHECK (unit_price > 0),\n  quantity integer NOT NULL CHECK (quantity > 0),\n  price_type text NOT NULL CHECK (price_type IN ('retail', 'wholesale'))\n);\nCREATE INDEX order_items_order_idx ON order_items (order_id);\n\nCREATE TABLE payments (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  order_id uuid NOT NULL REFERENCES orders (id) ON DELETE CASCADE,\n  amount bigint NOT NULL CHECK (amount >= 0),\n  status text NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'paid', 'refunded', 'failed')),\n  provider text NOT NULL,\n  provider_ref text,\n  idempotency_key text NOT NULL UNIQUE,\n  created_at timestamptz NOT NULL DEFAULT now()\n);\nCREATE INDEX payments_order_idx ON payments (order_id);\n\nCREATE TABLE earnings (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  order_id uuid NOT NULL UNIQUE REFERENCES orders (id) ON DELETE CASCADE,\n  worker_id uuid NOT NULL REFERENCES workers (id),\n  amount bigint NOT NULL CHECK (amount >= 0),\n  commission bigint NOT NULL CHECK (commission >= 0),\n  created_at timestamptz NOT NULL DEFAULT now()\n);\nCREATE INDEX earnings_worker_idx ON earnings (worker_id, created_at DESC);\n\nCREATE TABLE sms_codes (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  phone text NOT NULL,\n  code_hash text NOT NULL,\n  expires_at timestamptz NOT NULL,\n  attempts integer NOT NULL DEFAULT 0,\n  consumed_at timestamptz,\n  created_at timestamptz NOT NULL DEFAULT now()\n);\nCREATE INDEX sms_codes_phone_idx ON sms_codes (phone, created_at DESC);\n\nCREATE TABLE refresh_tokens (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  user_id uuid NOT NULL REFERENCES users (id) ON DELETE CASCADE,\n  token_hash text NOT NULL UNIQUE,\n  expires_at timestamptz NOT NULL,\n  revoked_at timestamptz,\n  created_at timestamptz NOT NULL DEFAULT now()\n);\nCREATE INDEX refresh_tokens_user_idx ON refresh_tokens (user_id);\n\nCREATE TABLE files (\n  name text PRIMARY KEY,\n  content_type text NOT NULL,\n  size integer NOT NULL,\n  data bytea NOT NULL,\n  created_at timestamptz NOT NULL DEFAULT now()\n);" }, { "name": "1760000100000_reviews_complaints.sql", "up": "CREATE TABLE reviews (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  -- One review per order: the unique key is what stops a second review at the database level.\n  order_id uuid NOT NULL UNIQUE REFERENCES orders (id) ON DELETE CASCADE,\n  customer_id uuid NOT NULL REFERENCES users (id),\n  worker_id uuid NOT NULL REFERENCES workers (id),\n  rating smallint NOT NULL CHECK (rating BETWEEN 1 AND 5),\n  comment text CHECK (comment IS NULL OR char_length(comment) <= 1000),\n  status text NOT NULL DEFAULT 'visible' CHECK (status IN ('visible', 'hidden')),\n  created_at timestamptz NOT NULL DEFAULT now()\n);\nCREATE INDEX reviews_worker_idx ON reviews (worker_id, created_at DESC);\n\nCREATE TABLE complaints (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  order_id uuid NOT NULL REFERENCES orders (id) ON DELETE CASCADE,\n  user_id uuid NOT NULL REFERENCES users (id),\n  reason text NOT NULL CHECK (char_length(reason) BETWEEN 5 AND 1000),\n  status text NOT NULL DEFAULT 'open' CHECK (status IN ('open', 'resolved', 'dismissed')),\n  created_at timestamptz NOT NULL DEFAULT now()\n);\nCREATE INDEX complaints_order_idx ON complaints (order_id);\n-- A user can have only one open complaint per order; they can file again after it is closed.\nCREATE UNIQUE INDEX complaints_one_open_per_user_idx\n  ON complaints (order_id, user_id) WHERE status = 'open';" }];
+var migrations_default = [{ "name": "1760000000000_core.sql", "up": "CREATE EXTENSION IF NOT EXISTS pg_trgm;\n\nCREATE TABLE categories (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  slug text NOT NULL UNIQUE,\n  name_uz text NOT NULL,\n  name_ru text NOT NULL,\n  position integer NOT NULL DEFAULT 0\n);\n\nINSERT INTO categories (slug, name_uz, name_ru, position) VALUES\n  ('tikuvchilik', 'Tikuvchilik', '\u0428\u0438\u0442\u044C\u0451', 1),\n  ('pishiriq', 'Pishiriq', '\u0412\u044B\u043F\u0435\u0447\u043A\u0430', 2),\n  ('qol-mehnati', 'Qo''l mehnati', '\u0420\u0443\u043A\u043E\u0434\u0435\u043B\u0438\u0435', 3),\n  ('dizayn', 'Dizayn', '\u0414\u0438\u0437\u0430\u0439\u043D', 4),\n  ('masofaviy-ishlar', 'Masofaviy ishlar', '\u0423\u0434\u0430\u043B\u0451\u043D\u043D\u0430\u044F \u0440\u0430\u0431\u043E\u0442\u0430', 5);\n\nCREATE TABLE users (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  phone text NOT NULL UNIQUE,\n  name text,\n  role text NOT NULL DEFAULT 'customer' CHECK (role IN ('customer', 'worker', 'admin')),\n  language text NOT NULL DEFAULT 'uz' CHECK (language IN ('uz', 'ru')),\n  created_at timestamptz NOT NULL DEFAULT now()\n);\n\nCREATE TABLE workers (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  user_id uuid NOT NULL UNIQUE REFERENCES users (id) ON DELETE CASCADE,\n  category_id uuid NOT NULL REFERENCES categories (id),\n  display_name text NOT NULL,\n  bio text,\n  avatar_url text,\n  rating numeric(3, 2) NOT NULL DEFAULT 0,\n  reviews_count integer NOT NULL DEFAULT 0,\n  is_verified boolean NOT NULL DEFAULT false,\n  created_at timestamptz NOT NULL DEFAULT now()\n);\nCREATE INDEX workers_category_idx ON workers (category_id);\n\nCREATE TABLE products (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  worker_id uuid NOT NULL REFERENCES workers (id) ON DELETE CASCADE,\n  category_id uuid NOT NULL REFERENCES categories (id),\n  title text NOT NULL,\n  description text NOT NULL DEFAULT '',\n  retail_price bigint NOT NULL CHECK (retail_price > 0),\n  wholesale_price bigint CHECK (wholesale_price IS NULL OR wholesale_price > 0),\n  wholesale_min_qty integer CHECK (wholesale_min_qty IS NULL OR wholesale_min_qty >= 2),\n  stock integer NOT NULL DEFAULT 0 CHECK (stock >= 0),\n  status text NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'published', 'hidden')),\n  created_at timestamptz NOT NULL DEFAULT now(),\n  updated_at timestamptz NOT NULL DEFAULT now(),\n  CONSTRAINT products_wholesale_pair CHECK (\n    (wholesale_price IS NULL) = (wholesale_min_qty IS NULL)\n  ),\n  CONSTRAINT products_wholesale_lower CHECK (\n    wholesale_price IS NULL OR wholesale_price < retail_price\n  )\n);\nCREATE INDEX products_worker_status_idx ON products (worker_id, status);\nCREATE INDEX products_category_status_idx ON products (category_id, status);\n-- Uzbek apostrophe variants (' \u02BB \u02BC \u2019 \u2018 `) collapse to one form for search.\nCREATE FUNCTION uz_normalize(value text) RETURNS text\n  LANGUAGE sql IMMUTABLE PARALLEL SAFE\n  AS $$ SELECT lower(translate(value, '''\u02BB\u02BC\u2019\u2018`', '')) $$;\nCREATE INDEX products_title_trgm_idx ON products USING gin (uz_normalize(title) gin_trgm_ops);\n\nCREATE TABLE product_images (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  product_id uuid NOT NULL REFERENCES products (id) ON DELETE CASCADE,\n  url text NOT NULL,\n  position integer NOT NULL DEFAULT 0\n);\nCREATE INDEX product_images_product_idx ON product_images (product_id, position);\n\nCREATE TABLE product_models (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  product_id uuid NOT NULL UNIQUE REFERENCES products (id) ON DELETE CASCADE,\n  file_url text NOT NULL,\n  file_size integer NOT NULL,\n  poster_url text,\n  created_at timestamptz NOT NULL DEFAULT now()\n);\n\nCREATE TABLE orders (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  type text NOT NULL CHECK (type IN ('service', 'product')),\n  customer_id uuid NOT NULL REFERENCES users (id),\n  worker_id uuid NOT NULL REFERENCES workers (id),\n  status text NOT NULL DEFAULT 'awaiting_payment' CHECK (\n    status IN ('awaiting_payment', 'new', 'accepted', 'in_progress', 'ready', 'delivered', 'cancelled', 'refunded')\n  ),\n  total bigint NOT NULL CHECK (total >= 0),\n  commission bigint NOT NULL CHECK (commission >= 0),\n  worker_amount bigint NOT NULL CHECK (worker_amount >= 0),\n  fulfillment text NOT NULL DEFAULT 'pickup' CHECK (fulfillment IN ('pickup', 'delivery')),\n  delivery_address text,\n  start_time timestamptz,\n  end_time timestamptz,\n  created_at timestamptz NOT NULL DEFAULT now(),\n  updated_at timestamptz NOT NULL DEFAULT now()\n);\nCREATE INDEX orders_type_idx ON orders (type);\nCREATE INDEX orders_customer_idx ON orders (customer_id, created_at DESC);\nCREATE INDEX orders_worker_status_idx ON orders (worker_id, status);\n\nCREATE TABLE order_items (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  order_id uuid NOT NULL REFERENCES orders (id) ON DELETE CASCADE,\n  product_id uuid REFERENCES products (id) ON DELETE SET NULL,\n  title_snapshot text NOT NULL,\n  unit_price bigint NOT NULL CHECK (unit_price > 0),\n  quantity integer NOT NULL CHECK (quantity > 0),\n  price_type text NOT NULL CHECK (price_type IN ('retail', 'wholesale'))\n);\nCREATE INDEX order_items_order_idx ON order_items (order_id);\n\nCREATE TABLE payments (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  order_id uuid NOT NULL REFERENCES orders (id) ON DELETE CASCADE,\n  amount bigint NOT NULL CHECK (amount >= 0),\n  status text NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'paid', 'refunded', 'failed')),\n  provider text NOT NULL,\n  provider_ref text,\n  idempotency_key text NOT NULL UNIQUE,\n  created_at timestamptz NOT NULL DEFAULT now()\n);\nCREATE INDEX payments_order_idx ON payments (order_id);\n\nCREATE TABLE earnings (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  order_id uuid NOT NULL UNIQUE REFERENCES orders (id) ON DELETE CASCADE,\n  worker_id uuid NOT NULL REFERENCES workers (id),\n  amount bigint NOT NULL CHECK (amount >= 0),\n  commission bigint NOT NULL CHECK (commission >= 0),\n  created_at timestamptz NOT NULL DEFAULT now()\n);\nCREATE INDEX earnings_worker_idx ON earnings (worker_id, created_at DESC);\n\nCREATE TABLE sms_codes (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  phone text NOT NULL,\n  code_hash text NOT NULL,\n  expires_at timestamptz NOT NULL,\n  attempts integer NOT NULL DEFAULT 0,\n  consumed_at timestamptz,\n  created_at timestamptz NOT NULL DEFAULT now()\n);\nCREATE INDEX sms_codes_phone_idx ON sms_codes (phone, created_at DESC);\n\nCREATE TABLE refresh_tokens (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  user_id uuid NOT NULL REFERENCES users (id) ON DELETE CASCADE,\n  token_hash text NOT NULL UNIQUE,\n  expires_at timestamptz NOT NULL,\n  revoked_at timestamptz,\n  created_at timestamptz NOT NULL DEFAULT now()\n);\nCREATE INDEX refresh_tokens_user_idx ON refresh_tokens (user_id);\n\nCREATE TABLE files (\n  name text PRIMARY KEY,\n  content_type text NOT NULL,\n  size integer NOT NULL,\n  data bytea NOT NULL,\n  created_at timestamptz NOT NULL DEFAULT now()\n);" }, { "name": "1760000100000_reviews_complaints.sql", "up": "CREATE TABLE reviews (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  -- One review per order: the unique key is what stops a second review at the database level.\n  order_id uuid NOT NULL UNIQUE REFERENCES orders (id) ON DELETE CASCADE,\n  customer_id uuid NOT NULL REFERENCES users (id),\n  worker_id uuid NOT NULL REFERENCES workers (id),\n  rating smallint NOT NULL CHECK (rating BETWEEN 1 AND 5),\n  comment text CHECK (comment IS NULL OR char_length(comment) <= 1000),\n  status text NOT NULL DEFAULT 'visible' CHECK (status IN ('visible', 'hidden')),\n  created_at timestamptz NOT NULL DEFAULT now()\n);\nCREATE INDEX reviews_worker_idx ON reviews (worker_id, created_at DESC);\n\nCREATE TABLE complaints (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  order_id uuid NOT NULL REFERENCES orders (id) ON DELETE CASCADE,\n  user_id uuid NOT NULL REFERENCES users (id),\n  reason text NOT NULL CHECK (char_length(reason) BETWEEN 5 AND 1000),\n  status text NOT NULL DEFAULT 'open' CHECK (status IN ('open', 'resolved', 'dismissed')),\n  created_at timestamptz NOT NULL DEFAULT now()\n);\nCREATE INDEX complaints_order_idx ON complaints (order_id);\n-- A user can have only one open complaint per order; they can file again after it is closed.\nCREATE UNIQUE INDEX complaints_one_open_per_user_idx\n  ON complaints (order_id, user_id) WHERE status = 'open';" }, { "name": "1760000200000_calendar.sql", "up": "CREATE EXTENSION IF NOT EXISTS btree_gist;\n\nALTER TABLE workers\n  ADD COLUMN hourly_rate bigint CHECK (hourly_rate IS NULL OR hourly_rate > 0);\n\n-- Free windows a worker publishes. The exclusion constraint keeps one worker's windows from overlapping.\nCREATE TABLE availability (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  worker_id uuid NOT NULL REFERENCES workers (id) ON DELETE CASCADE,\n  start_time timestamptz NOT NULL,\n  end_time timestamptz NOT NULL,\n  created_at timestamptz NOT NULL DEFAULT now(),\n  CONSTRAINT availability_range_valid CHECK (end_time > start_time),\n  CONSTRAINT availability_no_overlap\n    EXCLUDE USING gist (worker_id WITH =, tstzrange(start_time, end_time) WITH &&)\n);\nCREATE INDEX availability_worker_idx ON availability (worker_id, start_time);\n\nALTER TABLE orders\n  ADD COLUMN description text,\n  ADD COLUMN deadline date,\n  ADD CONSTRAINT orders_service_has_slot CHECK (\n    type = 'product' OR (start_time IS NOT NULL AND end_time IS NOT NULL AND end_time > start_time)\n  ),\n  -- Slot clash is decided by the database, not by a check-then-insert in application code.\n  -- A slot is held from the moment the order is created (even unpaid) until it leaves these states.\n  ADD CONSTRAINT orders_slot_no_overlap\n    EXCLUDE USING gist (worker_id WITH =, tstzrange(start_time, end_time) WITH &&)\n    WHERE (start_time IS NOT NULL AND status IN ('awaiting_payment', 'new', 'accepted', 'in_progress'));\nCREATE INDEX orders_status_created_idx ON orders (status, created_at);\n\nCREATE TABLE order_images (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  order_id uuid NOT NULL REFERENCES orders (id) ON DELETE CASCADE,\n  url text NOT NULL,\n  position integer NOT NULL DEFAULT 0\n);\nCREATE INDEX order_images_order_idx ON order_images (order_id, position);" }];
 
 // src/app.ts
 var import_cookie_parser = __toESM(require_cookie_parser(), 1);
 var import_cors = __toESM(require_lib(), 1);
-var import_express7 = __toESM(require_express2(), 1);
+var import_express8 = __toESM(require_express2(), 1);
 
 // ../../node_modules/.pnpm/helmet@8.3.0/node_modules/helmet/index.mjs
 var dashify = (str) => str.replace(/[A-Z]/g, (capitalLetter) => "-" + capitalLetter.toLowerCase());
@@ -72537,6 +72537,7 @@ var import_express = __toESM(require_express2(), 1);
 
 // ../../packages/shared/src/constants.ts
 var COMMISSION_RATE_PERCENT = 5;
+var MAX_ORDER_IMAGES = 5;
 var MAX_PRODUCT_IMAGES = 8;
 var MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 var ALLOWED_IMAGE_MIME_TYPES = ["image/jpeg", "image/png", "image/webp"];
@@ -72562,6 +72563,8 @@ var SMS_CODE_TTL_MINUTES = 5;
 var SMS_MAX_ATTEMPTS = 5;
 var ACCESS_TOKEN_TTL_SECONDS = 15 * 60;
 var REFRESH_TOKEN_TTL_DAYS = 30;
+var UNPAID_ORDER_TTL_MINUTES = 15;
+var WORKER_ACCEPT_TTL_HOURS = 24;
 var MIN_REVIEW_RATING = 1;
 var MAX_REVIEW_RATING = 5;
 var MAX_REVIEW_COMMENT_LENGTH = 1e3;
@@ -72575,6 +72578,11 @@ var MAX_ADDRESS_LENGTH = 300;
 var MAX_CART_ITEMS = 30;
 var MAX_ITEM_QUANTITY = 1e4;
 var MAX_PRICE_SOM = 1e9;
+var TASHKENT_UTC_OFFSET_HOURS = 5;
+var MAX_SERVICE_HOURS = 8;
+var MAX_AVAILABILITY_HOURS = 16;
+var AVAILABILITY_HORIZON_DAYS = 60;
+var MAX_ORDER_DESCRIPTION_LENGTH = 1e3;
 
 // ../../packages/shared/src/money.ts
 function calculateCommission(total) {
@@ -72613,6 +72621,12 @@ var PHONE_VISIBLE_STATUSES = [
   "in_progress",
   "ready",
   "delivered"
+];
+var SLOT_HOLDING_STATUSES = [
+  "awaiting_payment",
+  "new",
+  "accepted",
+  "in_progress"
 ];
 
 // ../../packages/shared/src/phone.ts
@@ -72714,6 +72728,20 @@ var reviewInputSchema = external_exports.object({
 var complaintInputSchema = external_exports.object({
   reason: external_exports.string().trim().min(MIN_COMPLAINT_REASON_LENGTH).max(MAX_COMPLAINT_REASON_LENGTH)
 });
+var isoInstant = external_exports.string().datetime({ offset: true });
+var availabilityInputSchema = external_exports.object({
+  startTime: isoInstant,
+  endTime: isoInstant
+});
+var hourlyRateSchema = external_exports.object({ hourlyRate: moneySchema.nullable() });
+var createServiceOrderSchema = external_exports.object({
+  workerId: external_exports.string().uuid(),
+  description: external_exports.string().trim().min(MIN_NAME_LENGTH).max(MAX_ORDER_DESCRIPTION_LENGTH),
+  deadline: external_exports.string().regex(/^\d{4}-\d{2}-\d{2}$/, "INVALID_DATE").nullable().default(null),
+  startTime: isoInstant,
+  hours: external_exports.number().int().min(1).max(MAX_SERVICE_HOURS),
+  imageUrls: external_exports.array(external_exports.string().max(300)).max(MAX_ORDER_IMAGES).default([])
+});
 var orderActionSchema = external_exports.object({
   action: external_exports.enum(["accept", "reject", "start", "ready", "deliver"])
 });
@@ -72738,6 +72766,13 @@ function isValidCardNumber(cardNumber) {
     double = !double;
   }
   return sum % 10 === 0;
+}
+
+// ../../packages/shared/src/slots.ts
+var HOUR_MS = 60 * 60 * 1e3;
+var OFFSET_MS = TASHKENT_UTC_OFFSET_HOURS * HOUR_MS;
+function rangeContains(outer, inner) {
+  return outer.start <= inner.start && inner.end <= outer.end;
 }
 
 // src/modules/auth/tokens.ts
@@ -72823,6 +72858,7 @@ function toDto(row) {
     rating: row.rating,
     reviewsCount: row.reviews_count,
     isVerified: row.is_verified,
+    hourlyRate: row.hourly_rate === null ? null : Number(row.hourly_rate),
     minPrice: row.min_price === null ? null : Number(row.min_price),
     productsCount: Number(row.products_count)
   };
@@ -72872,6 +72908,7 @@ var WorkersRepository = class {
       "w.rating",
       "w.reviews_count",
       "w.is_verified",
+      "w.hourly_rate",
       "c.slug as category_slug",
       sql`min(p.retail_price)`.as("min_price"),
       sql`count(p.id)`.as("products_count")
@@ -73137,8 +73174,395 @@ function createAuthRouter(ctx) {
   return router;
 }
 
-// src/modules/catalog/catalog.routes.ts
+// src/modules/calendar/calendar.routes.ts
 var import_express2 = __toESM(require_express2(), 1);
+
+// src/db/errors.ts
+var EXCLUSION_VIOLATION = "23P01";
+function hasCode(error, code) {
+  return typeof error === "object" && error !== null && error.code === code;
+}
+var isExclusionViolation = (error) => hasCode(error, EXCLUSION_VIOLATION);
+
+// src/modules/orders/order.repository.ts
+init_esm();
+var OrderRepository = class {
+  constructor(db2) {
+    this.db = db2;
+  }
+  async listIdsForCustomer(userId) {
+    const rows = await this.db.selectFrom("orders").select("id").where("customer_id", "=", userId).orderBy("created_at", "desc").limit(50).execute();
+    return rows.map((row) => row.id);
+  }
+  async listIdsForWorker(workerId) {
+    const rows = await this.db.selectFrom("orders").select("id").where("worker_id", "=", workerId).where("status", "!=", "awaiting_payment").orderBy("created_at", "desc").limit(50).execute();
+    return rows.map((row) => row.id);
+  }
+  /** One order query, one items query (IN) and one payments query (IN) for any number of orders. */
+  async findDtos(ids, viewer) {
+    if (ids.length === 0) return [];
+    const [orders, items, payments, reviews, complaints, images] = await Promise.all([
+      this.db.selectFrom("orders as o").innerJoin("workers as w", "w.id", "o.worker_id").innerJoin("users as wu", "wu.id", "w.user_id").innerJoin("users as cu", "cu.id", "o.customer_id").select([
+        "o.id",
+        "o.type",
+        "o.status",
+        "o.total",
+        "o.commission",
+        "o.worker_amount",
+        "o.fulfillment",
+        "o.delivery_address",
+        "o.start_time",
+        "o.end_time",
+        "o.description",
+        sql`o.deadline::text`.as("deadline"),
+        "o.created_at",
+        "o.customer_id",
+        "o.worker_id",
+        "w.display_name as worker_name",
+        "wu.phone as worker_phone",
+        "cu.name as customer_name",
+        "cu.phone as customer_phone"
+      ]).where("o.id", "in", ids).execute(),
+      this.db.selectFrom("order_items").selectAll().where("order_id", "in", ids).execute(),
+      this.db.selectFrom("payments").select(["order_id", "status", "created_at"]).where("order_id", "in", ids).orderBy("created_at").execute(),
+      this.db.selectFrom("reviews").selectAll().where("order_id", "in", ids).execute(),
+      this.db.selectFrom("complaints").selectAll().where("order_id", "in", ids).where("user_id", "=", viewer.userId).orderBy("created_at", "desc").execute(),
+      this.db.selectFrom("order_images").select(["order_id", "url"]).where("order_id", "in", ids).orderBy("position").execute()
+    ]);
+    const imagesByOrder = /* @__PURE__ */ new Map();
+    for (const image of images) {
+      imagesByOrder.set(image.order_id, [...imagesByOrder.get(image.order_id) ?? [], image.url]);
+    }
+    const reviewByOrder = new Map(
+      reviews.map((row) => [
+        row.order_id,
+        {
+          id: row.id,
+          orderId: row.order_id,
+          rating: row.rating,
+          comment: row.comment,
+          status: row.status,
+          createdAt: row.created_at.toISOString()
+        }
+      ])
+    );
+    const complaintByOrder = /* @__PURE__ */ new Map();
+    for (const row of complaints) {
+      if (complaintByOrder.has(row.order_id)) continue;
+      complaintByOrder.set(row.order_id, {
+        id: row.id,
+        orderId: row.order_id,
+        reason: row.reason,
+        status: row.status,
+        createdAt: row.created_at.toISOString()
+      });
+    }
+    const itemsByOrder = /* @__PURE__ */ new Map();
+    for (const item of items) {
+      const list = itemsByOrder.get(item.order_id) ?? [];
+      list.push({
+        id: item.id,
+        productId: item.product_id,
+        title: item.title_snapshot,
+        unitPrice: item.unit_price,
+        quantity: item.quantity,
+        priceType: item.price_type
+      });
+      itemsByOrder.set(item.order_id, list);
+    }
+    const paymentStatus = new Map(
+      payments.map((p) => [p.order_id, p.status])
+    );
+    const byId = new Map(
+      orders.map((row) => {
+        const asWorker = viewer.workerId !== void 0 && viewer.workerId === row.worker_id;
+        const phoneVisible = PHONE_VISIBLE_STATUSES.includes(row.status);
+        const counterpart = asWorker ? { name: row.customer_name, phone: row.customer_phone } : { name: row.worker_name, phone: row.worker_phone };
+        const dto = {
+          id: row.id,
+          type: row.type,
+          status: row.status,
+          viewerRole: asWorker ? "worker" : "customer",
+          total: row.total,
+          commission: row.commission,
+          workerAmount: row.worker_amount,
+          fulfillment: row.fulfillment,
+          deliveryAddress: row.delivery_address,
+          items: itemsByOrder.get(row.id) ?? [],
+          counterpart: { name: counterpart.name, phone: phoneVisible ? counterpart.phone : null },
+          paymentStatus: paymentStatus.get(row.id) ?? null,
+          review: reviewByOrder.get(row.id) ?? null,
+          complaint: complaintByOrder.get(row.id) ?? null,
+          startTime: row.start_time ? row.start_time.toISOString() : null,
+          endTime: row.end_time ? row.end_time.toISOString() : null,
+          description: row.description,
+          deadline: row.deadline,
+          images: imagesByOrder.get(row.id) ?? [],
+          createdAt: row.created_at.toISOString()
+        };
+        return [row.id, dto];
+      })
+    );
+    return ids.flatMap((id) => {
+      const dto = byId.get(id);
+      return dto ? [dto] : [];
+    });
+  }
+  async findOwnerRefs(id) {
+    const row = await this.db.selectFrom("orders").select(["customer_id", "worker_id"]).where("id", "=", id).executeTakeFirst();
+    return row ? { customerId: row.customer_id, workerId: row.worker_id } : void 0;
+  }
+  async earningsFor(workerId, limit) {
+    return this.db.selectFrom("earnings").select(["order_id", "amount", "commission", "created_at"]).where("worker_id", "=", workerId).orderBy("created_at", "desc").limit(limit).execute();
+  }
+  async earningsSince(workerId, since) {
+    const row = await this.db.selectFrom("earnings").select((eb) => eb.fn.coalesce(eb.fn.sum("amount"), eb.lit(0)).as("total")).where("worker_id", "=", workerId).where("created_at", ">=", since).executeTakeFirstOrThrow();
+    return Number(row.total);
+  }
+  async earningsTotal(workerId) {
+    return this.earningsSince(workerId, /* @__PURE__ */ new Date(0));
+  }
+};
+
+// src/modules/payments/payment.service.ts
+async function restoreStock(trx, orderId3) {
+  const items = await trx.selectFrom("order_items").select(["product_id", "quantity"]).where("order_id", "=", orderId3).execute();
+  for (const item of items) {
+    if (!item.product_id) continue;
+    await trx.updateTable("products").set((eb) => ({ stock: eb("stock", "+", item.quantity) })).where("id", "=", item.product_id).execute();
+  }
+}
+async function refundPaidOrder(trx, provider, orderId3) {
+  const payment = await trx.selectFrom("payments").select(["id", "provider_ref"]).where("order_id", "=", orderId3).where("status", "=", "paid").forUpdate().executeTakeFirst();
+  if (!payment) return;
+  await provider.refund(payment.provider_ref ?? "");
+  await trx.updateTable("payments").set({ status: "refunded" }).where("id", "=", payment.id).execute();
+  await restoreStock(trx, orderId3);
+}
+async function reserveStock(trx, orderId3) {
+  const items = await trx.selectFrom("order_items").select(["product_id", "quantity"]).where("order_id", "=", orderId3).execute();
+  for (const item of items) {
+    if (!item.product_id) throw AppError.conflict("PRODUCT_UNAVAILABLE");
+    const result = await trx.updateTable("products").set((eb) => ({ stock: eb("stock", "-", item.quantity) })).where("id", "=", item.product_id).where("stock", ">=", item.quantity).executeTakeFirst();
+    if (Number(result.numUpdatedRows) !== 1) throw AppError.conflict("INSUFFICIENT_STOCK");
+  }
+}
+var PaymentService = class {
+  constructor(ctx) {
+    this.ctx = ctx;
+    this.orders = new OrderRepository(ctx.db);
+  }
+  orders;
+  /** Creates (or returns) the pending payment for an order the customer still has to pay. */
+  async start(customerId, orderId3) {
+    const order = await this.ctx.db.selectFrom("orders").select(["id", "customer_id", "status", "total"]).where("id", "=", orderId3).executeTakeFirst();
+    if (!order || order.customer_id !== customerId) throw AppError.notFound();
+    const existing = await this.findPayment(orderId3);
+    if (existing?.status === "paid") throw AppError.conflict("PAYMENT_ALREADY_PAID");
+    if (order.status !== "awaiting_payment") throw AppError.conflict("ORDER_NOT_PAYABLE");
+    const payment = existing ?? await this.createPending(orderId3, order.total);
+    return {
+      paymentId: payment.id,
+      orderId: orderId3,
+      amount: payment.amount,
+      status: payment.status,
+      redirectUrl: `/tolov/${orderId3}`
+    };
+  }
+  /** Provider callback: idempotent, so a repeated confirmation never reserves stock twice. */
+  async confirm(customerId, orderId3, card) {
+    const outcome = await this.ctx.db.transaction().execute(async (trx) => {
+      const order = await trx.selectFrom("orders").select(["id", "customer_id", "status", "total", "type"]).where("id", "=", orderId3).forUpdate().executeTakeFirst();
+      if (!order || order.customer_id !== customerId) throw AppError.notFound();
+      const payment = await trx.selectFrom("payments").selectAll().where("order_id", "=", orderId3).forUpdate().executeTakeFirst();
+      if (!payment) throw AppError.conflict("ORDER_NOT_PAYABLE");
+      if (payment.status === "paid") return "already-paid";
+      if (order.status !== "awaiting_payment") throw AppError.conflict("ORDER_NOT_PAYABLE");
+      const result = await this.ctx.payments.verifyCallback(card, { orderId: orderId3, amount: order.total });
+      if (result.status === "failed") return "declined";
+      if (order.type === "product") await reserveStock(trx, orderId3);
+      await trx.updateTable("payments").set({ status: "paid", provider_ref: result.providerRef }).where("id", "=", payment.id).execute();
+      await trx.updateTable("orders").set({ status: "new", updated_at: /* @__PURE__ */ new Date() }).where("id", "=", orderId3).execute();
+      return "paid";
+    });
+    if (outcome === "declined") throw new AppError("PAYMENT_DECLINED", 402);
+    const [dto] = await this.orders.findDtos([orderId3], {
+      userId: customerId,
+      workerId: void 0
+    });
+    if (!dto) throw AppError.notFound();
+    return dto;
+  }
+  findPayment(orderId3) {
+    return this.ctx.db.selectFrom("payments").selectAll().where("order_id", "=", orderId3).executeTakeFirst();
+  }
+  async createPending(orderId3, amount) {
+    const created = await this.ctx.payments.createPayment({ orderId: orderId3, amount });
+    await this.ctx.db.insertInto("payments").values({
+      order_id: orderId3,
+      amount,
+      provider: this.ctx.payments.name,
+      provider_ref: created.providerRef,
+      idempotency_key: `order:${orderId3}`
+    }).onConflict((oc) => oc.column("idempotency_key").doNothing()).execute();
+    const payment = await this.findPayment(orderId3);
+    if (!payment) throw AppError.notFound();
+    return payment;
+  }
+};
+
+// src/modules/jobs/order-expiry.ts
+var MINUTE_MS2 = 60 * 1e3;
+var HOUR_MS2 = 60 * MINUTE_MS2;
+var REFUND_BATCH = 50;
+async function expireUnpaidOrders(db2, now) {
+  const cutoff = new Date(now.getTime() - UNPAID_ORDER_TTL_MINUTES * MINUTE_MS2);
+  return db2.transaction().execute(async (trx) => {
+    const expired = await trx.updateTable("orders").set({ status: "cancelled", updated_at: now }).where("status", "=", "awaiting_payment").where("created_at", "<", cutoff).returning("id").execute();
+    if (expired.length === 0) return 0;
+    await trx.updateTable("payments").set({ status: "failed" }).where("status", "=", "pending").where(
+      "order_id",
+      "in",
+      expired.map((row) => row.id)
+    ).execute();
+    return expired.length;
+  });
+}
+async function refundUnacceptedOrders(ctx, now) {
+  const cutoff = new Date(now.getTime() - WORKER_ACCEPT_TTL_HOURS * HOUR_MS2);
+  const stale = await ctx.db.selectFrom("orders").select("id").where("status", "=", "new").where("updated_at", "<", cutoff).orderBy("updated_at").limit(REFUND_BATCH).execute();
+  let refunded = 0;
+  for (const { id } of stale) {
+    try {
+      refunded += await refundOne(ctx, id, cutoff, now);
+    } catch (error) {
+      logger.error("Automatic refund failed", {
+        orderId: id,
+        message: error instanceof Error ? error.message : "unknown"
+      });
+    }
+  }
+  return refunded;
+}
+async function refundOne(ctx, id, cutoff, now) {
+  return ctx.db.transaction().execute(async (trx) => {
+    const order = await trx.selectFrom("orders").select(["status", "updated_at"]).where("id", "=", id).forUpdate().executeTakeFirst();
+    if (!order || order.status !== "new" || order.updated_at >= cutoff) return 0;
+    await refundPaidOrder(trx, ctx.payments, id);
+    await trx.updateTable("orders").set({ status: "refunded", updated_at: now }).where("id", "=", id).execute();
+    return 1;
+  });
+}
+
+// src/modules/calendar/availability.service.ts
+var HOUR_MS3 = 60 * 60 * 1e3;
+var DAY_MS2 = 24 * HOUR_MS3;
+var AvailabilityService = class {
+  constructor(ctx, now = () => /* @__PURE__ */ new Date()) {
+    this.ctx = ctx;
+    this.now = now;
+  }
+  /** Free windows still ahead of now and the slots already taken inside them. */
+  async read(workerId) {
+    const now = this.now();
+    await expireUnpaidOrders(this.ctx.db, now);
+    const horizon = new Date(now.getTime() + AVAILABILITY_HORIZON_DAYS * DAY_MS2);
+    const [windows, booked] = await Promise.all([
+      this.ctx.db.selectFrom("availability").select(["id", "start_time", "end_time"]).where("worker_id", "=", workerId).where("end_time", ">", now).where("start_time", "<", horizon).orderBy("start_time").execute(),
+      this.ctx.db.selectFrom("orders").select(["start_time", "end_time"]).where("worker_id", "=", workerId).where("start_time", "is not", null).where("end_time", ">", now).where("status", "in", [...SLOT_HOLDING_STATUSES]).orderBy("start_time").execute()
+    ]);
+    return {
+      windows: windows.map((row) => ({
+        id: row.id,
+        startTime: new Date(row.start_time).toISOString(),
+        endTime: new Date(row.end_time).toISOString()
+      })),
+      booked: booked.flatMap(
+        (row) => row.start_time && row.end_time ? [{ startTime: row.start_time.toISOString(), endTime: row.end_time.toISOString() }] : []
+      )
+    };
+  }
+  async workerExists(workerId) {
+    const row = await this.ctx.db.selectFrom("workers").select("id").where("id", "=", workerId).executeTakeFirst();
+    return row !== void 0;
+  }
+  async add(workerId, input) {
+    const start = new Date(input.startTime);
+    const end = new Date(input.endTime);
+    const now = this.now();
+    const length2 = end.getTime() - start.getTime();
+    const horizon = now.getTime() + AVAILABILITY_HORIZON_DAYS * DAY_MS2;
+    if (length2 <= 0 || length2 > MAX_AVAILABILITY_HOURS * HOUR_MS3 || start <= now) {
+      throw AppError.badRequest("AVAILABILITY_INVALID");
+    }
+    if (start.getTime() > horizon) throw AppError.badRequest("AVAILABILITY_INVALID");
+    try {
+      const row = await this.ctx.db.insertInto("availability").values({ worker_id: workerId, start_time: start, end_time: end }).returning(["id", "start_time", "end_time"]).executeTakeFirstOrThrow();
+      return {
+        id: row.id,
+        startTime: new Date(row.start_time).toISOString(),
+        endTime: new Date(row.end_time).toISOString()
+      };
+    } catch (error) {
+      if (isExclusionViolation(error)) throw AppError.conflict("AVAILABILITY_OVERLAP");
+      throw error;
+    }
+  }
+  async remove(workerId, id) {
+    const result = await this.ctx.db.deleteFrom("availability").where("id", "=", id).where("worker_id", "=", workerId).executeTakeFirst();
+    if (Number(result.numDeletedRows) !== 1) throw AppError.notFound();
+  }
+  async setHourlyRate(workerId, hourlyRate) {
+    await this.ctx.db.updateTable("workers").set({ hourly_rate: hourlyRate }).where("id", "=", workerId).execute();
+    this.ctx.cache.delete("workers:featured");
+    return hourlyRate;
+  }
+  async hourlyRate(workerId) {
+    const row = await this.ctx.db.selectFrom("workers").select("hourly_rate").where("id", "=", workerId).executeTakeFirst();
+    return row?.hourly_rate == null ? null : Number(row.hourly_rate);
+  }
+};
+
+// src/modules/calendar/calendar.routes.ts
+var UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+function idParam(req) {
+  const value = req.params.id;
+  if (typeof value !== "string" || !UUID_PATTERN.test(value)) throw AppError.notFound();
+  return value;
+}
+function createCalendarRouter(ctx) {
+  const router = (0, import_express2.Router)();
+  const service = new AvailabilityService(ctx);
+  const { requireWorker } = createAuthMiddleware(ctx);
+  const workerId = (req) => req.workerId ?? "";
+  router.get("/workers/:id/availability", async (req, res) => {
+    const id = idParam(req);
+    if (!await service.workerExists(id)) throw AppError.notFound();
+    res.json(await service.read(id));
+  });
+  router.get("/my/availability", requireWorker, async (req, res) => {
+    res.json({
+      ...await service.read(workerId(req)),
+      hourlyRate: await service.hourlyRate(workerId(req))
+    });
+  });
+  router.post("/my/availability", requireWorker, async (req, res) => {
+    const input = availabilityInputSchema.parse(req.body);
+    res.status(201).json(await service.add(workerId(req), input));
+  });
+  router.delete("/my/availability/:id", requireWorker, async (req, res) => {
+    await service.remove(workerId(req), idParam(req));
+    res.status(204).end();
+  });
+  router.put("/my/hourly-rate", requireWorker, async (req, res) => {
+    const { hourlyRate } = hourlyRateSchema.parse(req.body);
+    res.json({ hourlyRate: await service.setHourlyRate(workerId(req), hourlyRate) });
+  });
+  return router;
+}
+
+// src/modules/catalog/catalog.routes.ts
+var import_express3 = __toESM(require_express2(), 1);
 
 // src/modules/products/product.repository.ts
 init_esm();
@@ -73367,13 +73791,13 @@ var CatalogService = class {
 };
 
 // src/modules/catalog/catalog.routes.ts
-var UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+var UUID_PATTERN2 = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 function requireUuid(value, code) {
-  if (typeof value !== "string" || !UUID_PATTERN.test(value)) throw AppError.notFound(code);
+  if (typeof value !== "string" || !UUID_PATTERN2.test(value)) throw AppError.notFound(code);
   return value;
 }
 function createCatalogRouter(ctx) {
-  const router = (0, import_express2.Router)();
+  const router = (0, import_express3.Router)();
   const catalog = new CatalogService(ctx);
   const workers = new WorkersService(ctx);
   const workersRepo = new WorkersRepository(ctx.db);
@@ -73399,7 +73823,7 @@ function createCatalogRouter(ctx) {
 }
 
 // src/modules/feedback/feedback.routes.ts
-var import_express3 = __toESM(require_express2(), 1);
+var import_express4 = __toESM(require_express2(), 1);
 
 // src/modules/feedback/feedback.service.ts
 var UNIQUE_VIOLATION = "23505";
@@ -73509,7 +73933,7 @@ function orderId(req) {
   return parsed.data;
 }
 function createFeedbackRouter(ctx) {
-  const router = (0, import_express3.Router)();
+  const router = (0, import_express4.Router)();
   const feedback = new FeedbackService(ctx);
   const { requireAuth } = createAuthMiddleware(ctx);
   router.post("/orders/:id/review", requireAuth, async (req, res) => {
@@ -73524,11 +73948,11 @@ function createFeedbackRouter(ctx) {
 }
 
 // src/modules/files/files.routes.ts
-var import_express4 = __toESM(require_express2(), 1);
+var import_express5 = __toESM(require_express2(), 1);
 var FILE_NAME_PATTERN = /^[a-f0-9-]{36}\.(webp|glb)$/;
 var ONE_YEAR_SECONDS = 31536e3;
 function createFilesRouter(ctx) {
-  const router = (0, import_express4.Router)();
+  const router = (0, import_express5.Router)();
   router.get("/files/:name", async (req, res) => {
     const name = req.params.name ?? "";
     if (!FILE_NAME_PATTERN.test(name)) throw AppError.notFound();
@@ -73544,212 +73968,59 @@ function createFilesRouter(ctx) {
 }
 
 // src/modules/orders/order.routes.ts
-var import_express5 = __toESM(require_express2(), 1);
+var import_node_crypto4 = require("node:crypto");
+var import_express6 = __toESM(require_express2(), 1);
 
-// src/modules/orders/order.repository.ts
-var OrderRepository = class {
-  constructor(db2) {
-    this.db = db2;
-  }
-  async listIdsForCustomer(userId) {
-    const rows = await this.db.selectFrom("orders").select("id").where("customer_id", "=", userId).orderBy("created_at", "desc").limit(50).execute();
-    return rows.map((row) => row.id);
-  }
-  async listIdsForWorker(workerId) {
-    const rows = await this.db.selectFrom("orders").select("id").where("worker_id", "=", workerId).where("status", "!=", "awaiting_payment").orderBy("created_at", "desc").limit(50).execute();
-    return rows.map((row) => row.id);
-  }
-  /** One order query, one items query (IN) and one payments query (IN) for any number of orders. */
-  async findDtos(ids, viewer) {
-    if (ids.length === 0) return [];
-    const [orders, items, payments, reviews, complaints] = await Promise.all([
-      this.db.selectFrom("orders as o").innerJoin("workers as w", "w.id", "o.worker_id").innerJoin("users as wu", "wu.id", "w.user_id").innerJoin("users as cu", "cu.id", "o.customer_id").select([
-        "o.id",
-        "o.type",
-        "o.status",
-        "o.total",
-        "o.commission",
-        "o.worker_amount",
-        "o.fulfillment",
-        "o.delivery_address",
-        "o.created_at",
-        "o.customer_id",
-        "o.worker_id",
-        "w.display_name as worker_name",
-        "wu.phone as worker_phone",
-        "cu.name as customer_name",
-        "cu.phone as customer_phone"
-      ]).where("o.id", "in", ids).execute(),
-      this.db.selectFrom("order_items").selectAll().where("order_id", "in", ids).execute(),
-      this.db.selectFrom("payments").select(["order_id", "status", "created_at"]).where("order_id", "in", ids).orderBy("created_at").execute(),
-      this.db.selectFrom("reviews").selectAll().where("order_id", "in", ids).execute(),
-      this.db.selectFrom("complaints").selectAll().where("order_id", "in", ids).where("user_id", "=", viewer.userId).orderBy("created_at", "desc").execute()
-    ]);
-    const reviewByOrder = new Map(
-      reviews.map((row) => [
-        row.order_id,
-        {
-          id: row.id,
-          orderId: row.order_id,
-          rating: row.rating,
-          comment: row.comment,
-          status: row.status,
-          createdAt: row.created_at.toISOString()
-        }
-      ])
-    );
-    const complaintByOrder = /* @__PURE__ */ new Map();
-    for (const row of complaints) {
-      if (complaintByOrder.has(row.order_id)) continue;
-      complaintByOrder.set(row.order_id, {
-        id: row.id,
-        orderId: row.order_id,
-        reason: row.reason,
-        status: row.status,
-        createdAt: row.created_at.toISOString()
-      });
-    }
-    const itemsByOrder = /* @__PURE__ */ new Map();
-    for (const item of items) {
-      const list = itemsByOrder.get(item.order_id) ?? [];
-      list.push({
-        id: item.id,
-        productId: item.product_id,
-        title: item.title_snapshot,
-        unitPrice: item.unit_price,
-        quantity: item.quantity,
-        priceType: item.price_type
-      });
-      itemsByOrder.set(item.order_id, list);
-    }
-    const paymentStatus = new Map(
-      payments.map((p) => [p.order_id, p.status])
-    );
-    const byId = new Map(
-      orders.map((row) => {
-        const asWorker = viewer.workerId !== void 0 && viewer.workerId === row.worker_id;
-        const phoneVisible = PHONE_VISIBLE_STATUSES.includes(row.status);
-        const counterpart = asWorker ? { name: row.customer_name, phone: row.customer_phone } : { name: row.worker_name, phone: row.worker_phone };
-        const dto = {
-          id: row.id,
-          type: row.type,
-          status: row.status,
-          viewerRole: asWorker ? "worker" : "customer",
-          total: row.total,
-          commission: row.commission,
-          workerAmount: row.worker_amount,
-          fulfillment: row.fulfillment,
-          deliveryAddress: row.delivery_address,
-          items: itemsByOrder.get(row.id) ?? [],
-          counterpart: { name: counterpart.name, phone: phoneVisible ? counterpart.phone : null },
-          paymentStatus: paymentStatus.get(row.id) ?? null,
-          review: reviewByOrder.get(row.id) ?? null,
-          complaint: complaintByOrder.get(row.id) ?? null,
-          createdAt: row.created_at.toISOString()
-        };
-        return [row.id, dto];
-      })
-    );
-    return ids.flatMap((id) => {
-      const dto = byId.get(id);
-      return dto ? [dto] : [];
+// src/middleware/upload.ts
+var import_multer = __toESM(require_multer(), 1);
+function singleFile(field, maxBytes, tooLarge) {
+  const upload = (0, import_multer.default)({
+    storage: import_multer.default.memoryStorage(),
+    limits: { fileSize: maxBytes, files: 1 }
+  });
+  return (req, res, next) => {
+    upload.single(field)(req, res, (error) => {
+      if (error instanceof import_multer.MulterError) {
+        return next(
+          error.code === "LIMIT_FILE_SIZE" ? new AppError(tooLarge, 413) : AppError.badRequest("UPLOAD_MISSING_FILE")
+        );
+      }
+      return next(error);
     });
-  }
-  async findOwnerRefs(id) {
-    const row = await this.db.selectFrom("orders").select(["customer_id", "worker_id"]).where("id", "=", id).executeTakeFirst();
-    return row ? { customerId: row.customer_id, workerId: row.worker_id } : void 0;
-  }
-  async earningsFor(workerId, limit) {
-    return this.db.selectFrom("earnings").select(["order_id", "amount", "commission", "created_at"]).where("worker_id", "=", workerId).orderBy("created_at", "desc").limit(limit).execute();
-  }
-  async earningsSince(workerId, since) {
-    const row = await this.db.selectFrom("earnings").select((eb) => eb.fn.coalesce(eb.fn.sum("amount"), eb.lit(0)).as("total")).where("worker_id", "=", workerId).where("created_at", ">=", since).executeTakeFirstOrThrow();
-    return Number(row.total);
-  }
-  async earningsTotal(workerId) {
-    return this.earningsSince(workerId, /* @__PURE__ */ new Date(0));
-  }
-};
+  };
+}
+function fileOf(req) {
+  if (!req.file) throw AppError.badRequest("UPLOAD_MISSING_FILE");
+  return req.file.buffer;
+}
 
-// src/modules/payments/payment.service.ts
-async function restoreStock(trx, orderId3) {
-  const items = await trx.selectFrom("order_items").select(["product_id", "quantity"]).where("order_id", "=", orderId3).execute();
-  for (const item of items) {
-    if (!item.product_id) continue;
-    await trx.updateTable("products").set((eb) => ({ stock: eb("stock", "+", item.quantity) })).where("id", "=", item.product_id).execute();
+// src/modules/uploads/image.ts
+var MAX_DIMENSION = 1600;
+var WEBP_QUALITY = 80;
+var FORMAT_TO_MIME = {
+  jpeg: "image/jpeg",
+  png: "image/png",
+  webp: "image/webp"
+};
+async function processImage(input) {
+  const { default: sharp } = await import("sharp");
+  try {
+    const meta = await sharp(input).metadata();
+    const mime = FORMAT_TO_MIME[meta.format ?? ""];
+    if (!mime || !ALLOWED_IMAGE_MIME_TYPES.includes(mime)) {
+      throw AppError.badRequest("IMAGE_INVALID_FORMAT");
+    }
+    return await sharp(input).rotate().resize({
+      width: MAX_DIMENSION,
+      height: MAX_DIMENSION,
+      fit: "inside",
+      withoutEnlargement: true
+    }).webp({ quality: WEBP_QUALITY }).toBuffer();
+  } catch (error) {
+    if (error instanceof AppError) throw error;
+    throw AppError.badRequest("IMAGE_INVALID_FORMAT");
   }
 }
-async function reserveStock(trx, orderId3) {
-  const items = await trx.selectFrom("order_items").select(["product_id", "quantity"]).where("order_id", "=", orderId3).execute();
-  for (const item of items) {
-    if (!item.product_id) throw AppError.conflict("PRODUCT_UNAVAILABLE");
-    const result = await trx.updateTable("products").set((eb) => ({ stock: eb("stock", "-", item.quantity) })).where("id", "=", item.product_id).where("stock", ">=", item.quantity).executeTakeFirst();
-    if (Number(result.numUpdatedRows) !== 1) throw AppError.conflict("INSUFFICIENT_STOCK");
-  }
-}
-var PaymentService = class {
-  constructor(ctx) {
-    this.ctx = ctx;
-    this.orders = new OrderRepository(ctx.db);
-  }
-  orders;
-  /** Creates (or returns) the pending payment for an order the customer still has to pay. */
-  async start(customerId, orderId3) {
-    const order = await this.ctx.db.selectFrom("orders").select(["id", "customer_id", "status", "total"]).where("id", "=", orderId3).executeTakeFirst();
-    if (!order || order.customer_id !== customerId) throw AppError.notFound();
-    const existing = await this.findPayment(orderId3);
-    if (existing?.status === "paid") throw AppError.conflict("PAYMENT_ALREADY_PAID");
-    if (order.status !== "awaiting_payment") throw AppError.conflict("ORDER_NOT_PAYABLE");
-    const payment = existing ?? await this.createPending(orderId3, order.total);
-    return {
-      paymentId: payment.id,
-      orderId: orderId3,
-      amount: payment.amount,
-      status: payment.status,
-      redirectUrl: `/tolov/${orderId3}`
-    };
-  }
-  /** Provider callback: idempotent, so a repeated confirmation never reserves stock twice. */
-  async confirm(customerId, orderId3, card) {
-    const outcome = await this.ctx.db.transaction().execute(async (trx) => {
-      const order = await trx.selectFrom("orders").select(["id", "customer_id", "status", "total"]).where("id", "=", orderId3).forUpdate().executeTakeFirst();
-      if (!order || order.customer_id !== customerId) throw AppError.notFound();
-      const payment = await trx.selectFrom("payments").selectAll().where("order_id", "=", orderId3).forUpdate().executeTakeFirst();
-      if (!payment) throw AppError.conflict("ORDER_NOT_PAYABLE");
-      if (payment.status === "paid") return "already-paid";
-      if (order.status !== "awaiting_payment") throw AppError.conflict("ORDER_NOT_PAYABLE");
-      const result = await this.ctx.payments.verifyCallback(card, { orderId: orderId3, amount: order.total });
-      if (result.status === "failed") return "declined";
-      await reserveStock(trx, orderId3);
-      await trx.updateTable("payments").set({ status: "paid", provider_ref: result.providerRef }).where("id", "=", payment.id).execute();
-      await trx.updateTable("orders").set({ status: "new", updated_at: /* @__PURE__ */ new Date() }).where("id", "=", orderId3).execute();
-      return "paid";
-    });
-    if (outcome === "declined") throw new AppError("PAYMENT_DECLINED", 402);
-    const [dto] = await this.orders.findDtos([orderId3], {
-      userId: customerId,
-      workerId: void 0
-    });
-    if (!dto) throw AppError.notFound();
-    return dto;
-  }
-  findPayment(orderId3) {
-    return this.ctx.db.selectFrom("payments").selectAll().where("order_id", "=", orderId3).executeTakeFirst();
-  }
-  async createPending(orderId3, amount) {
-    const created = await this.ctx.payments.createPayment({ orderId: orderId3, amount });
-    await this.ctx.db.insertInto("payments").values({
-      order_id: orderId3,
-      amount,
-      provider: this.ctx.payments.name,
-      provider_ref: created.providerRef,
-      idempotency_key: `order:${orderId3}`
-    }).onConflict((oc) => oc.column("idempotency_key").doNothing()).execute();
-    const payment = await this.findPayment(orderId3);
-    if (!payment) throw AppError.notFound();
-    return payment;
-  }
-};
 
 // src/modules/orders/order.service.ts
 var ACTION_TARGET = {
@@ -73816,7 +74087,7 @@ var OrderService = class {
       const target = ACTION_TARGET[action];
       if (!canTransition(order.status, target))
         throw AppError.conflict("ORDER_INVALID_TRANSITION");
-      if (action === "reject") await this.refund(trx, id);
+      if (action === "reject") await refundPaidOrder(trx, this.ctx.payments, id);
       if (action === "deliver") {
         await trx.insertInto("earnings").values({
           order_id: id,
@@ -73845,13 +74116,6 @@ var OrderService = class {
         createdAt: row.created_at.toISOString()
       }))
     };
-  }
-  async refund(trx, orderId3) {
-    const payment = await trx.selectFrom("payments").select(["id", "provider_ref"]).where("order_id", "=", orderId3).where("status", "=", "paid").forUpdate().executeTakeFirst();
-    if (!payment) return;
-    await this.ctx.payments.refund(payment.provider_ref ?? "");
-    await trx.updateTable("payments").set({ status: "refunded" }).where("id", "=", payment.id).execute();
-    await restoreStock(trx, orderId3);
   }
   async priceItems(customerId, items) {
     const rows = await this.ctx.db.selectFrom("products as p").innerJoin("workers as w", "w.id", "p.worker_id").select([
@@ -73924,6 +74188,102 @@ var OrderService = class {
   }
 };
 
+// src/modules/orders/service-order.service.ts
+var HOUR_MS4 = 60 * 60 * 1e3;
+var TITLE_SNAPSHOT_LENGTH = 120;
+var IMAGE_CONTENT_TYPE = "image/webp";
+var ServiceOrderService = class {
+  constructor(ctx, now = () => /* @__PURE__ */ new Date()) {
+    this.ctx = ctx;
+    this.now = now;
+    this.repo = new OrderRepository(ctx.db);
+  }
+  repo;
+  /**
+   * Books a slot, prices it by the worker's hourly rate and stores the order, its line and its
+   * photos in one transaction. A clash with another booking is rejected by the database
+   * constraint itself, so two simultaneous customers cannot both get the slot.
+   */
+  async create(customerId, input) {
+    const now = this.now();
+    const start = new Date(input.startTime);
+    const end = new Date(start.getTime() + input.hours * HOUR_MS4);
+    if (start <= now) throw AppError.badRequest("SLOT_IN_PAST");
+    await expireUnpaidOrders(this.ctx.db, now);
+    const worker = await this.ctx.db.selectFrom("workers").select(["id", "user_id", "hourly_rate"]).where("id", "=", input.workerId).executeTakeFirst();
+    if (!worker) throw AppError.notFound();
+    if (worker.user_id === customerId) throw AppError.badRequest("OWN_SERVICE");
+    if (worker.hourly_rate === null) throw AppError.badRequest("SERVICE_RATE_MISSING");
+    await this.assertInsideAvailability(worker.id, start, end);
+    await this.assertImagesStored(input.imageUrls);
+    const rate = Number(worker.hourly_rate);
+    const split = splitOrderAmount(rate * input.hours);
+    try {
+      const orderId3 = await this.ctx.db.transaction().execute(async (trx) => {
+        const order = await trx.insertInto("orders").values({
+          type: "service",
+          customer_id: customerId,
+          worker_id: worker.id,
+          total: split.total,
+          commission: split.commission,
+          worker_amount: split.workerAmount,
+          fulfillment: "pickup",
+          delivery_address: null,
+          start_time: start,
+          end_time: end,
+          description: input.description,
+          deadline: input.deadline,
+          updated_at: now
+        }).returning("id").executeTakeFirstOrThrow();
+        await trx.insertInto("order_items").values({
+          order_id: order.id,
+          product_id: null,
+          title_snapshot: input.description.slice(0, TITLE_SNAPSHOT_LENGTH),
+          unit_price: rate,
+          quantity: input.hours,
+          price_type: "retail"
+        }).execute();
+        if (input.imageUrls.length > 0) {
+          await trx.insertInto("order_images").values(
+            input.imageUrls.map((url, position) => ({ order_id: order.id, url, position }))
+          ).execute();
+        }
+        return order.id;
+      });
+      const [dto] = await this.repo.findDtos([orderId3], { userId: customerId, workerId: void 0 });
+      if (!dto) throw AppError.notFound();
+      return dto;
+    } catch (error) {
+      if (isExclusionViolation(error)) throw AppError.conflict("ORDER_SLOT_TAKEN");
+      throw error;
+    }
+  }
+  async assertInsideAvailability(workerId, start, end) {
+    const windows = await this.ctx.db.selectFrom("availability").select(["start_time", "end_time"]).where("worker_id", "=", workerId).where("start_time", "<=", start).where("end_time", ">=", end).execute();
+    const fits = windows.some(
+      (window2) => rangeContains(
+        { start: new Date(window2.start_time), end: new Date(window2.end_time) },
+        { start, end }
+      )
+    );
+    if (!fits) throw AppError.conflict("SLOT_OUTSIDE_AVAILABILITY");
+  }
+  /** Only photos this platform stored can be attached; arbitrary URLs are never saved. */
+  async assertImagesStored(urls) {
+    if (urls.length === 0) return;
+    const names = urls.map(
+      (url) => url.startsWith(FILES_URL_PREFIX) ? url.slice(FILES_URL_PREFIX.length) : ""
+    );
+    if (names.some((name) => name === "" || name.includes("/"))) {
+      throw AppError.badRequest("ORDER_IMAGE_INVALID");
+    }
+    const rows = await this.ctx.db.selectFrom("files").select("name").where("name", "in", names).where("content_type", "=", IMAGE_CONTENT_TYPE).execute();
+    if (new Set(rows.map((row) => row.name)).size !== new Set(names).size) {
+      throw AppError.badRequest("ORDER_IMAGE_INVALID");
+    }
+  }
+};
+
 // src/modules/orders/order.routes.ts
 var idSchema2 = external_exports.string().uuid();
 var listQuery = external_exports.object({ as: external_exports.enum(["customer", "worker"]).default("customer") });
@@ -73933,8 +74293,9 @@ function orderId2(req) {
   return parsed.data;
 }
 function createOrderRouter(ctx) {
-  const router = (0, import_express5.Router)();
+  const router = (0, import_express6.Router)();
   const orders = new OrderService(ctx);
+  const serviceOrders = new ServiceOrderService(ctx);
   const payments = new PaymentService(ctx);
   const workers = new WorkersRepository(ctx.db);
   const { requireAuth, requireWorker } = createAuthMiddleware(ctx);
@@ -73946,6 +74307,20 @@ function createOrderRouter(ctx) {
     const input = createOrdersSchema.parse(req.body);
     res.status(201).json(await orders.createOrders(req.auth?.userId ?? "", input));
   });
+  router.post("/orders/service", requireAuth, async (req, res) => {
+    const input = createServiceOrderSchema.parse(req.body);
+    res.status(201).json(await serviceOrders.create(req.auth?.userId ?? "", input));
+  });
+  router.post(
+    "/uploads/order-image",
+    requireAuth,
+    singleFile("image", MAX_IMAGE_BYTES, "IMAGE_TOO_LARGE"),
+    async (req, res) => {
+      const webp = await processImage(fileOf(req));
+      const url = await ctx.storage.put(`${(0, import_node_crypto4.randomUUID)()}.webp`, webp, "image/webp");
+      res.status(201).json({ url });
+    }
+  );
   router.get("/orders", requireAuth, async (req, res) => {
     const { as } = listQuery.parse(req.query);
     res.json(await orders.list(await viewerOf(req), as));
@@ -73968,6 +74343,33 @@ function createOrderRouter(ctx) {
     res.json(await orders.earnings(req.workerId ?? ""));
   });
   return router;
+}
+
+// src/modules/jobs/maintenance.ts
+var SWEEP_INTERVAL_MS = 60 * 1e3;
+async function runMaintenance(ctx, now = /* @__PURE__ */ new Date()) {
+  const cancelled = await expireUnpaidOrders(ctx.db, now);
+  const refunded = await refundUnacceptedOrders(ctx, now);
+  if (cancelled > 0 || refunded > 0) logger.info("Maintenance finished", { cancelled, refunded });
+  return { cancelled, refunded };
+}
+function requestDrivenMaintenance(ctx) {
+  let lastRun = 0;
+  return (_req, _res, next) => {
+    const nowMs = Date.now();
+    if (nowMs - lastRun < SWEEP_INTERVAL_MS) return next();
+    lastRun = nowMs;
+    runMaintenance(ctx).then(
+      () => next(),
+      (error) => {
+        lastRun = 0;
+        logger.error("Maintenance failed", {
+          message: error instanceof Error ? error.message : "unknown"
+        });
+        next();
+      }
+    );
+  };
 }
 
 // src/modules/payments/payment-provider.ts
@@ -73993,7 +74395,7 @@ var ClickPaymentProvider = class {
 };
 
 // src/modules/payments/internal.adapter.ts
-var import_node_crypto4 = require("node:crypto");
+var import_node_crypto5 = require("node:crypto");
 function isExpired(expiry, now) {
   const [monthPart, yearPart] = expiry.split("/");
   const month = Number(monthPart);
@@ -74007,13 +74409,13 @@ var InternalPaymentProvider = class {
   }
   name = "internal";
   async createPayment(order) {
-    return { providerRef: `int_${(0, import_node_crypto4.randomUUID)()}`, redirectUrl: `/tolov/${order.orderId}` };
+    return { providerRef: `int_${(0, import_node_crypto5.randomUUID)()}`, redirectUrl: `/tolov/${order.orderId}` };
   }
   async verifyCallback(payload) {
     if (!isValidCardNumber(payload.cardNumber) || isExpired(payload.expiry, this.now())) {
       return { status: "failed", reason: "card_invalid" };
     }
-    return { status: "paid", providerRef: `int_${(0, import_node_crypto4.randomUUID)()}` };
+    return { status: "paid", providerRef: `int_${(0, import_node_crypto5.randomUUID)()}` };
   }
   async refund() {
   }
@@ -74062,11 +74464,10 @@ function createPaymentProvider(config2) {
 }
 
 // src/modules/products/product.routes.ts
-var import_express6 = __toESM(require_express2(), 1);
-var import_multer = __toESM(require_multer(), 1);
+var import_express7 = __toESM(require_express2(), 1);
 
 // src/modules/products/product.service.ts
-var import_node_crypto5 = require("node:crypto");
+var import_node_crypto6 = require("node:crypto");
 
 // ../../node_modules/.pnpm/property-graph@4.1.0/node_modules/property-graph/dist/index.mjs
 var EventDispatcher = class {
@@ -79110,34 +79511,6 @@ async function validateGlb(buffer) {
   await assertReadable(buffer, parsed.json);
 }
 
-// src/modules/uploads/image.ts
-var MAX_DIMENSION = 1600;
-var WEBP_QUALITY = 80;
-var FORMAT_TO_MIME = {
-  jpeg: "image/jpeg",
-  png: "image/png",
-  webp: "image/webp"
-};
-async function processImage(input) {
-  const { default: sharp } = await import("sharp");
-  try {
-    const meta = await sharp(input).metadata();
-    const mime = FORMAT_TO_MIME[meta.format ?? ""];
-    if (!mime || !ALLOWED_IMAGE_MIME_TYPES.includes(mime)) {
-      throw AppError.badRequest("IMAGE_INVALID_FORMAT");
-    }
-    return await sharp(input).rotate().resize({
-      width: MAX_DIMENSION,
-      height: MAX_DIMENSION,
-      fit: "inside",
-      withoutEnlargement: true
-    }).webp({ quality: WEBP_QUALITY }).toBuffer();
-  } catch (error) {
-    if (error instanceof AppError) throw error;
-    throw AppError.badRequest("IMAGE_INVALID_FORMAT");
-  }
-}
-
 // src/modules/products/product.service.ts
 var ProductService = class {
   constructor(ctx) {
@@ -79193,7 +79566,7 @@ var ProductService = class {
     const existing = await this.repo.listImages(id);
     if (existing.length >= MAX_PRODUCT_IMAGES) throw AppError.conflict("IMAGE_LIMIT_REACHED");
     const webp = await processImage(file);
-    const url = await this.ctx.storage.put(`${(0, import_node_crypto5.randomUUID)()}.webp`, webp, "image/webp");
+    const url = await this.ctx.storage.put(`${(0, import_node_crypto6.randomUUID)()}.webp`, webp, "image/webp");
     await this.repo.addImage(id, url, existing.length);
     return this.get(id);
   }
@@ -79208,7 +79581,7 @@ var ProductService = class {
     await this.assertOwner(workerId, id);
     await validateGlb(file);
     const previous = await this.repo.getModelUrl(id);
-    const url = await this.ctx.storage.put(`${(0, import_node_crypto5.randomUUID)()}.glb`, file, MODEL_MIME_TYPE);
+    const url = await this.ctx.storage.put(`${(0, import_node_crypto6.randomUUID)()}.glb`, file, MODEL_MIME_TYPE);
     const poster = (await this.repo.listImages(id))[0]?.url ?? null;
     await this.repo.upsertModel(id, url, file.length, poster);
     if (previous) await this.ctx.storage.delete(previous);
@@ -79244,34 +79617,14 @@ var ProductService = class {
 };
 
 // src/modules/products/product.routes.ts
-var UUID_PATTERN2 = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-function idParam(req, name = "id") {
+var UUID_PATTERN3 = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+function idParam2(req, name = "id") {
   const value = req.params[name];
-  if (typeof value !== "string" || !UUID_PATTERN2.test(value)) throw AppError.notFound();
+  if (typeof value !== "string" || !UUID_PATTERN3.test(value)) throw AppError.notFound();
   return value;
 }
-function singleFile(field, maxBytes, tooLarge) {
-  const upload = (0, import_multer.default)({
-    storage: import_multer.default.memoryStorage(),
-    limits: { fileSize: maxBytes, files: 1 }
-  });
-  return (req, res, next) => {
-    upload.single(field)(req, res, (error) => {
-      if (error instanceof import_multer.MulterError) {
-        return next(
-          error.code === "LIMIT_FILE_SIZE" ? new AppError(tooLarge, 413) : AppError.badRequest("UPLOAD_MISSING_FILE")
-        );
-      }
-      return next(error);
-    });
-  };
-}
-function fileOf(req) {
-  if (!req.file) throw AppError.badRequest("UPLOAD_MISSING_FILE");
-  return req.file.buffer;
-}
 function createProductRouter(ctx) {
-  const router = (0, import_express6.Router)();
+  const router = (0, import_express7.Router)();
   const service = new ProductService(ctx);
   const { requireWorker } = createAuthMiddleware(ctx);
   const workerId = (req) => req.workerId ?? "";
@@ -79285,39 +79638,39 @@ function createProductRouter(ctx) {
   });
   router.put("/my/products/:id", async (req, res) => {
     const input = productInputSchema.parse(req.body);
-    res.json(await service.update(workerId(req), idParam(req), input));
+    res.json(await service.update(workerId(req), idParam2(req), input));
   });
   router.patch("/my/products/:id/stock", async (req, res) => {
     const { stock } = stockUpdateSchema.parse(req.body);
-    res.json(await service.setStock(workerId(req), idParam(req), stock));
+    res.json(await service.setStock(workerId(req), idParam2(req), stock));
   });
   router.patch("/my/products/:id/status", async (req, res) => {
     const { status } = productStatusSchema.parse(req.body);
-    res.json(await service.setStatus(workerId(req), idParam(req), status));
+    res.json(await service.setStatus(workerId(req), idParam2(req), status));
   });
   router.delete("/my/products/:id", async (req, res) => {
-    await service.remove(workerId(req), idParam(req));
+    await service.remove(workerId(req), idParam2(req));
     res.status(204).end();
   });
   router.post(
     "/my/products/:id/images",
     singleFile("image", MAX_IMAGE_BYTES, "IMAGE_TOO_LARGE"),
     async (req, res) => {
-      res.status(201).json(await service.addImage(workerId(req), idParam(req), fileOf(req)));
+      res.status(201).json(await service.addImage(workerId(req), idParam2(req), fileOf(req)));
     }
   );
   router.delete("/my/products/:id/images/:imageId", async (req, res) => {
-    res.json(await service.removeImage(workerId(req), idParam(req), idParam(req, "imageId")));
+    res.json(await service.removeImage(workerId(req), idParam2(req), idParam2(req, "imageId")));
   });
   router.put(
     "/my/products/:id/model",
     singleFile("model", MAX_MODEL_BYTES, "MODEL_TOO_LARGE"),
     async (req, res) => {
-      res.json(await service.setModel(workerId(req), idParam(req), fileOf(req)));
+      res.json(await service.setModel(workerId(req), idParam2(req), fileOf(req)));
     }
   );
   router.delete("/my/products/:id/model", async (req, res) => {
-    res.json(await service.removeModel(workerId(req), idParam(req)));
+    res.json(await service.removeModel(workerId(req), idParam2(req)));
   });
   return router;
 }
@@ -79341,27 +79694,29 @@ function waitFor(ready) {
   };
 }
 function createApp(options) {
-  const ctx = buildContext(options);
+  const ctx = options.context ?? buildContext(options);
   const { config: config2 } = ctx;
   if (config2.isProduction && ctx.payments.name === "internal") {
     logger.warn("Real payment provider is not connected: PAYMENT_PROVIDER=internal");
   }
-  const app = (0, import_express7.default)();
+  const app = (0, import_express8.default)();
   app.set("trust proxy", 1);
   app.disable("x-powered-by");
   app.use(helmet({ crossOriginResourcePolicy: { policy: "same-site" } }));
   app.use((0, import_cors.default)({ origin: config2.allowedOrigins, credentials: true }));
   app.use(originGuard(config2.allowedOrigins));
-  app.use(import_express7.default.json({ limit: "100kb" }));
+  app.use(import_express8.default.json({ limit: "100kb" }));
   app.use((0, import_cookie_parser.default)());
-  const api = import_express7.default.Router();
+  const api = import_express8.default.Router();
   api.get("/health", (_req, res) => {
     res.json({ status: "ok" });
   });
   api.use(waitFor(options.ready));
   api.use(generalLimiter(config2.nodeEnv !== "test"));
   api.use(createAuthRouter(ctx));
+  if (options.requestDrivenJobs) api.use(requestDrivenMaintenance(ctx));
   api.use(createCatalogRouter(ctx));
+  api.use(createCalendarRouter(ctx));
   api.use(createProductRouter(ctx));
   api.use(createOrderRouter(ctx));
   api.use(createFeedbackRouter(ctx));
@@ -79448,7 +79803,7 @@ async function migrateToLatest(db2, migrations = loadMigrations()) {
 }
 
 // src/db/seed.ts
-var import_node_crypto6 = require("node:crypto");
+var import_node_crypto7 = require("node:crypto");
 
 // src/modules/uploads/glb-fixture.ts
 var SEGMENTS = 32;
@@ -79680,12 +80035,12 @@ async function seedProduct(db2, storage, workerId, categoryId, product) {
   const urls = [];
   for (const variant of [0, 1]) {
     const image = await renderImage(product.tint, variant);
-    urls.push(await storage.put(`${(0, import_node_crypto6.randomUUID)()}.webp`, image, "image/webp"));
+    urls.push(await storage.put(`${(0, import_node_crypto7.randomUUID)()}.webp`, image, "image/webp"));
   }
   await db2.insertInto("product_images").values(urls.map((url, position) => ({ product_id: row.id, url, position }))).execute();
   if (product.model) {
     const glb = await buildVaseGlb(product.model);
-    const fileUrl = await storage.put(`${(0, import_node_crypto6.randomUUID)()}.glb`, glb, MODEL_MIME_TYPE);
+    const fileUrl = await storage.put(`${(0, import_node_crypto7.randomUUID)()}.glb`, glb, MODEL_MIME_TYPE);
     await db2.insertInto("product_models").values({
       product_id: row.id,
       file_url: fileUrl,
@@ -79732,7 +80087,7 @@ function ensureMigrated() {
   });
   return migrated;
 }
-var vercel_default = createApp({ db, config, ready: ensureMigrated });
+var vercel_default = createApp({ db, config, ready: ensureMigrated, requestDrivenJobs: true });
 /*! Bundled license information:
 
 cookie/index.js:

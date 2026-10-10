@@ -1,4 +1,4 @@
-import type { Selectable } from 'kysely';
+import { sql, type Selectable } from 'kysely';
 import {
   PHONE_VISIBLE_STATUSES,
   type ComplaintDto,
@@ -47,7 +47,7 @@ export class OrderRepository {
   /** One order query, one items query (IN) and one payments query (IN) for any number of orders. */
   async findDtos(ids: string[], viewer: OrderViewer): Promise<OrderDto[]> {
     if (ids.length === 0) return [];
-    const [orders, items, payments, reviews, complaints] = await Promise.all([
+    const [orders, items, payments, reviews, complaints, images] = await Promise.all([
       this.db
         .selectFrom('orders as o')
         .innerJoin('workers as w', 'w.id', 'o.worker_id')
@@ -62,6 +62,10 @@ export class OrderRepository {
           'o.worker_amount',
           'o.fulfillment',
           'o.delivery_address',
+          'o.start_time',
+          'o.end_time',
+          'o.description',
+          sql<string | null>`o.deadline::text`.as('deadline'),
           'o.created_at',
           'o.customer_id',
           'o.worker_id',
@@ -87,7 +91,17 @@ export class OrderRepository {
         .where('user_id', '=', viewer.userId)
         .orderBy('created_at', 'desc')
         .execute(),
+      this.db
+        .selectFrom('order_images')
+        .select(['order_id', 'url'])
+        .where('order_id', 'in', ids)
+        .orderBy('position')
+        .execute(),
     ]);
+    const imagesByOrder = new Map<string, string[]>();
+    for (const image of images) {
+      imagesByOrder.set(image.order_id, [...(imagesByOrder.get(image.order_id) ?? []), image.url]);
+    }
     const reviewByOrder = new Map<string, ReviewDto>(
       reviews.map((row) => [
         row.order_id,
@@ -150,6 +164,11 @@ export class OrderRepository {
           paymentStatus: paymentStatus.get(row.id) ?? null,
           review: reviewByOrder.get(row.id) ?? null,
           complaint: complaintByOrder.get(row.id) ?? null,
+          startTime: row.start_time ? row.start_time.toISOString() : null,
+          endTime: row.end_time ? row.end_time.toISOString() : null,
+          description: row.description,
+          deadline: row.deadline,
+          images: imagesByOrder.get(row.id) ?? [],
           createdAt: row.created_at.toISOString(),
         };
         return [row.id, dto] as const;

@@ -61,3 +61,27 @@ Brifdagi noaniqliklar bo'yicha qabul qilingan qarorlar. Yangi qaror oxiriga qo's
 - **To'lov:** `internal` provayder. Payme/Click/Uzum adapterlari bo'sh (`NotImplemented`), UI'da
   ular ulangan deb yozilmaydi. Karta ma'lumotlari saqlanmaydi va loglanmaydi.
 - **Komissiya:** buyurtma `delivered` bo'lganda `earnings` yoziladi: `commission = round(total*5/100)`.
+
+## Kalendar va xizmat buyurtmalari
+
+- **Xizmat narxi:** alohida xizmatlar jadvali yoʻq; hunarmand bir soatlik narxni (`workers.hourly_rate`)
+  belgilaydi, xizmat buyurtmasi summasi = narx × soat. Narx boʻsh boʻlsa, xizmat buyurtmasi qabul
+  qilinmaydi (`SERVICE_RATE_MISSING`). Buyurtma qatori `order_items` da saqlanadi (miqdor = soat).
+- **Boʻsh vaqt:** `availability` jadvali, bir hunarmandning oraliqlari bir-biri bilan kesishmaydi
+  (exclusion constraint). Oraliq kelajakda, 16 soatgacha va 60 kun ichida boʻlishi shart.
+  Tez tugmalar: Ertalab 08–12, Tushlik 12–15, Kechqurun 17–21 (`QUICK_SLOTS`).
+- **Slot tanlash:** buyurtmachi oraliq ichidan soat boshidan boshlanadigan vaqtni tanlaydi; mijoz
+  tomonda boʻsh soatlar `bookableStarts` bilan hisoblanadi, server esa har doim qayta tekshiradi
+  (oraliqqa sigʻishi, oʻtmishda emasligi, band emasligi).
+- **To'qnashuv:** `orders` da `btree_gist` exclusion constraint (13.3-band). Kod oldindan tekshirmaydi:
+  ikki parallel buyurtmadan birini baza rad etadi (23P01 → `ORDER_SLOT_TAKEN`).
+- **Muddat va rasmlar:** `orders.description`, `orders.deadline` (ixtiyoriy sana), `order_images`
+  (≤5). Rasm avval `/api/uploads/order-image` bilan yuklanadi (WebP, kontent tekshiriladi), buyurtma
+  faqat platforma oʻzi saqlagan rasm havolalarini qabul qiladi.
+- **Toʻlanmagan buyurtma:** 15 daqiqadan keyin `cancelled`, toʻlov `failed`, slot boʻshaydi.
+  Server doimiy ishlaydigan joyda (`server.ts`) `JobQueue` (in-process) har daqiqada ishga tushadi;
+  Vercel kabi serverless'da bir xil tozalash kiruvchi soʻrovlar bilan (daqiqasiga bir marta) bajariladi
+  (`requestDrivenMaintenance`). Slot oʻqilganda va band qilinganda ham eskirgan buyurtmalar oldin
+  tozalanadi.
+- **24 soatlik qaytarish:** `new` holatida 24 soatdan oshgan buyurtma avtomatik `refunded` boʻladi,
+  toʻlov provayder orqali qaytariladi va zaxira tiklanadi (bitta tranzaksiya).

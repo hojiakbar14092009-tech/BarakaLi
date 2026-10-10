@@ -13,7 +13,7 @@ import type { Transaction } from 'kysely';
 import type { AppContext } from '../../context.js';
 import type { Database } from '../../db/schema.js';
 import { AppError } from '../../errors.js';
-import { restoreStock } from '../payments/payment.service.js';
+import { refundPaidOrder } from '../payments/payment.service.js';
 import { OrderRepository, type OrderViewer } from './order.repository.js';
 
 const ACTION_TARGET: Record<OrderAction, OrderStatus> = {
@@ -107,7 +107,7 @@ export class OrderService {
       const target = ACTION_TARGET[action];
       if (!canTransition(order.status as OrderStatus, target))
         throw AppError.conflict('ORDER_INVALID_TRANSITION');
-      if (action === 'reject') await this.refund(trx, id);
+      if (action === 'reject') await refundPaidOrder(trx, this.ctx.payments, id);
       if (action === 'deliver') {
         await trx
           .insertInto('earnings')
@@ -144,24 +144,6 @@ export class OrderService {
         createdAt: row.created_at.toISOString(),
       })),
     };
-  }
-
-  private async refund(trx: Transaction<Database>, orderId: string): Promise<void> {
-    const payment = await trx
-      .selectFrom('payments')
-      .select(['id', 'provider_ref'])
-      .where('order_id', '=', orderId)
-      .where('status', '=', 'paid')
-      .forUpdate()
-      .executeTakeFirst();
-    if (!payment) return;
-    await this.ctx.payments.refund(payment.provider_ref ?? '');
-    await trx
-      .updateTable('payments')
-      .set({ status: 'refunded' })
-      .where('id', '=', payment.id)
-      .execute();
-    await restoreStock(trx, orderId);
   }
 
   private async priceItems(customerId: string, items: CartItemInput[]): Promise<PricedLine[]> {

@@ -30,6 +30,7 @@ export interface WorkersTable {
   rating: Generated<number>;
   reviews_count: Generated<number>;
   is_verified: Generated<boolean>;
+  hourly_rate: number | null;
   created_at: CreatedAt;
 }
 
@@ -77,6 +78,8 @@ export interface OrdersTable {
   delivery_address: string | null;
   start_time: Date | null;
   end_time: Date | null;
+  description: string | null;
+  deadline: string | null;
   created_at: CreatedAt;
   updated_at: Timestamp;
 }
@@ -158,6 +161,21 @@ export interface ComplaintsTable {
   created_at: CreatedAt;
 }
 
+export interface AvailabilityTable {
+  id: Generated<string>;
+  worker_id: string;
+  start_time: Date | string;
+  end_time: Date | string;
+  created_at: CreatedAt;
+}
+
+export interface OrderImagesTable {
+  id: Generated<string>;
+  order_id: string;
+  url: string;
+  position: Generated<number>;
+}
+
 export interface Database {
   categories: CategoriesTable;
   users: UsersTable;
@@ -174,4 +192,6 @@ export interface Database {
   reviews: ReviewsTable;
   complaints: ComplaintsTable;
   files: FilesTable;
+  availability: AvailabilityTable;
+  order_images: OrderImagesTable;
 }

@@ -1,6 +1,7 @@
 import type { Transaction } from 'kysely';
 import type { CardPaymentInput, OrderDto, PaymentSessionDto } from '@barakali/shared';
 import type { AppContext } from '../../context.js';
+import type { PaymentProvider } from './payment-provider.js';
 import type { Database } from '../../db/schema.js';
 import { AppError } from '../../errors.js';
 import { OrderRepository } from '../orders/order.repository.js';
@@ -20,6 +21,32 @@ export async function restoreStock(trx: Transaction<Database>, orderId: string):
       .where('id', '=', item.product_id)
       .execute();
   }
+}
+
+/**
+ * Refunds the paid payment of an order through the provider and returns its stock, inside the
+ * caller's transaction so the money, the stock and the order status change together.
+ */
+export async function refundPaidOrder(
+  trx: Transaction<Database>,
+  provider: PaymentProvider,
+  orderId: string,
+): Promise<void> {
+  const payment = await trx
+    .selectFrom('payments')
+    .select(['id', 'provider_ref'])
+    .where('order_id', '=', orderId)
+    .where('status', '=', 'paid')
+    .forUpdate()
+    .executeTakeFirst();
+  if (!payment) return;
+  await provider.refund(payment.provider_ref ?? '');
+  await trx
+    .updateTable('payments')
+    .set({ status: 'refunded' })
+    .where('id', '=', payment.id)
+    .execute();
+  await restoreStock(trx, orderId);
 }
 
 /** Atomic guard against overselling: the update only succeeds while enough stock remains. */
@@ -74,7 +101,7 @@ export class PaymentService {
     const outcome = await this.ctx.db.transaction().execute(async (trx) => {
       const order = await trx
         .selectFrom('orders')
-        .select(['id', 'customer_id', 'status', 'total'])
+        .select(['id', 'customer_id', 'status', 'total', 'type'])
         .where('id', '=', orderId)
         .forUpdate()
         .executeTakeFirst();
@@ -90,7 +117,8 @@ export class PaymentService {
       if (order.status !== 'awaiting_payment') throw AppError.conflict('ORDER_NOT_PAYABLE');
       const result = await this.ctx.payments.verifyCallback(card, { orderId, amount: order.total });
       if (result.status === 'failed') return 'declined' as const;
-      await reserveStock(trx, orderId);
+      // Services have no shelf stock; their slot was already held when the order was created.
+      if (order.type === 'product') await reserveStock(trx, orderId);
       await trx
         .updateTable('payments')
         .set({ status: 'paid', provider_ref: result.providerRef })

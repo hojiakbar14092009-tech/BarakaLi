@@ -77,3 +77,17 @@ export const MAX_ADDRESS_LENGTH = 300;
 export const MAX_CART_ITEMS = 30;
 export const MAX_ITEM_QUANTITY = 10_000;
 export const MAX_PRICE_SOM = 1_000_000_000;
+
+export const TASHKENT_UTC_OFFSET_HOURS = 5;
+export const MAX_SERVICE_HOURS = 8;
+export const MAX_AVAILABILITY_HOURS = 16;
+export const AVAILABILITY_HORIZON_DAYS = 60;
+export const MAX_ORDER_DESCRIPTION_LENGTH = 1000;
+
+/** Quick availability buttons: local (Asia/Tashkent) start and end hour of the window. */
+export const QUICK_SLOTS = {
+  morning: { start: 8, end: 12 },
+  noon: { start: 12, end: 15 },
+  evening: { start: 17, end: 21 },
+} as const;
+export type QuickSlot = keyof typeof QUICK_SLOTS;

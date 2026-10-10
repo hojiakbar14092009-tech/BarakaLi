@@ -4,10 +4,11 @@ Bu ro'yxat `CLAUDE.md` dagi bosqichlardan MVP'ga kirmagan qismlarni o'z ichiga o
 
 ## 5-bosqich: kalendar va xizmat buyurtmalari
 
-- [ ] `availability` jadvali, bo'sh vaqt belgilash (Ertalab / Tushlik / Kechqurun tez tugmalari)
-- [ ] `/hunarmand/kalendar`, `/buyurtma/yangi` (tavsif, muddat, ≤5 rasm, slot tanlash)
-- [ ] `orders` uchun exclusion constraint (`btree_gist`, 13.3-band) va uning testi
-- [ ] To'lanmagan buyurtmani 15 daqiqada bekor qiluvchi navbat vazifasi (13.10)
+- [x] `availability` jadvali, boʻsh vaqt belgilash (Ertalab / Tushlik / Kechqurun tez tugmalari)
+- [x] `/hunarmand/kalendar`, `/buyurtma/yangi` (tavsif, muddat, ≤5 rasm, slot tanlash)
+- [x] `orders` uchun exclusion constraint (`btree_gist`, 13.3-band) va uning testi
+- [x] Toʻlanmagan buyurtmani 15 daqiqada bekor qiluvchi navbat vazifasi (13.10)
+- [x] 24 soatda qabul qilinmagan buyurtmani avtomatik qaytarish (13.11, shu bosqichda)
 
 ## 9-bosqich: admin, sharh, shikoyat, materiallar, jamg'arma, darslar
 
