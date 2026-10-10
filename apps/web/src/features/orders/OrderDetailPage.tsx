@@ -21,6 +21,7 @@ import { shortId } from './OrdersPage';
 import { ReviewSection } from './ReviewSection';
 import { ServiceDetails } from './ServiceDetails';
 import { StatusBadge } from './StatusBadge';
+import { formatPhoneDisplay } from '../../lib/phone';
 
 const STEPS: OrderStatus[] = ['new', 'accepted', 'in_progress', 'ready', 'delivered'];
 
@@ -221,7 +222,7 @@ export default function OrderDetailPage() {
               href={`tel:${order.counterpart.phone}`}
               className="inline-flex min-h-12 items-center font-semibold underline"
             >
-              {t('orders.phone')}: {order.counterpart.phone}
+              {t('orders.phone')}: {formatPhoneDisplay(order.counterpart.phone)}
             </a>
             {order.counterpart.telegramUsername && (
               <a

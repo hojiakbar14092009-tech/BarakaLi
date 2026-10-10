@@ -132,7 +132,7 @@ describe('admin panel', () => {
     );
     expect(screen.getByRole('button', { name: 'Tasdiqlangan' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Rad etilgan' })).toBeInTheDocument();
-    expect(screen.getByText(/\+998901112233/)).toBeInTheDocument();
+    expect(screen.getByText(/\+998 90 111 22 33/)).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: /^Tasdiqlash: Dilfuza$/ }));
 
     await waitFor(() => {

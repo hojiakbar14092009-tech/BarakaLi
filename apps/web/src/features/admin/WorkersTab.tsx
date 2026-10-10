@@ -13,6 +13,7 @@ import { EmptyState, ErrorState, LoadingState } from '../../components/StateView
 import { errorMessage } from '../../lib/errors';
 import { Pagination } from '../catalog/Pagination';
 import { useAdminWorkers, useApproveWorker, useRejectWorker } from './api';
+import { formatPhoneDisplay } from '../../lib/phone';
 
 const FILTERS: WorkerStatus[] = ['pending', 'approved', 'rejected'];
 
@@ -110,7 +111,7 @@ export function WorkersTab() {
               </p>
               <p className="text-sm text-mocha">
                 {t(`categories.${worker.categorySlug}`, { defaultValue: worker.categorySlug })} ·{' '}
-                {worker.phone}
+                {formatPhoneDisplay(worker.phone)}
               </p>
               <p className="text-sm text-mocha">
                 {t(`admin.workers.status.${worker.status}`)}

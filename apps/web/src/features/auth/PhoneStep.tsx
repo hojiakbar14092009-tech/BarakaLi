@@ -1,15 +1,18 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
 import { PHONE_COUNTRY_PREFIX } from '@barakali/shared';
 import { Button } from '../../components/Button';
-import { Field } from '../../components/Field';
+import { PhoneInput } from '../../components/ui/PhoneInput';
 import { errorMessage, validationMessage } from '../../lib/errors';
+import { PHONE_LOCAL_DIGITS } from '../../lib/phone';
 import { requestCode } from './api';
 
-const schema = z.object({ phone: z.string().regex(/^\d{9}$/, 'INVALID_PHONE') });
+const schema = z.object({
+  phone: z.string().regex(new RegExp(`^\\d{${PHONE_LOCAL_DIGITS}}$`), 'INVALID_PHONE'),
+});
 type FormValues = z.infer<typeof schema>;
 
 interface PhoneStepProps {
@@ -19,13 +22,10 @@ interface PhoneStepProps {
 
 export function PhoneStep({ initialPhone, onSent }: PhoneStepProps) {
   const { t } = useTranslation();
-  const {
-    register,
-    handleSubmit,
-    setValue,
-    formState: { errors },
-  } = useForm<FormValues>({
+  const { control, handleSubmit } = useForm<FormValues>({
     resolver: zodResolver(schema),
+    mode: 'onBlur',
+    reValidateMode: 'onChange',
     defaultValues: { phone: initialPhone },
   });
   const mutation = useMutation({
@@ -39,26 +39,22 @@ export function PhoneStep({ initialPhone, onSent }: PhoneStepProps) {
       className="space-y-4"
       noValidate
     >
-      <div className="flex items-end gap-2">
-        <span className="mb-0 inline-flex min-h-12 items-center rounded-field bg-bisque px-3 font-semibold">
-          {PHONE_COUNTRY_PREFIX}
-        </span>
-        <div className="flex-1">
-          <Field
+      <Controller
+        name="phone"
+        control={control}
+        render={({ field, fieldState }) => (
+          <PhoneInput
+            ref={field.ref}
+            name={field.name}
             label={t('auth.phoneLabel')}
             hint={t('auth.phoneHint')}
-            error={validationMessage(errors.phone?.message, t)}
-            inputMode="numeric"
-            autoComplete="tel-national"
-            placeholder="90 123 45 67"
-            maxLength={12}
-            {...register('phone', {
-              onChange: (event) =>
-                setValue('phone', event.target.value.replace(/\D/g, '').slice(0, 9)),
-            })}
+            error={validationMessage(fieldState.error?.message, t)}
+            value={field.value}
+            onChange={field.onChange}
+            onBlur={field.onBlur}
           />
-        </div>
-      </div>
+        )}
+      />
       {mutation.isError && (
         <p role="alert" className="font-medium">
           {errorMessage(mutation.error, t)}

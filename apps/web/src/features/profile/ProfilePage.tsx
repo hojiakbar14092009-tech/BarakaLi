@@ -9,6 +9,7 @@ import { LanguageSwitch } from '../../components/LanguageSwitch';
 import { errorMessage } from '../../lib/errors';
 import { useAuthStore } from '../../stores/auth';
 import { updateProfile, updateWorkerProfile } from '../auth/api';
+import { formatPhoneDisplay } from '../../lib/phone';
 
 function TelegramField({ current }: { current: string | null }) {
   const { t } = useTranslation();
@@ -73,7 +74,7 @@ export default function ProfilePage() {
       <dl className="space-y-1 rounded-card bg-bisque/60 p-4">
         <div className="flex justify-between gap-3">
           <dt className="text-mocha">{t('profile.phone')}</dt>
-          <dd className="font-semibold">{user.phone}</dd>
+          <dd className="font-semibold">{formatPhoneDisplay(user.phone)}</dd>
         </div>
         <div className="flex justify-between gap-3">
           <dt className="text-mocha">{t('profile.roleLabel')}</dt>

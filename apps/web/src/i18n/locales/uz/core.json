@@ -98,7 +98,7 @@
   },
   "validation": {
     "invalid": "Maydonni toʻgʻri toʻldiring.",
-    "INVALID_PHONE": "9 ta raqamni toʻliq kiriting.",
+    "INVALID_PHONE": "Raqam 9 ta raqamdan iborat boʻlsin, masalan: 90 123 45 67.",
     "INVALID_CODE": "6 xonali kodni kiriting.",
     "WHOLESALE_INCOMPLETE": "Ulgurji narx va minimal miqdorni birga kiriting.",
     "WHOLESALE_NOT_LOWER": "Ulgurji narx dona narxidan past boʻlishi kerak.",
