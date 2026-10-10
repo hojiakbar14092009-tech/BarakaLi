@@ -233,7 +233,7 @@ Yangi sahifalar: `/ishlar` (hunarmandning ishlari boshqaruvi), `/mahsulot/:id`, 
 
 ## 10. BOSH SAHIFA
 
-Yuqoridan pastga: Header (logotip, UZ/RU, "Kirish") → katta qidiruv ("Nima tikish yoki pishirish kerak?") → kategoriyalar (rasmli katta tugmalar: Tikuvchilik, Pishiriq, Qo'l mehnati, Dizayn, Masofaviy ishlar) → "Hunarmand bo'lish" (katta, Mocha) → tavsiya etilgan hunarmandlar (3–4 kartochka: rasm, ism, kategoriya, reyting, "dan narx", "Buyurtma berish") → "Qanday ishlaydi" (Tanlang → Buyurtma bering → Oling) → Darslar (2–3 kartochka) → Footer.
+Yuqoridan pastga: Header (logotip, UZ/RU, "Kirish") → katta qidiruv ("Nima tikish yoki pishirish kerak?") → kategoriyalar (rasmli katta tugmalar: Tikuvchilik, Pishiriq, Qo'l mehnati, Dizayn) → "Hunarmand bo'lish" (katta, Mocha) → tavsiya etilgan hunarmandlar (3–4 kartochka: rasm, ism, kategoriya, reyting, "dan narx", "Buyurtma berish") → "Qanday ishlaydi" (Tanlang → Buyurtma bering → Oling) → Darslar (2–3 kartochka) → Footer.
 
 Telefonda birinchi ekranda faqat 1–4 bandlar ko'rinadi. Birinchi ekran **3 soniyadan tez** yuklansin.
 

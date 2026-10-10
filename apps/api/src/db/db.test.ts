@@ -14,15 +14,19 @@ afterAll(async () => {
 });
 
 describe('database', () => {
-  it('seeds the five categories through the migration', async () => {
-    const rows = await db.selectFrom('categories').select('slug').orderBy('position').execute();
-    expect(rows.map((r) => r.slug)).toEqual([
+  it('seeds four active categories and keeps the retired remote-work row inactive', async () => {
+    const rows = await db
+      .selectFrom('categories')
+      .select(['slug', 'is_active'])
+      .orderBy('position')
+      .execute();
+    expect(rows.filter((r) => r.is_active).map((r) => r.slug)).toEqual([
       'tikuvchilik',
       'pishiriq',
       'qol-mehnati',
       'dizayn',
-      'masofaviy-ishlar',
     ]);
+    expect(rows.find((r) => r.slug === 'masofaviy-ishlar')?.is_active).toBe(false);
   });
 
   it('does not re-apply migrations on a second run', async () => {

@@ -36,9 +36,9 @@ describe('app', () => {
     expect(res.body.error.code).toBe('FORBIDDEN');
   });
 
-  it('lists the five categories', async () => {
+  it('lists the four active categories', async () => {
     const res = await request(app).get('/api/categories');
     expect(res.status).toBe(200);
-    expect(res.body).toHaveLength(5);
+    expect(res.body).toHaveLength(4);
   });
 });

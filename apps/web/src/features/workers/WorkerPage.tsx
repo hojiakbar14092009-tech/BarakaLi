@@ -34,7 +34,7 @@ export default function WorkerPage() {
         </span>
         <div className="space-y-1">
           <h1 className="text-3xl font-bold">{data.displayName}</h1>
-          <p className="text-mocha">{t(`categories.${data.categorySlug}`)}</p>
+          <p className="text-mocha">{t(`categories.${data.categorySlug}`, { defaultValue: '' })}</p>
           <div className="flex flex-wrap items-center gap-3 text-sm">
             <span className="inline-flex items-center gap-1 text-mocha">
               <Star className="size-4" aria-hidden="true" />

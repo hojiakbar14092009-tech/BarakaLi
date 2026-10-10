@@ -168,6 +168,7 @@ export class ProductRepository {
       .selectFrom('categories')
       .select('id')
       .where('id', '=', categoryId)
+      .where('is_active', '=', true)
       .executeTakeFirst();
     return row !== undefined;
   }
@@ -301,7 +302,10 @@ export class ProductRepository {
     // Public listings: published products of approved workers only. Pending and rejected
     // applicants never show up, whatever the client asks for.
     if (filter.publishedOnly) {
-      query = query.where('p.status', '=', 'published').where('w.status', '=', 'approved');
+      query = query
+        .where('p.status', '=', 'published')
+        .where('w.status', '=', 'approved')
+        .where('c.is_active', '=', true);
     }
     if (filter.categorySlug) query = query.where('c.slug', '=', filter.categorySlug);
     if (filter.workerId) query = query.where('p.worker_id', '=', filter.workerId);

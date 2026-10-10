@@ -1,19 +1,10 @@
-import {
-  CakeSlice,
-  Flower2,
-  Laptop,
-  Palette,
-  Scissors,
-  Store,
-  type LucideIcon,
-} from 'lucide-react';
+import { CakeSlice, Flower2, Palette, Scissors, Store, type LucideIcon } from 'lucide-react';
 
 const ICONS: Record<string, LucideIcon> = {
   tikuvchilik: Scissors,
   pishiriq: CakeSlice,
   'qol-mehnati': Flower2,
   dizayn: Palette,
-  'masofaviy-ishlar': Laptop,
 };
 
 interface CategoryIconProps {

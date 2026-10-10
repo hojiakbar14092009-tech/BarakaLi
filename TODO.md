@@ -11,6 +11,27 @@ Bu ro'yxat `CLAUDE.md` dagi bosqichlardan MVP'ga kirmagan qismlarni o'z ichiga o
 - [x] Playwright e2e: admin tasdiqlaydi → mahsulot → buyurtma → qabul → kontakt; raqib hunarmand koʻrmaydi; 360 px da scroll va 48 px tekshiruvi
 - [x] `vercel.json`: `/api/(.*)` → `/api` (SPA fallbackdan oldin), testi `vercel-config.test.ts`
 
+## "Masofaviy ishlar" toifasi olib tashlandi (2026-10-10)
+
+- Qaror: `categories` qatori **oʻchirilmadi**. Migratsiya `1760000900000` `categories.is_active` qoʻshdi va
+  `masofaviy-ishlar` ni `false` qildi. Nofaol toifa `/api/categories` da qaytmaydi, yangi hunarmand yoki
+  mahsulot uni tanlay olmaydi (`categoryId: NOT_FOUND`), shu toifadagi mahsulotlar ommaviy katalogda va
+  tavsiya etilgan hunarmandlar roʻyxatida koʻrinmaydi. Buyurtma tarixi va `category_id` oʻzgarmaydi.
+- Namuna maʼlumotda (seed) bu toifada mahsulot ham, hunarmand ham yoʻq. Production bazasiga bu muhitdan
+  ulanilmagan, shuning uchun u yerdagi soni nomaʼlum. Tekshirish:
+
+  ```sql
+  SELECT 'workers' AS kind, count(*) FROM workers w JOIN categories c ON c.id = w.category_id
+    WHERE c.slug = 'masofaviy-ishlar'
+  UNION ALL
+  SELECT 'products', count(*) FROM products p JOIN categories c ON c.id = p.category_id
+    WHERE c.slug = 'masofaviy-ishlar';
+  ```
+
+- [ ] Natijani shu yerga yozish (faqat soni va id, ism/telefon emas)
+- [ ] Shu toifadagi hunarmandlarga boshqa toifani tanlash imkonini berish (hozir profil sahifasi ochiladi,
+      lekin toifa nomi koʻrsatilmaydi)
+
 ## 8-bosqich: frontend qoldig'i
 
 - [x] Hunarmand kalendar sahifasi (boʻsh vaqt, band vaqtlar)

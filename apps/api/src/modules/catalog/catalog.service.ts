@@ -24,6 +24,7 @@ export class CatalogService {
       const rows = await this.ctx.db
         .selectFrom('categories')
         .select(['id', 'slug', 'name_uz', 'name_ru'])
+        .where('is_active', '=', true)
         .orderBy('position')
         .execute();
       return rows.map((row) => ({

@@ -57,6 +57,7 @@ export class WorkersRepository {
       .selectFrom('categories')
       .select('id')
       .where('id', '=', categoryId)
+      .where('is_active', '=', true)
       .executeTakeFirst();
     return row !== undefined;
   }
@@ -87,6 +88,7 @@ export class WorkersRepository {
   async findFeatured(limit: number): Promise<WorkerSummaryDto[]> {
     const rows = await this.summaryQuery()
       .where('w.status', '=', 'approved')
+      .where('c.is_active', '=', true)
       .having(sql<number>`count(p.id)`, '>', 0)
       .orderBy('w.rating', 'desc')
       .orderBy('w.reviews_count', 'desc')

@@ -115,6 +115,49 @@ describe('workers', () => {
   });
 });
 
+describe('retired remote-work category', () => {
+  const retiredId = async () =>
+    (
+      await t.db
+        .selectFrom('categories')
+        .select('id')
+        .where('slug', '=', 'masofaviy-ishlar')
+        .executeTakeFirstOrThrow()
+    ).id;
+
+  it('is not returned by the category list', async () => {
+    const res = await request(t.app).get('/api/categories');
+    const slugs = res.body.map((c: { slug: string }) => c.slug);
+    expect(slugs).toEqual(['tikuvchilik', 'pishiriq', 'qol-mehnati', 'dizayn']);
+  });
+
+  it('cannot be chosen for a new product', async () => {
+    const res = await request(t.app)
+      .post('/api/my/products')
+      .set('Authorization', `Bearer ${worker.token}`)
+      .send({ title: 'Yangi', categoryId: await retiredId(), retailPrice: 10_000, stock: 1 });
+    expect(res.status).toBe(400);
+    expect(res.body.error.details).toEqual({ categoryId: ['NOT_FOUND'] });
+  });
+
+  it('keeps legacy products in the database but out of public listings', async () => {
+    const legacy = await makeProduct(t, worker, { title: 'Eski masofaviy ish' });
+    await t.db
+      .updateTable('products')
+      .set({ category_id: await retiredId() })
+      .where('id', '=', legacy.id)
+      .execute();
+    const res = await request(t.app).get('/api/products').query({ q: 'Eski masofaviy' });
+    expect(res.body.total).toBe(0);
+    const stored = await t.db
+      .selectFrom('products')
+      .select('id')
+      .where('id', '=', legacy.id)
+      .executeTakeFirst();
+    expect(stored?.id).toBe(legacy.id);
+  });
+});
+
 describe('normalizeSearch', () => {
   it('removes apostrophe variants and lowercases', () => {
     expect(normalizeSearch("O'ZBEK")).toBe('ozbek');

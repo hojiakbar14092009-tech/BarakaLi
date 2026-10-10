@@ -41,13 +41,7 @@ export type FulfillmentType = (typeof FULFILLMENT_TYPES)[number];
 export const PAYMENT_STATUSES = ['pending', 'paid', 'refunded', 'failed'] as const;
 export type PaymentStatus = (typeof PAYMENT_STATUSES)[number];
 
-export const CATEGORY_SLUGS = [
-  'tikuvchilik',
-  'pishiriq',
-  'qol-mehnati',
-  'dizayn',
-  'masofaviy-ishlar',
-] as const;
+export const CATEGORY_SLUGS = ['tikuvchilik', 'pishiriq', 'qol-mehnati', 'dizayn'] as const;
 export type CategorySlug = (typeof CATEGORY_SLUGS)[number];
 export const ALL_CATEGORIES_SLUG = 'barchasi';
 

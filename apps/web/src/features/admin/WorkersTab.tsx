@@ -109,7 +109,8 @@ export function WorkersTab() {
                 )}
               </p>
               <p className="text-sm text-mocha">
-                {t(`categories.${worker.categorySlug}`)} · {worker.phone}
+                {t(`categories.${worker.categorySlug}`, { defaultValue: worker.categorySlug })} ·{' '}
+                {worker.phone}
               </p>
               <p className="text-sm text-mocha">
                 {t(`admin.workers.status.${worker.status}`)}

@@ -9,6 +9,7 @@ export interface CategoriesTable {
   name_uz: string;
   name_ru: string;
   position: Generated<number>;
+  is_active: Generated<boolean>;
 }
 
 export interface UsersTable {
