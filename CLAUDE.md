@@ -293,6 +293,9 @@ Qo'shimcha kirish: "Mening ishlarim" (6-bo'lim).
 15. **Jamg'arma va darslar:** jamg'arma haqiqiy bank emas: `/daromad` da daromad tarixi, oylik jami va hunarmand belgilagan maqsad summasi bilan progress (`savings_goals`). `/darslar` kontenti hozircha statik (markdown/i18n fayllari), keyinroq CMS.
 16. **Qidiruv:** PostgreSQL `pg_trgm` + indeks. O'zbekcha apostrof variantlari (`'`, `ʻ`, `ʼ`, `’`) qidiruvda bitta ko'rinishga keltiriladi, lotin/kirill farqi hozircha yo'q.
 17. **Maxfiylik:** shaxsiy ma'lumotlarni mamlakat ichidagi serverda saqlash talab qilinishi mumkin. Hosting `docs/DEPLOY.md` da qayd etiladi, kod konkret provayderga bog'lanmaydi.
+18. **Soatlik narx yo'q:** hunarmandning soatlik narxi (`workers.hourly_rate`) olib tashlangan. Xizmat so'rovi bepul va to'lovsiz; narx va to'lov faqat mahsulot buyurtmasida.
+19. **Admin tasdiqlash:** yangi hunarmand arizasi `pending` holatida boshlanadi, profil ommaviy emas va buyurtma qabul qilmaydi. Admin `/admin/hunarmandlar` da `approved` yoki `rejected` qiladi; tekshiruv serverda (`workers.status`).
+20. **Kontakt qoidasi:** hunarmandning telefoni va Telegram nomi (`workers.telegram_username`, ixtiyoriy) faqat buyurtma `accepted` va undan keyingi holatda, faqat shu buyurtmaning buyurtmachisiga, API javobining o'zida qaytadi. Boshqa hunarmand yoki begona foydalanuvchi buyurtmani umuman ko'rmaydi (404).
 
 ---
 

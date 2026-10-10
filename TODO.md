@@ -2,6 +2,15 @@
 
 Bu ro'yxat `CLAUDE.md` dagi bosqichlardan MVP'ga kirmagan qismlarni o'z ichiga oladi.
 
+## Joriy qoidalar (bajarilgan)
+
+- [x] Komissiya 2%: har buyurtma oʻz stavkasini saqlaydi (`orders.commission_rate`, `commission_amount`); eski buyurtmalar 5% bilan qoldi
+- [x] Soatlik narx olib tashlandi: xizmat soʻrovi bepul, toʻlovsiz
+- [x] Hunarmand arizasi admin tasdiqlagach faollashadi (`pending` / `approved` / `rejected`, `/admin/hunarmandlar`)
+- [x] Kontakt (telefon, Telegram) faqat buyurtma qabul qilingach, faqat buyurtmachiga; boshqa hunarmand buyurtmani koʻrmaydi
+- [x] Playwright e2e: admin tasdiqlaydi → mahsulot → buyurtma → qabul → kontakt; raqib hunarmand koʻrmaydi; 360 px da scroll va 48 px tekshiruvi
+- [x] `vercel.json`: `/api/(.*)` → `/api` (SPA fallbackdan oldin), testi `vercel-config.test.ts`
+
 ## 8-bosqich: frontend qoldig'i
 
 - [x] Hunarmand kalendar sahifasi (boʻsh vaqt, band vaqtlar)
