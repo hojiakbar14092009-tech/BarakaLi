@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { buttonClasses } from '../../components/Button';
+import { Announcement } from './Announcement';
 import { CategoryGrid } from './CategoryGrid';
 import { FeaturedWorkers } from './FeaturedWorkers';
 import { HowItWorks } from './HowItWorks';
@@ -13,6 +14,7 @@ export function HomePage() {
   return (
     <div className="space-y-10">
       <div className="space-y-5">
+        <Announcement />
         <SearchBar />
         <CategoryGrid />
         <Link

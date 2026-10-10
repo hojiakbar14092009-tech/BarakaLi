@@ -50,6 +50,3 @@ export function AdminMaterialsPage() {
     </SectionPage>
   );
 }
-
-export const AdminCategoriesPage = () => <SectionPage titleKey="categories" />;
-export const AdminSettingsPage = () => <SectionPage titleKey="settings" />;

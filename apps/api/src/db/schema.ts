@@ -158,6 +158,7 @@ export interface ReviewsTable {
   rating: number;
   comment: string | null;
   status: Generated<'visible' | 'hidden'>;
+  moderation_reason: string | null;
   created_at: CreatedAt;
 }
 
@@ -166,7 +167,9 @@ export interface ComplaintsTable {
   order_id: string;
   user_id: string;
   reason: string;
-  status: Generated<'open' | 'resolved' | 'dismissed'>;
+  status: Generated<'open' | 'in_review' | 'resolved' | 'dismissed'>;
+  admin_note: string | null;
+  updated_at: Timestamp;
   created_at: CreatedAt;
 }
 
@@ -269,6 +272,15 @@ export interface RefundsTable {
   created_at: CreatedAt;
 }
 
+export interface PlatformSettingsTable {
+  id: number;
+  accept_applications: Generated<boolean>;
+  announcement_uz: string | null;
+  announcement_ru: string | null;
+  updated_at: Timestamp;
+  updated_by: string | null;
+}
+
 export interface Database {
   categories: CategoriesTable;
   users: UsersTable;
@@ -295,4 +307,5 @@ export interface Database {
   notifications: NotificationsTable;
   audit_log: AuditLogTable;
   refunds: RefundsTable;
+  platform_settings: PlatformSettingsTable;
 }

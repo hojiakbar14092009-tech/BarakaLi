@@ -28,6 +28,8 @@ import {
   MAX_ORDER_IMAGES,
   REVIEW_STATUSES,
   MAX_SERVICE_HOURS,
+  MAX_ADMIN_NOTE_LENGTH,
+  MAX_ANNOUNCEMENT_LENGTH,
 } from './constants.js';
 import { ORDER_STATUSES } from './order-status.js';
 import { normalizePhone } from './phone.js';
@@ -253,8 +255,38 @@ export type SavingsGoalInput = z.infer<typeof savingsGoalSchema>;
 export const workerRejectionSchema = z.object({
   reason: z.string().trim().min(MIN_REJECT_REASON_LENGTH).max(MAX_REJECT_REASON_LENGTH),
 });
-export const reviewModerationSchema = z.object({ status: z.enum(REVIEW_STATUSES) });
-export const complaintResolutionSchema = z.object({ status: z.enum(['resolved', 'dismissed']) });
+/** Hiding a review needs a reason (shown in the audit log); showing it again does not. */
+export const reviewModerationSchema = z
+  .object({
+    status: z.enum(REVIEW_STATUSES),
+    reason: z.string().trim().max(MAX_REJECT_REASON_LENGTH).optional(),
+  })
+  .superRefine((value, ctx) => {
+    if (value.status === 'hidden' && (value.reason ?? '').length < MIN_REJECT_REASON_LENGTH) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['reason'], message: 'REASON_REQUIRED' });
+    }
+  });
+
+export const complaintUpdateSchema = z.object({
+  status: z.enum(['in_review', 'resolved', 'dismissed']),
+  adminNote: z.string().trim().max(MAX_ADMIN_NOTE_LENGTH).optional(),
+});
+export type ComplaintUpdate = z.infer<typeof complaintUpdateSchema>;
+
+export const categoryUpdateSchema = z.object({
+  nameUz: z.string().trim().min(MIN_NAME_LENGTH).max(MAX_NAME_LENGTH),
+  nameRu: z.string().trim().min(MIN_NAME_LENGTH).max(MAX_NAME_LENGTH),
+  isActive: z.boolean(),
+});
+export type CategoryUpdate = z.infer<typeof categoryUpdateSchema>;
+
+const announcementSchema = z.string().trim().max(MAX_ANNOUNCEMENT_LENGTH).optional();
+export const settingsUpdateSchema = z.object({
+  acceptApplications: z.boolean(),
+  announcementUz: announcementSchema,
+  announcementRu: announcementSchema,
+});
+export type SettingsUpdate = z.infer<typeof settingsUpdateSchema>;
 
 export const adminListQuerySchema = z.object({
   page: z.coerce.number().int().min(1).default(1),

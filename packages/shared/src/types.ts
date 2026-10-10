@@ -374,6 +374,26 @@ export interface AdminUserDto {
   createdAt: string;
 }
 
+export interface AdminCategoryDto {
+  id: string;
+  slug: string;
+  nameUz: string;
+  nameRu: string;
+  isActive: boolean;
+  productsCount: number;
+}
+
+export interface PublicSettingsDto {
+  acceptApplications: boolean;
+  announcement: { uz: string; ru: string } | null;
+}
+
+export interface PlatformSettingsDto extends PublicSettingsDto {
+  /** Read-only here: the rate lives in code (COMMISSION_RATE_PERCENT). */
+  commissionPercent: number;
+  updatedAt: string;
+}
+
 export interface AdminReviewDto {
   id: string;
   orderId: string;
@@ -382,6 +402,7 @@ export interface AdminReviewDto {
   rating: number;
   comment: string | null;
   status: ReviewStatus;
+  moderationReason: string | null;
   createdAt: string;
 }
 
@@ -394,6 +415,7 @@ export interface AdminComplaintDto {
   status: ComplaintStatus;
   orderStatus: OrderStatus;
   paymentStatus: PaymentStatus | null;
+  adminNote: string | null;
   createdAt: string;
 }
 

@@ -91,11 +91,25 @@
       "hidden": "Yashirilgan"
     },
     "hide": "Yashirish",
-    "show": "Qayta koʻrsatish"
+    "show": "Qayta koʻrsatish",
+    "dialog": {
+      "hide": {
+        "title": "Sharhni yashirish",
+        "text": "Sharh hunarmand profilidan olib tashlanadi va reytingga kirmaydi.",
+        "confirm": "Sharhni yashirish",
+        "reasonLabel": "Yashirish sababi"
+      },
+      "show": {
+        "title": "Sharhni qayta koʻrsatish",
+        "text": "Sharh yana profilda koʻrinadi va reytingga kiradi.",
+        "confirm": "Sharhni koʻrsatish"
+      }
+    }
   },
   "complaints": {
     "filter": {
-      "open": "Ochiq",
+      "open": "Yangi",
+      "in_review": "Koʻrib chiqilmoqda",
       "all": "Barchasi"
     },
     "empty": "Shikoyatlar yoʻq.",
@@ -104,13 +118,34 @@
       "worker": "Hunarmand"
     },
     "status": {
-      "open": "Ochiq",
-      "resolved": "Hal qilingan",
-      "dismissed": "Rad etilgan"
+      "open": "Yangi",
+      "in_review": "Koʻrib chiqilmoqda",
+      "resolved": "Hal qilindi",
+      "dismissed": "Rad etildi"
     },
-    "resolve": "Hal qilindi",
-    "dismiss": "Rad etish",
-    "refund": "Pulni qaytarish"
+    "refund": "Pulni qaytarish",
+    "actions": {
+      "in_review": "Koʻrib chiqishga olish",
+      "resolved": "Hal qilindi",
+      "dismissed": "Rad etish"
+    },
+    "note": "Admin izohi",
+    "noteLabel": "Izoh (ixtiyoriy)",
+    "noteHint": "Faqat administratorlar koʻradi, audit jurnalida saqlanadi.",
+    "dialog": {
+      "in_review": {
+        "title": "Shikoyatni koʻrib chiqishga olish",
+        "text": "Shikoyat «Koʻrib chiqilmoqda» holatiga oʻtadi."
+      },
+      "resolved": {
+        "title": "Shikoyatni hal qilingan deb belgilash",
+        "text": "Shikoyat yopiladi. Pul qaytarish kerak boʻlsa, buyurtma sahifasidan bajaring."
+      },
+      "dismissed": {
+        "title": "Shikoyatni rad etish",
+        "text": "Shikoyat asossiz deb yopiladi."
+      }
+    }
   },
   "materials": {
     "catalog": "Materiallar katalogi",
@@ -177,7 +212,10 @@
       "product.show": "Mahsulot qayta koʻrsatildi",
       "product.delete": "Mahsulot oʻchirildi",
       "user.block": "Foydalanuvchi bloklandi",
-      "user.unblock": "Foydalanuvchi blokdan chiqarildi"
+      "user.unblock": "Foydalanuvchi blokdan chiqarildi",
+      "complaint.review": "Shikoyat koʻrib chiqildi",
+      "category.update": "Toifa yangilandi",
+      "settings.update": "Sozlamalar yangilandi"
     }
   },
   "notReady": {
@@ -309,5 +347,37 @@
         "confirm": "Blokdan chiqarish"
       }
     }
+  },
+  "categories": {
+    "intro": "Toifa nomlari katalogda shu yerdagidek koʻrinadi. Oʻchirilgan toifada mavjud mahsulotlar saqlanadi, yangi mahsulot va ariza qabul qilinmaydi.",
+    "active": "Faol",
+    "inactive": "Oʻchirilgan",
+    "productsCount": "mahsulotlar: {{count}}",
+    "nameUz": "Nomi (oʻzbekcha)",
+    "nameRu": "Nomi (ruscha)",
+    "enable": "Yoqish",
+    "disable": "Oʻchirish",
+    "dialog": {
+      "enable": {
+        "title": "Toifani yoqish",
+        "text": "«{{name}}» yana katalogda va tanlovlarda koʻrinadi."
+      },
+      "disable": {
+        "title": "Toifani oʻchirish",
+        "text": "«{{name}}» katalogdan yashiriladi. Mavjud mahsulotlar saqlanadi, yangisini qoʻshib boʻlmaydi."
+      }
+    }
+  },
+  "settings": {
+    "applicationsTitle": "Hunarmand arizalari",
+    "acceptApplications": "Yangi hunarmand arizalarini qabul qilish",
+    "applicationsHint": "Oʻchirilsa, «Hunarmand boʻlish» oqimi yopiladi; mavjud hunarmandlar ishlayveradi.",
+    "announcementTitle": "Bosh sahifadagi eʼlon",
+    "announcementHint": "Ixtiyoriy. Boʻsh qoldirilsa, eʼlon koʻrsatilmaydi.",
+    "announcementUz": "Eʼlon (oʻzbekcha)",
+    "announcementRu": "Eʼlon (ruscha)",
+    "commissionTitle": "Komissiya",
+    "commissionHint": "Stavka kod konstantasi; bu yerdan oʻzgartirilmaydi.",
+    "saved": "Sozlamalar saqlandi."
   }
 }

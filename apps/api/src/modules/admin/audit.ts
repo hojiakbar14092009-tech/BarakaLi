@@ -20,10 +20,22 @@ export type AuditAction =
   | 'product.show'
   | 'product.delete'
   | 'user.block'
-  | 'user.unblock';
+  | 'user.unblock'
+  | 'complaint.review'
+  | 'category.update'
+  | 'settings.update';
 
 export type AuditTarget =
-  'worker' | 'review' | 'complaint' | 'order' | 'product' | 'user' | 'material' | 'material_order';
+  | 'worker'
+  | 'review'
+  | 'complaint'
+  | 'order'
+  | 'product'
+  | 'user'
+  | 'category'
+  | 'settings'
+  | 'material'
+  | 'material_order';
 
 /** Plain values only; the writer never receives phone numbers, codes or tokens. */
 export type AuditDetails = Record<string, string | number | boolean | null>;

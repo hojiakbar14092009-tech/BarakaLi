@@ -401,6 +401,20 @@ Foydalanuvchilar: `GET /admin/users?q&status=blocked|admin|worker|customer&page`
 Bloklangan foydalanuvchi: kirish va refresh rad etiladi, mavjud access token bilan soʻrovlar 403
 `USER_BLOCKED`. Oʻziga nisbatan 409 `CANNOT_ACT_ON_SELF`, oxirgi adminga 409 `LAST_ADMIN`.
 
+Sharh va shikoyat: `PATCH /admin/reviews/:id` (`{ status: 'hidden', reason }` — yashirishda sabab 10–300 belgi,
+`{ status: 'visible' }` sababsiz; `moderationReason` roʻyxatda qaytadi), `PATCH /admin/complaints/:id`
+(`{ status: 'in_review' | 'resolved' | 'dismissed', adminNote? }`; `open → in_review | resolved | dismissed`,
+`in_review → resolved | dismissed`, boshqasi 409 `COMPLAINT_NOT_OPEN`).
+
+Xizmat turlari: `GET /admin/categories` (oʻchirilganlar ham, `productsCount` bilan),
+`PATCH /admin/categories/:id` (`{ nameUz, nameRu, isActive }`). Oʻchirilgan toifa `GET /categories` da
+chiqmaydi, yangi mahsulot/ariza unda rad etiladi (`categoryId: NOT_FOUND`), mavjud mahsulotlar saqlanadi.
+
+Sozlamalar: `GET /settings` (ommaviy) → `{ acceptApplications, announcement: { uz, ru } | null }`;
+`GET /admin/settings` → shunga `commissionPercent` (faqat oʻqish, kod konstantasi) va `updatedAt` qoʻshilgan;
+`PUT /admin/settings` (`{ acceptApplications, announcementUz?, announcementRu? }`, eʼlon ≤300 belgi).
+Arizalar yopiq boʻlsa `POST /me/worker` → 403 `APPLICATIONS_CLOSED`.
+
 `GET /admin/audit?page=1` → `Page<AdminAuditEntryDto>` (`id, action, targetType, targetId, details, adminName, createdAt`); `details` da telefon yoʻq.
 
 Xatolar: 401 tokensiz, 403 `FORBIDDEN` admin boʻlmasa, 409 `CANNOT_ACT_ON_SELF` / `LAST_ADMIN` (admin hisoblariga nisbatan amallar).

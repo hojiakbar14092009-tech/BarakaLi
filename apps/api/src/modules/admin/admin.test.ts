@@ -87,7 +87,7 @@ describe('review moderation', () => {
     const hide = await request(t.app)
       .patch(`/api/admin/reviews/${lowReview.id}`)
       .set(bearer(admin))
-      .send({ status: 'hidden' });
+      .send({ status: 'hidden', reason: 'Haqoratli soʻzlar bor' });
     expect(hide.status).toBe(204);
 
     const after = await request(t.app).get(`/api/workers/${worker.workerId}`);
@@ -100,7 +100,7 @@ describe('review moderation', () => {
     await request(t.app)
       .patch(`/api/admin/reviews/${lowReview.id}`)
       .set(bearer(admin))
-      .send({ status: 'hidden' });
+      .send({ status: 'hidden', reason: 'Haqoratli soʻzlar bor' });
     const again = await request(t.app).get(`/api/workers/${worker.workerId}`);
     expect(again.body).toMatchObject({ rating: 5, reviewsCount: 1 });
 

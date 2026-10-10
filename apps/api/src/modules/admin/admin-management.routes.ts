@@ -3,7 +3,9 @@ import {
   adminListQuerySchema,
   adminOrderStatusSchema,
   adminProductUpdateSchema,
+  categoryUpdateSchema,
   refundRequestSchema,
+  settingsUpdateSchema,
   userBlockSchema,
 } from '@barakali/shared';
 import type { AppContext } from '../../context.js';
@@ -11,6 +13,7 @@ import { AppError } from '../../errors.js';
 import { createAuthMiddleware } from '../../middleware/auth.js';
 import { AdminOrdersService } from './admin-orders.service.js';
 import { AdminProductsService } from './admin-products.service.js';
+import { AdminSettingsService } from './admin-settings.service.js';
 import { AdminUsersService } from './admin-users.service.js';
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -27,10 +30,30 @@ export function createAdminManagementRouter(ctx: AppContext): Router {
   const products = new AdminProductsService(ctx);
   const orders = new AdminOrdersService(ctx);
   const users = new AdminUsersService(ctx);
+  const settings = new AdminSettingsService(ctx);
   const { requireAdmin } = createAuthMiddleware(ctx);
   const adminId = (req: Request) => req.auth?.userId ?? '';
 
+  // Public: whether worker applications are open and the home page notice.
+  router.get('/settings', async (_req, res) => {
+    res.json(await settings.publicSettings());
+  });
+
   router.use('/admin', requireAdmin);
+
+  router.get('/admin/categories', async (_req, res) => {
+    res.json(await settings.listCategories());
+  });
+  router.patch('/admin/categories/:id', async (req, res) => {
+    await settings.updateCategory(adminId(req), idParam(req), categoryUpdateSchema.parse(req.body));
+    res.status(204).end();
+  });
+  router.get('/admin/settings', async (_req, res) => {
+    res.json(await settings.get());
+  });
+  router.put('/admin/settings', async (req, res) => {
+    res.json(await settings.update(adminId(req), settingsUpdateSchema.parse(req.body)));
+  });
 
   router.get('/admin/products', async (req, res) => {
     res.json(await products.list(adminListQuerySchema.parse(req.query)));

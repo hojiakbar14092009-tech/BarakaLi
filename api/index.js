@@ -66688,7 +66688,32 @@ var migrations_default = [{ "name": "1760000000000_core.sql", "up": "CREATE EXTE
 -- chosen for new workers or products.
 ALTER TABLE categories ADD COLUMN is_active boolean NOT NULL DEFAULT true;
 
-UPDATE categories SET is_active = false WHERE slug = 'masofaviy-ishlar';` }, { "name": "1760001000000_catering_requests.sql", "up": "-- Catering enquiries from the landing page. Not an order: no price, no payment; the team calls back.\n-- service_type_id mirrors CATERING_SERVICE_IDS in packages/shared.\nCREATE TABLE catering_requests (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  name text NOT NULL,\n  phone text NOT NULL,\n  service_type_id text NOT NULL\n    CHECK (service_type_id IN ('tikuvchilik', 'pishiriq', 'qolmehnat', 'dizayn', 'boshqa')),\n  event_date date NOT NULL,\n  guests_count integer NOT NULL CHECK (guests_count >= 1),\n  note text NOT NULL DEFAULT '',\n  status text NOT NULL DEFAULT 'new' CHECK (status IN ('new', 'contacted', 'closed')),\n  created_at timestamptz NOT NULL DEFAULT now()\n);\n\nCREATE INDEX catering_requests_status_created_idx ON catering_requests (status, created_at DESC);" }, { "name": "1760001100000_drop_catering_requests.sql", "up": "-- The catering section was removed. The table is dropped only when it holds no rows; if enquiries\n-- exist they are left untouched for the team to export first (nothing in the app reads them).\nDO $$\nBEGIN\n  IF to_regclass('public.catering_requests') IS NOT NULL THEN\n    IF (SELECT count(*) FROM catering_requests) = 0 THEN\n      DROP TABLE catering_requests;\n    ELSE\n      RAISE NOTICE 'catering_requests has rows; table kept';\n    END IF;\n  END IF;\nEND\n$$;" }, { "name": "1760001200000_audit_log.sql", "up": "-- Every administrator action, who did it and to what. `details` holds only ids, statuses and\n-- reasons: never a phone number, a code or a token.\nCREATE TABLE audit_log (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  admin_user_id uuid NOT NULL REFERENCES users (id),\n  action text NOT NULL,\n  target_type text NOT NULL,\n  target_id uuid,\n  details jsonb NOT NULL DEFAULT '{}'::jsonb,\n  created_at timestamptz NOT NULL DEFAULT now()\n);\n\nCREATE INDEX audit_log_created_idx ON audit_log (created_at DESC);\nCREATE INDEX audit_log_target_idx ON audit_log (target_type, target_id);" }, { "name": "1760001300000_worker_suspension.sql", "up": "-- An approved worker can be suspended: hidden from the catalog and unable to take new orders, while\n-- orders already placed run to completion. Sample and existing workers keep their current status.\nALTER TABLE workers DROP CONSTRAINT IF EXISTS workers_status_check;\nALTER TABLE workers\n  ADD CONSTRAINT workers_status_check\n    CHECK (status IN ('pending', 'approved', 'rejected', 'suspended'));\n\nALTER TABLE notifications DROP CONSTRAINT IF EXISTS notifications_kind_check;\nALTER TABLE notifications\n  ADD CONSTRAINT notifications_kind_check CHECK (\n    kind IN (\n      'order_new',\n      'worker_application_received',\n      'worker_approved',\n      'worker_rejected',\n      'worker_suspended'\n    )\n  );" }, { "name": "1760001400000_admin_management.sql", "up": "-- Products are never hard-deleted by an administrator: a deleted product keeps its rows (order\n-- history refers to them) and simply stops existing for every query.\nALTER TABLE products ADD COLUMN deleted_at timestamptz;\nCREATE INDEX products_live_idx ON products (worker_id, status) WHERE deleted_at IS NULL;\n\n-- A blocked user cannot sign in and their sessions are refused.\nALTER TABLE users\n  ADD COLUMN blocked_at timestamptz,\n  ADD COLUMN block_reason text;\n\n-- Money going back: one row per refund, written in the same transaction as the payment and order\n-- status change. commission_reversed is non-zero only when earnings had already been recorded.\nCREATE TABLE refunds (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  order_id uuid NOT NULL REFERENCES orders (id),\n  payment_id uuid NOT NULL REFERENCES payments (id),\n  amount integer NOT NULL CHECK (amount > 0),\n  commission_reversed integer NOT NULL DEFAULT 0 CHECK (commission_reversed >= 0),\n  reason text,\n  admin_user_id uuid REFERENCES users (id) ON DELETE SET NULL,\n  created_at timestamptz NOT NULL DEFAULT now()\n);\nCREATE INDEX refunds_order_idx ON refunds (order_id);" }];
+UPDATE categories SET is_active = false WHERE slug = 'masofaviy-ishlar';` }, { "name": "1760001000000_catering_requests.sql", "up": "-- Catering enquiries from the landing page. Not an order: no price, no payment; the team calls back.\n-- service_type_id mirrors CATERING_SERVICE_IDS in packages/shared.\nCREATE TABLE catering_requests (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  name text NOT NULL,\n  phone text NOT NULL,\n  service_type_id text NOT NULL\n    CHECK (service_type_id IN ('tikuvchilik', 'pishiriq', 'qolmehnat', 'dizayn', 'boshqa')),\n  event_date date NOT NULL,\n  guests_count integer NOT NULL CHECK (guests_count >= 1),\n  note text NOT NULL DEFAULT '',\n  status text NOT NULL DEFAULT 'new' CHECK (status IN ('new', 'contacted', 'closed')),\n  created_at timestamptz NOT NULL DEFAULT now()\n);\n\nCREATE INDEX catering_requests_status_created_idx ON catering_requests (status, created_at DESC);" }, { "name": "1760001100000_drop_catering_requests.sql", "up": "-- The catering section was removed. The table is dropped only when it holds no rows; if enquiries\n-- exist they are left untouched for the team to export first (nothing in the app reads them).\nDO $$\nBEGIN\n  IF to_regclass('public.catering_requests') IS NOT NULL THEN\n    IF (SELECT count(*) FROM catering_requests) = 0 THEN\n      DROP TABLE catering_requests;\n    ELSE\n      RAISE NOTICE 'catering_requests has rows; table kept';\n    END IF;\n  END IF;\nEND\n$$;" }, { "name": "1760001200000_audit_log.sql", "up": "-- Every administrator action, who did it and to what. `details` holds only ids, statuses and\n-- reasons: never a phone number, a code or a token.\nCREATE TABLE audit_log (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  admin_user_id uuid NOT NULL REFERENCES users (id),\n  action text NOT NULL,\n  target_type text NOT NULL,\n  target_id uuid,\n  details jsonb NOT NULL DEFAULT '{}'::jsonb,\n  created_at timestamptz NOT NULL DEFAULT now()\n);\n\nCREATE INDEX audit_log_created_idx ON audit_log (created_at DESC);\nCREATE INDEX audit_log_target_idx ON audit_log (target_type, target_id);" }, { "name": "1760001300000_worker_suspension.sql", "up": "-- An approved worker can be suspended: hidden from the catalog and unable to take new orders, while\n-- orders already placed run to completion. Sample and existing workers keep their current status.\nALTER TABLE workers DROP CONSTRAINT IF EXISTS workers_status_check;\nALTER TABLE workers\n  ADD CONSTRAINT workers_status_check\n    CHECK (status IN ('pending', 'approved', 'rejected', 'suspended'));\n\nALTER TABLE notifications DROP CONSTRAINT IF EXISTS notifications_kind_check;\nALTER TABLE notifications\n  ADD CONSTRAINT notifications_kind_check CHECK (\n    kind IN (\n      'order_new',\n      'worker_application_received',\n      'worker_approved',\n      'worker_rejected',\n      'worker_suspended'\n    )\n  );" }, { "name": "1760001400000_admin_management.sql", "up": "-- Products are never hard-deleted by an administrator: a deleted product keeps its rows (order\n-- history refers to them) and simply stops existing for every query.\nALTER TABLE products ADD COLUMN deleted_at timestamptz;\nCREATE INDEX products_live_idx ON products (worker_id, status) WHERE deleted_at IS NULL;\n\n-- A blocked user cannot sign in and their sessions are refused.\nALTER TABLE users\n  ADD COLUMN blocked_at timestamptz,\n  ADD COLUMN block_reason text;\n\n-- Money going back: one row per refund, written in the same transaction as the payment and order\n-- status change. commission_reversed is non-zero only when earnings had already been recorded.\nCREATE TABLE refunds (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  order_id uuid NOT NULL REFERENCES orders (id),\n  payment_id uuid NOT NULL REFERENCES payments (id),\n  amount integer NOT NULL CHECK (amount > 0),\n  commission_reversed integer NOT NULL DEFAULT 0 CHECK (commission_reversed >= 0),\n  reason text,\n  admin_user_id uuid REFERENCES users (id) ON DELETE SET NULL,\n  created_at timestamptz NOT NULL DEFAULT now()\n);\nCREATE INDEX refunds_order_idx ON refunds (order_id);" }, { "name": "1760001500000_moderation_settings.sql", "up": `-- Complaints get an "in review" step and an administrator's note; reviews keep the reason they
+-- were hidden for.
+ALTER TABLE complaints DROP CONSTRAINT IF EXISTS complaints_status_check;
+ALTER TABLE complaints
+  ADD CONSTRAINT complaints_status_check
+    CHECK (status IN ('open', 'in_review', 'resolved', 'dismissed')),
+  ADD COLUMN admin_note text CHECK (admin_note IS NULL OR char_length(admin_note) <= 1000),
+  ADD COLUMN updated_at timestamptz NOT NULL DEFAULT now();
+DROP INDEX IF EXISTS complaints_one_open_per_user_idx;
+CREATE UNIQUE INDEX complaints_one_open_per_user_idx
+  ON complaints (order_id, user_id) WHERE status IN ('open', 'in_review');
+
+ALTER TABLE reviews
+  ADD COLUMN moderation_reason text
+    CHECK (moderation_reason IS NULL OR char_length(moderation_reason) <= 300);
+
+-- One row of platform settings; the commission rate is a code constant and is not stored here.
+CREATE TABLE platform_settings (
+  id integer PRIMARY KEY CHECK (id = 1),
+  accept_applications boolean NOT NULL DEFAULT true,
+  announcement_uz text CHECK (announcement_uz IS NULL OR char_length(announcement_uz) <= 300),
+  announcement_ru text CHECK (announcement_ru IS NULL OR char_length(announcement_ru) <= 300),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid REFERENCES users (id) ON DELETE SET NULL
+);
+INSERT INTO platform_settings (id) VALUES (1);` }];
 
 // src/app.ts
 var import_cookie_parser = __toESM(require_cookie_parser(), 1);
@@ -71341,6 +71366,8 @@ var REVIEW_STATUSES = ["visible", "hidden"];
 var MIN_REVIEW_RATING = 1;
 var MAX_REVIEW_RATING = 5;
 var MAX_REVIEW_COMMENT_LENGTH = 1e3;
+var MAX_ADMIN_NOTE_LENGTH = 1e3;
+var MAX_ANNOUNCEMENT_LENGTH = 300;
 var MIN_COMPLAINT_REASON_LENGTH = 5;
 var MAX_COMPLAINT_REASON_LENGTH = 1e3;
 var MIN_NAME_LENGTH = 2;
@@ -71586,8 +71613,29 @@ var savingsGoalSchema = external_exports.object({ targetAmount: moneySchema });
 var workerRejectionSchema = external_exports.object({
   reason: external_exports.string().trim().min(MIN_REJECT_REASON_LENGTH).max(MAX_REJECT_REASON_LENGTH)
 });
-var reviewModerationSchema = external_exports.object({ status: external_exports.enum(REVIEW_STATUSES) });
-var complaintResolutionSchema = external_exports.object({ status: external_exports.enum(["resolved", "dismissed"]) });
+var reviewModerationSchema = external_exports.object({
+  status: external_exports.enum(REVIEW_STATUSES),
+  reason: external_exports.string().trim().max(MAX_REJECT_REASON_LENGTH).optional()
+}).superRefine((value, ctx) => {
+  if (value.status === "hidden" && (value.reason ?? "").length < MIN_REJECT_REASON_LENGTH) {
+    ctx.addIssue({ code: external_exports.ZodIssueCode.custom, path: ["reason"], message: "REASON_REQUIRED" });
+  }
+});
+var complaintUpdateSchema = external_exports.object({
+  status: external_exports.enum(["in_review", "resolved", "dismissed"]),
+  adminNote: external_exports.string().trim().max(MAX_ADMIN_NOTE_LENGTH).optional()
+});
+var categoryUpdateSchema = external_exports.object({
+  nameUz: external_exports.string().trim().min(MIN_NAME_LENGTH).max(MAX_NAME_LENGTH),
+  nameRu: external_exports.string().trim().min(MIN_NAME_LENGTH).max(MAX_NAME_LENGTH),
+  isActive: external_exports.boolean()
+});
+var announcementSchema = external_exports.string().trim().max(MAX_ANNOUNCEMENT_LENGTH).optional();
+var settingsUpdateSchema = external_exports.object({
+  acceptApplications: external_exports.boolean(),
+  announcementUz: announcementSchema,
+  announcementRu: announcementSchema
+});
 var adminListQuerySchema = external_exports.object({
   page: external_exports.coerce.number().int().min(1).default(1),
   status: external_exports.string().trim().max(30).optional(),
@@ -72952,6 +73000,140 @@ function createAuthMiddleware(ctx) {
   return { optionalAuth, requireAuth, requireWorker, requireAdmin };
 }
 
+// src/modules/admin/admin-settings.service.ts
+init_esm();
+
+// src/modules/admin/audit.ts
+async function writeAudit(db2, entry) {
+  await db2.insertInto("audit_log").values({
+    admin_user_id: entry.adminId,
+    action: entry.action,
+    target_type: entry.targetType,
+    target_id: entry.targetId,
+    details: JSON.stringify(entry.details ?? {})
+  }).execute();
+}
+async function listAudit(db2, page) {
+  const offset = (page - 1) * ADMIN_PAGE_SIZE;
+  const [rows, total] = await Promise.all([
+    db2.selectFrom("audit_log as a").innerJoin("users as u", "u.id", "a.admin_user_id").select([
+      "a.id",
+      "a.action",
+      "a.target_type",
+      "a.target_id",
+      "a.details",
+      "a.created_at",
+      "u.name as admin_name"
+    ]).orderBy("a.created_at", "desc").limit(ADMIN_PAGE_SIZE).offset(offset).execute(),
+    db2.selectFrom("audit_log").select((eb) => eb.fn.countAll().as("n")).executeTakeFirstOrThrow()
+  ]);
+  return {
+    items: rows.map((row) => ({
+      id: row.id,
+      action: row.action,
+      targetType: row.target_type,
+      targetId: row.target_id,
+      details: typeof row.details === "string" ? JSON.parse(row.details) : row.details,
+      adminName: row.admin_name,
+      createdAt: row.created_at.toISOString()
+    })),
+    page,
+    pageSize: ADMIN_PAGE_SIZE,
+    total: Number(total.n)
+  };
+}
+
+// src/modules/admin/admin-settings.service.ts
+var SETTINGS_CACHE_KEY = "settings";
+var CATEGORIES_CACHE_KEY = "categories";
+var FEATURED_CACHE_KEY = "workers:featured";
+var SETTINGS_TTL_SECONDS = 60;
+var AdminSettingsService = class {
+  constructor(ctx, now = () => /* @__PURE__ */ new Date()) {
+    this.ctx = ctx;
+    this.now = now;
+  }
+  async listCategories() {
+    const rows = await this.ctx.db.selectFrom("categories as c").select([
+      "c.id",
+      "c.slug",
+      "c.name_uz",
+      "c.name_ru",
+      "c.is_active",
+      sql`(select count(*) from products p where p.category_id = c.id and p.deleted_at is null)`.as(
+        "products_count"
+      )
+    ]).orderBy("c.position").execute();
+    return rows.map((row) => ({
+      id: row.id,
+      slug: row.slug,
+      nameUz: row.name_uz,
+      nameRu: row.name_ru,
+      isActive: row.is_active,
+      productsCount: Number(row.products_count)
+    }));
+  }
+  /** Switching a category off keeps its products; only new products and workers are refused. */
+  async updateCategory(adminId, id, input) {
+    await this.ctx.db.transaction().execute(async (trx) => {
+      const result = await trx.updateTable("categories").set({ name_uz: input.nameUz, name_ru: input.nameRu, is_active: input.isActive }).where("id", "=", id).executeTakeFirst();
+      if (Number(result.numUpdatedRows) !== 1) throw AppError.notFound();
+      await writeAudit(trx, {
+        adminId,
+        action: "category.update",
+        targetType: "category",
+        targetId: id,
+        details: { nameUz: input.nameUz, nameRu: input.nameRu, isActive: input.isActive }
+      });
+    });
+    this.ctx.cache.delete(CATEGORIES_CACHE_KEY);
+    this.ctx.cache.delete(FEATURED_CACHE_KEY);
+  }
+  async row() {
+    return this.ctx.db.selectFrom("platform_settings").selectAll().where("id", "=", 1).executeTakeFirstOrThrow();
+  }
+  async get() {
+    const row = await this.row();
+    return {
+      acceptApplications: row.accept_applications,
+      announcement: row.announcement_uz || row.announcement_ru ? { uz: row.announcement_uz ?? "", ru: row.announcement_ru ?? "" } : null,
+      commissionPercent: COMMISSION_RATE_PERCENT,
+      updatedAt: row.updated_at.toISOString()
+    };
+  }
+  /** What the public site needs: whether applications are open and the home page notice. */
+  publicSettings() {
+    return cached(this.ctx.cache, SETTINGS_CACHE_KEY, SETTINGS_TTL_SECONDS, async () => {
+      const { acceptApplications, announcement } = await this.get();
+      return { acceptApplications, announcement };
+    });
+  }
+  async update(adminId, input) {
+    await this.ctx.db.transaction().execute(async (trx) => {
+      await trx.updateTable("platform_settings").set({
+        accept_applications: input.acceptApplications,
+        announcement_uz: input.announcementUz || null,
+        announcement_ru: input.announcementRu || null,
+        updated_at: this.now(),
+        updated_by: adminId
+      }).where("id", "=", 1).execute();
+      await writeAudit(trx, {
+        adminId,
+        action: "settings.update",
+        targetType: "settings",
+        targetId: null,
+        details: {
+          acceptApplications: input.acceptApplications,
+          announcementUz: input.announcementUz || null,
+          announcementRu: input.announcementRu || null
+        }
+      });
+    });
+    this.ctx.cache.delete(SETTINGS_CACHE_KEY);
+    return this.get();
+  }
+};
+
 // src/modules/workers/workers.repository.ts
 init_esm();
 function toDto(row) {
@@ -73029,26 +73211,31 @@ var WorkersRepository = class {
 // src/modules/workers/workers.service.ts
 var FEATURED_LIMIT = 4;
 var FEATURED_TTL_SECONDS = 60;
-var FEATURED_CACHE_KEY = "workers:featured";
+var FEATURED_CACHE_KEY2 = "workers:featured";
 var WorkersService = class {
   constructor(ctx) {
     this.ctx = ctx;
     this.repo = new WorkersRepository(ctx.db);
+    this.settings = new AdminSettingsService(ctx);
   }
   repo;
+  settings;
   async becomeWorker(userId, input) {
+    if (!(await this.settings.publicSettings()).acceptApplications) {
+      throw new AppError("APPLICATIONS_CLOSED", 403);
+    }
     if (await this.repo.findIdByUser(userId)) throw AppError.conflict("ALREADY_WORKER");
     if (!await this.repo.categoryExists(input.categoryId)) {
       throw AppError.validation({ categoryId: ["NOT_FOUND"] });
     }
     const id = await this.repo.create(userId, input);
-    this.ctx.cache.delete(FEATURED_CACHE_KEY);
+    this.ctx.cache.delete(FEATURED_CACHE_KEY2);
     return id;
   }
   featured() {
     return cached(
       this.ctx.cache,
-      FEATURED_CACHE_KEY,
+      FEATURED_CACHE_KEY2,
       FEATURED_TTL_SECONDS,
       () => this.repo.findFeatured(FEATURED_LIMIT)
     );
@@ -73831,49 +74018,9 @@ var FeedbackService = class {
   }
 };
 
-// src/modules/admin/audit.ts
-async function writeAudit(db2, entry) {
-  await db2.insertInto("audit_log").values({
-    admin_user_id: entry.adminId,
-    action: entry.action,
-    target_type: entry.targetType,
-    target_id: entry.targetId,
-    details: JSON.stringify(entry.details ?? {})
-  }).execute();
-}
-async function listAudit(db2, page) {
-  const offset = (page - 1) * ADMIN_PAGE_SIZE;
-  const [rows, total] = await Promise.all([
-    db2.selectFrom("audit_log as a").innerJoin("users as u", "u.id", "a.admin_user_id").select([
-      "a.id",
-      "a.action",
-      "a.target_type",
-      "a.target_id",
-      "a.details",
-      "a.created_at",
-      "u.name as admin_name"
-    ]).orderBy("a.created_at", "desc").limit(ADMIN_PAGE_SIZE).offset(offset).execute(),
-    db2.selectFrom("audit_log").select((eb) => eb.fn.countAll().as("n")).executeTakeFirstOrThrow()
-  ]);
-  return {
-    items: rows.map((row) => ({
-      id: row.id,
-      action: row.action,
-      targetType: row.target_type,
-      targetId: row.target_id,
-      details: typeof row.details === "string" ? JSON.parse(row.details) : row.details,
-      adminName: row.admin_name,
-      createdAt: row.created_at.toISOString()
-    })),
-    page,
-    pageSize: ADMIN_PAGE_SIZE,
-    total: Number(total.n)
-  };
-}
-
 // src/modules/admin/admin.service.ts
 var RATING_DECIMALS2 = 100;
-var FEATURED_CACHE_KEY2 = "workers:featured";
+var FEATURED_CACHE_KEY3 = "workers:featured";
 var HOUR_MS2 = 36e5;
 function tashkentDayStart(now) {
   const shifted = new Date(now.getTime() + TASHKENT_UTC_OFFSET_HOURS * HOUR_MS2);
@@ -74040,7 +74187,7 @@ var AdminService = class {
         details: { status: decision.status, reason: decision.reason }
       });
     });
-    this.ctx.cache.delete(FEATURED_CACHE_KEY2);
+    this.ctx.cache.delete(FEATURED_CACHE_KEY3);
   }
   /** Also reinstates a rejected or suspended worker. */
   approveWorker(adminId, workerId) {
@@ -74103,6 +74250,7 @@ var AdminService = class {
         "r.rating",
         "r.comment",
         "r.status",
+        "r.moderation_reason",
         "r.created_at",
         "w.display_name as worker_name",
         "u.name as author_name"
@@ -74118,6 +74266,7 @@ var AdminService = class {
         rating: row.rating,
         comment: row.comment,
         status: row.status,
+        moderationReason: row.moderation_reason,
         createdAt: row.created_at.toISOString()
       })),
       Number(total.n),
@@ -74128,7 +74277,7 @@ var AdminService = class {
    * Hides or restores a review and moves the worker's rating in the same transaction. A review that
    * is already in the requested state changes nothing, so a repeated click cannot drift the rating.
    */
-  async setReviewStatus(adminId, reviewId, status) {
+  async setReviewStatus(adminId, reviewId, status, reason) {
     await this.ctx.db.transaction().execute(async (trx) => {
       const review = await trx.selectFrom("reviews").select(["id", "worker_id", "rating", "status"]).where("id", "=", reviewId).forUpdate().executeTakeFirst();
       if (!review) throw AppError.notFound();
@@ -74139,16 +74288,16 @@ var AdminService = class {
         rating: hiding ? ratingWithout(worker.rating, worker.reviews_count, review.rating) : nextRating(worker.rating, worker.reviews_count, review.rating),
         reviews_count: Math.max(0, worker.reviews_count + (hiding ? -1 : 1))
       }).where("id", "=", review.worker_id).execute();
-      await trx.updateTable("reviews").set({ status }).where("id", "=", reviewId).execute();
+      await trx.updateTable("reviews").set({ status, moderation_reason: hiding ? reason : null }).where("id", "=", reviewId).execute();
       await writeAudit(trx, {
         adminId,
         action: hiding ? "review.hide" : "review.show",
         targetType: "review",
         targetId: reviewId,
-        details: { status }
+        details: { status, reason }
       });
     });
-    this.ctx.cache.delete(FEATURED_CACHE_KEY2);
+    this.ctx.cache.delete(FEATURED_CACHE_KEY3);
   }
   async listComplaints(query) {
     const offset = (query.page - 1) * ADMIN_PAGE_SIZE;
@@ -74160,6 +74309,7 @@ var AdminService = class {
         "c.order_id",
         "c.reason",
         "c.status",
+        "c.admin_note",
         "c.created_at",
         "c.user_id",
         "o.customer_id",
@@ -74179,6 +74329,7 @@ var AdminService = class {
         authorRole: row.user_id === row.customer_id ? "customer" : "worker",
         reason: row.reason,
         status: row.status,
+        adminNote: row.admin_note,
         orderStatus: row.order_status,
         paymentStatus: row.payment_status,
         createdAt: row.created_at.toISOString()
@@ -74187,22 +74338,22 @@ var AdminService = class {
       query.page
     );
   }
-  async resolveComplaint(adminId, id, status) {
-    const updated = await this.ctx.db.transaction().execute(async (trx) => {
-      const result = await trx.updateTable("complaints").set({ status }).where("id", "=", id).where("status", "=", "open").executeTakeFirst();
-      if (Number(result.numUpdatedRows) !== 1) return false;
+  /** open -> in_review | resolved | dismissed, in_review -> resolved | dismissed; a note may be left. */
+  async updateComplaint(adminId, id, input) {
+    await this.ctx.db.transaction().execute(async (trx) => {
+      const current = await trx.selectFrom("complaints").select("status").where("id", "=", id).forUpdate().executeTakeFirst();
+      if (!current) throw AppError.notFound();
+      const allowed = current.status === "open" || current.status === "in_review" && input.status !== "in_review";
+      if (!allowed) throw AppError.conflict("COMPLAINT_NOT_OPEN");
+      await trx.updateTable("complaints").set({ status: input.status, admin_note: input.adminNote || null, updated_at: this.now() }).where("id", "=", id).execute();
       await writeAudit(trx, {
         adminId,
-        action: status === "resolved" ? "complaint.resolve" : "complaint.dismiss",
+        action: "complaint.review",
         targetType: "complaint",
         targetId: id,
-        details: { status }
+        details: { from: current.status, to: input.status, adminNote: input.adminNote || null }
       });
-      return true;
     });
-    if (updated) return;
-    const exists = await this.ctx.db.selectFrom("complaints").select("id").where("id", "=", id).executeTakeFirst();
-    throw exists ? AppError.conflict("COMPLAINT_NOT_OPEN") : AppError.notFound();
   }
 };
 
@@ -74253,16 +74404,15 @@ function createAdminRouter(ctx) {
     res.json(await admin.listReviews(adminListQuerySchema.parse(req.query)));
   });
   router.patch("/admin/reviews/:id", async (req, res) => {
-    const { status } = reviewModerationSchema.parse(req.body);
-    await admin.setReviewStatus(adminId(req), idParam(req), status);
+    const { status, reason } = reviewModerationSchema.parse(req.body);
+    await admin.setReviewStatus(adminId(req), idParam(req), status, reason ?? null);
     res.status(204).end();
   });
   router.get("/admin/complaints", async (req, res) => {
     res.json(await admin.listComplaints(adminListQuerySchema.parse(req.query)));
   });
   router.patch("/admin/complaints/:id", async (req, res) => {
-    const { status } = complaintResolutionSchema.parse(req.body);
-    await admin.resolveComplaint(adminId(req), idParam(req), status);
+    await admin.updateComplaint(adminId(req), idParam(req), complaintUpdateSchema.parse(req.body));
     res.status(204).end();
   });
   router.get("/admin/materials", async (_req, res) => {
@@ -74767,7 +74917,7 @@ function toRefundDto(row) {
 
 // src/modules/admin/admin-products.service.ts
 init_esm();
-var FEATURED_CACHE_KEY3 = "workers:featured";
+var FEATURED_CACHE_KEY4 = "workers:featured";
 var AdminProductsService = class {
   constructor(ctx, now = () => /* @__PURE__ */ new Date()) {
     this.ctx = ctx;
@@ -74879,7 +75029,7 @@ var AdminProductsService = class {
         targetId: id
       });
     });
-    this.ctx.cache.delete(FEATURED_CACHE_KEY3);
+    this.ctx.cache.delete(FEATURED_CACHE_KEY4);
   }
   /** Soft delete; a product that appears in any order can only be hidden. */
   async remove(adminId, id) {
@@ -74894,7 +75044,7 @@ var AdminProductsService = class {
         targetId: id
       });
     });
-    this.ctx.cache.delete(FEATURED_CACHE_KEY3);
+    this.ctx.cache.delete(FEATURED_CACHE_KEY4);
   }
 };
 
@@ -75011,9 +75161,26 @@ function createAdminManagementRouter(ctx) {
   const products = new AdminProductsService(ctx);
   const orders = new AdminOrdersService(ctx);
   const users = new AdminUsersService(ctx);
+  const settings = new AdminSettingsService(ctx);
   const { requireAdmin } = createAuthMiddleware(ctx);
   const adminId = (req) => req.auth?.userId ?? "";
+  router.get("/settings", async (_req, res) => {
+    res.json(await settings.publicSettings());
+  });
   router.use("/admin", requireAdmin);
+  router.get("/admin/categories", async (_req, res) => {
+    res.json(await settings.listCategories());
+  });
+  router.patch("/admin/categories/:id", async (req, res) => {
+    await settings.updateCategory(adminId(req), idParam2(req), categoryUpdateSchema.parse(req.body));
+    res.status(204).end();
+  });
+  router.get("/admin/settings", async (_req, res) => {
+    res.json(await settings.get());
+  });
+  router.put("/admin/settings", async (req, res) => {
+    res.json(await settings.update(adminId(req), settingsUpdateSchema.parse(req.body)));
+  });
   router.get("/admin/products", async (req, res) => {
     res.json(await products.list(adminListQuerySchema.parse(req.query)));
   });

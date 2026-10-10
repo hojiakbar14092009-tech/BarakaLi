@@ -310,3 +310,17 @@ Brifdagi noaniqliklar bo'yicha qabul qilingan qarorlar. Yangi qaror oxiriga qo's
   `USER_BLOCKED`. `assertCanActOnAdmin` bloklashga ulandi.
 - Admin buyurtma tafsilotida ikkala tomonning telefoni koʻrinadi (admin uchun ruxsat etilgan); audit
   `details` va URL'larda telefon yoʻq.
+
+## Sharh, shikoyat, xizmat turlari va sozlamalar (2026-10-10)
+
+- Shikoyat holatlari: `open` (Yangi) → `in_review` (Koʻrib chiqilmoqda) → `resolved` | `dismissed`; admin
+  izohi `complaints.admin_note`. Bir buyurtma boʻyicha ochiq yoki koʻrib chiqilayotgan shikoyat bitta.
+  Pulni qaytarish shikoyat sahifasidan emas, buyurtma tafsilotidan (sabab bilan) bajariladi.
+- Sharhni yashirish sababsiz boʻlmaydi (`reviews.moderation_reason`, audit); qayta koʻrsatishda sabab
+  tozalanadi. Reyting avvalgidek bir tranzaksiyada qayta hisoblanadi.
+- Toifa nomlari (`uz`/`ru`) endi bazadan: katalog va chiplar `GET /categories` dan oladi, i18n matni faqat
+  yuklanguncha zaxira. Toifalar qoʻshilmaydi/oʻchirilmaydi, faqat tahrirlanadi va yoqib-oʻchiriladi
+  (`is_active`): oʻchirilganda mavjud mahsulotlar saqlanadi, yangisi va yangi ariza rad etiladi.
+- `platform_settings` (bitta qator): arizalarni qabul qilish bayrogʻi va bosh sahifa eʼloni (`uz`/`ru`,
+  ixtiyoriy, ≤300). Komissiya bu yerda saqlanmaydi: paneldagi 2% faqat oʻqish uchun, kod konstantasi.
+  Ommaviy `GET /settings` 60 soniya keshlanadi; saqlashda kesh tozalanadi.

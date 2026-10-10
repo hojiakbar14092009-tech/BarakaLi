@@ -9,6 +9,7 @@ import {
   type AdminReviewDto,
   type AdminStatsDto,
   type AdminWorkerDto,
+  type ComplaintUpdate,
   type ComplaintStatus,
   type OrderStatus,
   type Page,
@@ -337,6 +338,7 @@ export class AdminService {
           'r.rating',
           'r.comment',
           'r.status',
+          'r.moderation_reason',
           'r.created_at',
           'w.display_name as worker_name',
           'u.name as author_name',
@@ -356,6 +358,7 @@ export class AdminService {
         rating: row.rating,
         comment: row.comment,
         status: row.status,
+        moderationReason: row.moderation_reason,
         createdAt: row.created_at.toISOString(),
       })),
       Number(total.n),
@@ -367,7 +370,12 @@ export class AdminService {
    * Hides or restores a review and moves the worker's rating in the same transaction. A review that
    * is already in the requested state changes nothing, so a repeated click cannot drift the rating.
    */
-  async setReviewStatus(adminId: string, reviewId: string, status: ReviewStatus): Promise<void> {
+  async setReviewStatus(
+    adminId: string,
+    reviewId: string,
+    status: ReviewStatus,
+    reason: string | null,
+  ): Promise<void> {
     await this.ctx.db.transaction().execute(async (trx) => {
       const review = await trx
         .selectFrom('reviews')
@@ -394,13 +402,17 @@ export class AdminService {
         })
         .where('id', '=', review.worker_id)
         .execute();
-      await trx.updateTable('reviews').set({ status }).where('id', '=', reviewId).execute();
+      await trx
+        .updateTable('reviews')
+        .set({ status, moderation_reason: hiding ? reason : null })
+        .where('id', '=', reviewId)
+        .execute();
       await writeAudit(trx, {
         adminId,
         action: hiding ? 'review.hide' : 'review.show',
         targetType: 'review',
         targetId: reviewId,
-        details: { status },
+        details: { status, reason },
       });
     });
     this.ctx.cache.delete(FEATURED_CACHE_KEY);
@@ -422,6 +434,7 @@ export class AdminService {
           'c.order_id',
           'c.reason',
           'c.status',
+          'c.admin_note',
           'c.created_at',
           'c.user_id',
           'o.customer_id',
@@ -445,6 +458,7 @@ export class AdminService {
         authorRole: row.user_id === row.customer_id ? ('customer' as const) : ('worker' as const),
         reason: row.reason,
         status: row.status,
+        adminNote: row.admin_note,
         orderStatus: row.order_status as OrderStatus,
         paymentStatus: row.payment_status,
         createdAt: row.created_at.toISOString(),
@@ -454,34 +468,32 @@ export class AdminService {
     );
   }
 
-  async resolveComplaint(
-    adminId: string,
-    id: string,
-    status: 'resolved' | 'dismissed',
-  ): Promise<void> {
-    const updated = await this.ctx.db.transaction().execute(async (trx) => {
-      const result = await trx
-        .updateTable('complaints')
-        .set({ status })
+  /** open -> in_review | resolved | dismissed, in_review -> resolved | dismissed; a note may be left. */
+  async updateComplaint(adminId: string, id: string, input: ComplaintUpdate): Promise<void> {
+    await this.ctx.db.transaction().execute(async (trx) => {
+      const current = await trx
+        .selectFrom('complaints')
+        .select('status')
         .where('id', '=', id)
-        .where('status', '=', 'open')
+        .forUpdate()
         .executeTakeFirst();
-      if (Number(result.numUpdatedRows) !== 1) return false;
+      if (!current) throw AppError.notFound();
+      const allowed =
+        current.status === 'open' ||
+        (current.status === 'in_review' && input.status !== 'in_review');
+      if (!allowed) throw AppError.conflict('COMPLAINT_NOT_OPEN');
+      await trx
+        .updateTable('complaints')
+        .set({ status: input.status, admin_note: input.adminNote || null, updated_at: this.now() })
+        .where('id', '=', id)
+        .execute();
       await writeAudit(trx, {
         adminId,
-        action: status === 'resolved' ? 'complaint.resolve' : 'complaint.dismiss',
+        action: 'complaint.review',
         targetType: 'complaint',
         targetId: id,
-        details: { status },
+        details: { from: current.status, to: input.status, adminNote: input.adminNote || null },
       });
-      return true;
     });
-    if (updated) return;
-    const exists = await this.ctx.db
-      .selectFrom('complaints')
-      .select('id')
-      .where('id', '=', id)
-      .executeTakeFirst();
-    throw exists ? AppError.conflict('COMPLAINT_NOT_OPEN') : AppError.notFound();
   }
 }

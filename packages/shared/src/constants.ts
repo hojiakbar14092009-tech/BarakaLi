@@ -65,7 +65,9 @@ export const MIN_REVIEW_RATING = 1;
 export const MAX_REVIEW_RATING = 5;
 export const MAX_REVIEW_COMMENT_LENGTH = 1000;
 
-export const COMPLAINT_STATUSES = ['open', 'resolved', 'dismissed'] as const;
+export const COMPLAINT_STATUSES = ['open', 'in_review', 'resolved', 'dismissed'] as const;
+export const MAX_ADMIN_NOTE_LENGTH = 1000;
+export const MAX_ANNOUNCEMENT_LENGTH = 300;
 export type ComplaintStatus = (typeof COMPLAINT_STATUSES)[number];
 export const MIN_COMPLAINT_REASON_LENGTH = 5;
 export const MAX_COMPLAINT_REASON_LENGTH = 1000;

@@ -2,6 +2,7 @@ import type { BecomeWorkerInput, WorkerSummaryDto } from '@barakali/shared';
 import type { AppContext } from '../../context.js';
 import { AppError } from '../../errors.js';
 import { cached } from '../../infra/cache.js';
+import { AdminSettingsService } from '../admin/admin-settings.service.js';
 import { WorkersRepository } from './workers.repository.js';
 
 const FEATURED_LIMIT = 4;
@@ -10,12 +11,17 @@ const FEATURED_CACHE_KEY = 'workers:featured';
 
 export class WorkersService {
   private readonly repo: WorkersRepository;
+  private readonly settings: AdminSettingsService;
 
   constructor(private readonly ctx: AppContext) {
     this.repo = new WorkersRepository(ctx.db);
+    this.settings = new AdminSettingsService(ctx);
   }
 
   async becomeWorker(userId: string, input: BecomeWorkerInput): Promise<string> {
+    if (!(await this.settings.publicSettings()).acceptApplications) {
+      throw new AppError('APPLICATIONS_CLOSED', 403);
+    }
     if (await this.repo.findIdByUser(userId)) throw AppError.conflict('ALREADY_WORKER');
     if (!(await this.repo.categoryExists(input.categoryId))) {
       throw AppError.validation({ categoryId: ['NOT_FOUND'] });

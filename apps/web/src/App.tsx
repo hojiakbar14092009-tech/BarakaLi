@@ -34,9 +34,9 @@ const adminSection = (name: keyof typeof import('./features/admin/sectionPages')
 const AdminWorkersPage = adminSection('AdminWorkersPage');
 const AdminOrdersPage = adminSection('AdminOrdersPage');
 const AdminModerationPage = adminSection('AdminModerationPage');
-const AdminCategoriesPage = adminSection('AdminCategoriesPage');
+const AdminCategoriesPage = lazy(() => import('./features/admin/AdminCategoriesPage'));
 const AdminMaterialsPage = adminSection('AdminMaterialsPage');
-const AdminSettingsPage = adminSection('AdminSettingsPage');
+const AdminSettingsPage = lazy(() => import('./features/admin/AdminSettingsPage'));
 const ProfilePage = lazy(() => import('./features/profile/ProfilePage'));
 const AuthPage = lazy(() => import('./features/auth/AuthPage'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));

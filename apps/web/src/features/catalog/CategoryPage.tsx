@@ -9,6 +9,7 @@ import { errorMessage } from '../../lib/errors';
 import { Pagination } from './Pagination';
 import { ProductCard } from './ProductCard';
 import { useProducts } from './api';
+import { useCategoryNames } from './useCategoryNames';
 
 const SORTS: ListQuery['sort'][] = ['new', 'price_asc', 'price_desc'];
 
@@ -33,6 +34,7 @@ function CategoryListing({ kategoriya }: { kategoriya: string }) {
   const page = Math.max(1, Number(params.get('page')) || 1);
   const sort = SORTS.find((value) => value === params.get('sort')) ?? 'new';
   const [draft, setDraft] = useState(q);
+  const categories = useCategoryNames();
 
   const products = useProducts({
     q: q || undefined,
@@ -55,14 +57,20 @@ function CategoryListing({ kategoriya }: { kategoriya: string }) {
     update({ q: draft.trim() || undefined, page: undefined });
   };
 
-  const title = t(`categories.${kategoriya}`);
+  const title =
+    kategoriya === ALL_CATEGORIES_SLUG
+      ? t(`categories.${kategoriya}`)
+      : (categories.find((c) => c.slug === kategoriya)?.name ?? t(`categories.${kategoriya}`));
 
   return (
     <div className="space-y-5">
       <h1 className="text-3xl font-bold">{title}</h1>
 
       <ul className="flex flex-wrap gap-2" aria-label={t('home.categoriesTitle')}>
-        {[ALL_CATEGORIES_SLUG, ...CATEGORY_SLUGS].map((slug) => (
+        {[
+          { slug: ALL_CATEGORIES_SLUG, name: t(`categories.${ALL_CATEGORIES_SLUG}`) },
+          ...categories,
+        ].map(({ slug, name }) => (
           <li key={slug}>
             <Link
               to={`/xizmatlar/${slug}`}
@@ -71,7 +79,7 @@ function CategoryListing({ kategoriya }: { kategoriya: string }) {
                 slug === kategoriya ? 'bg-mocha text-sugar' : 'bg-bisque text-espresso'
               }`}
             >
-              {t(`categories.${slug}`)}
+              {name}
             </Link>
           </li>
         ))}

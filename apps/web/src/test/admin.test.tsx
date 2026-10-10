@@ -214,14 +214,25 @@ describe('admin panel', () => {
     renderApp(adminRoutes, '/admin/sharhlar');
 
     expect(await screen.findByText('Yomon')).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: 'Yashirish' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Yashirish: Dilfuza' }));
+    const dialog = screen.getByRole('dialog', { name: 'Sharhni yashirish' });
+    const confirm = within(dialog).getByRole('button', { name: 'Sharhni yashirish' });
+    expect(confirm).toBeDisabled();
+    fireEvent.change(within(dialog).getByLabelText('Yashirish sababi'), {
+      target: { value: 'Haqoratli soʻzlar bor' },
+    });
+    fireEvent.click(confirm);
     await waitFor(() => {
       const call = fetchMock.mock.calls.find(([url]) => String(url).endsWith('/admin/reviews/r1'));
-      expect(JSON.parse(String((call?.[1] as RequestInit).body))).toEqual({ status: 'hidden' });
+      expect(JSON.parse(String((call?.[1] as RequestInit).body))).toEqual({
+        status: 'hidden',
+        reason: 'Haqoratli soʻzlar bor',
+      });
     });
 
     expect(await screen.findByText('Kech keldi')).toBeInTheDocument();
-    expect(screen.getAllByRole('button', { name: 'Pulni qaytarish' })).toHaveLength(1);
+    expect(screen.getAllByRole('link', { name: 'Pulni qaytarish' })).toHaveLength(1);
+    expect(screen.getAllByRole('button', { name: 'Koʻrib chiqishga olish' })).toHaveLength(2);
   });
 });
 

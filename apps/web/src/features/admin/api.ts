@@ -1,6 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type {
   AdminAuditEntryDto,
+  AdminCategoryDto,
+  CategoryUpdate,
+  ComplaintUpdate,
+  PlatformSettingsDto,
+  SettingsUpdate,
   AdminOrderDetailDto,
   AdminProductDto,
   AdminProductUpdate,
@@ -96,6 +101,18 @@ export const useAdminUser = (id: string) =>
     enabled: id.length > 0,
   });
 
+export const useAdminCategories = () =>
+  useQuery({
+    queryKey: [...ADMIN, 'categories'],
+    queryFn: () => apiRequest<AdminCategoryDto[]>('/admin/categories', { auth: true }),
+  });
+
+export const useAdminSettings = () =>
+  useQuery({
+    queryKey: [...ADMIN, 'settings'],
+    queryFn: () => apiRequest<PlatformSettingsDto>('/admin/settings', { auth: true }),
+  });
+
 export const useAdminMaterials = () =>
   useQuery({
     queryKey: [...ADMIN, 'materials'],
@@ -119,6 +136,8 @@ function useAdminAction<TVariables>(request: (variables: TVariables) => Promise<
       void client.invalidateQueries({ queryKey: ['worker'] });
       void client.invalidateQueries({ queryKey: ['materials'] });
       void client.invalidateQueries({ queryKey: ['products'] });
+      void client.invalidateQueries({ queryKey: ['categories'] });
+      void client.invalidateQueries({ queryKey: ['settings'] });
       void client.invalidateQueries({ queryKey: ['product'] });
     },
   });
@@ -148,13 +167,27 @@ export const useSuspendWorker = () =>
   );
 
 export const useSetReviewStatus = () =>
-  useAdminAction(({ id, status }: { id: string; status: ReviewStatus }) =>
-    apiRequest<void>(`/admin/reviews/${id}`, { method: 'PATCH', body: { status }, auth: true }),
+  useAdminAction(({ id, status, reason }: { id: string; status: ReviewStatus; reason?: string }) =>
+    apiRequest<void>(`/admin/reviews/${id}`, {
+      method: 'PATCH',
+      body: reason ? { status, reason } : { status },
+      auth: true,
+    }),
   );
 
-export const useResolveComplaint = () =>
-  useAdminAction(({ id, status }: { id: string; status: 'resolved' | 'dismissed' }) =>
-    apiRequest<void>(`/admin/complaints/${id}`, { method: 'PATCH', body: { status }, auth: true }),
+export const useUpdateComplaint = () =>
+  useAdminAction(({ id, ...input }: ComplaintUpdate & { id: string }) =>
+    apiRequest<void>(`/admin/complaints/${id}`, { method: 'PATCH', body: input, auth: true }),
+  );
+
+export const useUpdateCategory = () =>
+  useAdminAction(({ id, input }: { id: string; input: CategoryUpdate }) =>
+    apiRequest<void>(`/admin/categories/${id}`, { method: 'PATCH', body: input, auth: true }),
+  );
+
+export const useSaveSettings = () =>
+  useAdminAction((input: SettingsUpdate) =>
+    apiRequest<PlatformSettingsDto>('/admin/settings', { method: 'PUT', body: input, auth: true }),
   );
 
 export const useRefundOrder = () =>

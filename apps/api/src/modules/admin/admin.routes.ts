@@ -1,7 +1,7 @@
 import { Router, type Request } from 'express';
 import {
   adminListQuerySchema,
-  complaintResolutionSchema,
+  complaintUpdateSchema,
   materialInputSchema,
   reviewModerationSchema,
   workerRejectionSchema,
@@ -73,8 +73,8 @@ export function createAdminRouter(ctx: AppContext): Router {
   });
 
   router.patch('/admin/reviews/:id', async (req, res) => {
-    const { status } = reviewModerationSchema.parse(req.body);
-    await admin.setReviewStatus(adminId(req), idParam(req), status);
+    const { status, reason } = reviewModerationSchema.parse(req.body);
+    await admin.setReviewStatus(adminId(req), idParam(req), status, reason ?? null);
     res.status(204).end();
   });
 
@@ -83,8 +83,7 @@ export function createAdminRouter(ctx: AppContext): Router {
   });
 
   router.patch('/admin/complaints/:id', async (req, res) => {
-    const { status } = complaintResolutionSchema.parse(req.body);
-    await admin.resolveComplaint(adminId(req), idParam(req), status);
+    await admin.updateComplaint(adminId(req), idParam(req), complaintUpdateSchema.parse(req.body));
     res.status(204).end();
   });
 

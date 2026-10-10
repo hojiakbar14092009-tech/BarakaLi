@@ -1,5 +1,12 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
-import type { CategoryDto, ListQuery, Page, ProductDto, WorkerSummaryDto } from '@barakali/shared';
+import type {
+  PublicSettingsDto,
+  CategoryDto,
+  ListQuery,
+  Page,
+  ProductDto,
+  WorkerSummaryDto,
+} from '@barakali/shared';
 import { apiRequest } from '../../lib/api';
 
 const ONE_HOUR = 60 * 60_000;
@@ -38,5 +45,13 @@ export function useWorker(id: string | undefined) {
     queryKey: ['worker', id],
     queryFn: () => apiRequest<WorkerSummaryDto>(`/workers/${id}`),
     enabled: Boolean(id),
+  });
+}
+
+export function usePublicSettings() {
+  return useQuery({
+    queryKey: ['settings'],
+    queryFn: () => apiRequest<PublicSettingsDto>('/settings'),
+    staleTime: 60_000,
   });
 }

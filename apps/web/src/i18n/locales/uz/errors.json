@@ -47,5 +47,6 @@
   "CANNOT_ACT_ON_SELF": "Bu amalni oʻzingizga nisbatan bajarib boʻlmaydi.",
   "LAST_ADMIN": "Yagona administratorni olib tashlab boʻlmaydi.",
   "USER_BLOCKED": "Bu hisob bloklangan. Savol boʻlsa, platforma maʼmuriyatiga murojaat qiling.",
-  "PRODUCT_HAS_ORDERS": "Bu mahsulot buyurtmalarda bor: uni oʻchirib boʻlmaydi, faqat yashirish mumkin."
+  "PRODUCT_HAS_ORDERS": "Bu mahsulot buyurtmalarda bor: uni oʻchirib boʻlmaydi, faqat yashirish mumkin.",
+  "APPLICATIONS_CLOSED": "Hozircha yangi hunarmand arizalari qabul qilinmayapti. Keyinroq qayta urinib koʻring."
 }

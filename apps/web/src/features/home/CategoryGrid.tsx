@@ -1,17 +1,18 @@
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import { CATEGORY_SLUGS } from '@barakali/shared';
 import { CategoryIcon } from '../../components/CategoryIcon';
+import { useCategoryNames } from '../catalog/useCategoryNames';
 
 export function CategoryGrid() {
   const { t } = useTranslation();
+  const categories = useCategoryNames();
   return (
     <section aria-labelledby="home-categories" className="space-y-3">
       <h2 id="home-categories" className="text-xl font-bold">
         {t('home.categoriesTitle')}
       </h2>
       <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-        {CATEGORY_SLUGS.map((slug) => (
+        {categories.map(({ slug, name }) => (
           <li key={slug} className="last:col-span-2 sm:last:col-span-1">
             <Link
               to={`/xizmatlar/${slug}`}
@@ -20,7 +21,7 @@ export function CategoryGrid() {
               <span className="grid size-12 place-items-center rounded-field bg-sugar text-mocha">
                 <CategoryIcon slug={slug} />
               </span>
-              <span className="text-lg font-semibold leading-snug">{t(`categories.${slug}`)}</span>
+              <span className="text-lg font-semibold leading-snug">{name}</span>
             </Link>
           </li>
         ))}

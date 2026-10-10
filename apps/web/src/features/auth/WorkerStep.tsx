@@ -8,7 +8,7 @@ import { SelectField, Field, TextAreaField } from '../../components/Field';
 import { LoadingState } from '../../components/StateViews';
 import { errorMessage, validationMessage } from '../../lib/errors';
 import { useAuthStore } from '../../stores/auth';
-import { useCategories } from '../catalog/api';
+import { useCategories, usePublicSettings } from '../catalog/api';
 import { becomeWorker } from './api';
 
 interface WorkerStepProps {
@@ -20,6 +20,7 @@ export function WorkerStep({ defaultName, onDone }: WorkerStepProps) {
   const { t, i18n } = useTranslation();
   const setUser = useAuthStore((s) => s.setUser);
   const categories = useCategories();
+  const settings = usePublicSettings();
   const {
     register,
     handleSubmit,
@@ -36,7 +37,14 @@ export function WorkerStep({ defaultName, onDone }: WorkerStepProps) {
     },
   });
 
-  if (categories.isPending) return <LoadingState />;
+  if (categories.isPending || settings.isPending) return <LoadingState />;
+  if (settings.data && !settings.data.acceptApplications) {
+    return (
+      <p role="status" className="rounded-field bg-bisque px-4 py-3 font-medium">
+        {t('errors.APPLICATIONS_CLOSED')}
+      </p>
+    );
+  }
   const options = [
     { value: '', label: '—' },
     ...(categories.data ?? []).map((category) => ({

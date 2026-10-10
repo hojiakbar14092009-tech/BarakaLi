@@ -70,7 +70,8 @@
     "status": {
       "open": "Ochiq",
       "resolved": "Hal qilingan",
-      "dismissed": "Rad etilgan"
+      "dismissed": "Rad etilgan",
+      "in_review": "Koʻrib chiqilmoqda"
     }
   },
   "payWithin": "Buyurtma {{minutes}} daqiqa ichida toʻlanmasa, tanlangan vaqt boʻshatiladi.",
