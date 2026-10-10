@@ -2,7 +2,7 @@
   "searchLabel": "Поиск",
   "searchPlaceholder": "Поиск по названию",
   "results": "Найдено: {{count}}",
-  "sortLabel": "Порядок",
+  "sortLabel": "Сортировка",
   "sort": {
     "new": "Сначала новые",
     "price_asc": "Подешевле",

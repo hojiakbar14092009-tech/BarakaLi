@@ -1,8 +1,8 @@
-import { Search } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { ALL_CATEGORIES_SLUG } from '@barakali/shared';
+import { SearchInput } from '../../components/ui/SearchInput';
 
 export function SearchBar() {
   const { t } = useTranslation();
@@ -16,23 +16,13 @@ export function SearchBar() {
   };
 
   return (
-    <form onSubmit={handleSubmit} role="search" className="relative">
-      <label htmlFor="home-search" className="sr-only">
-        {t('home.searchLabel')}
-      </label>
-      <Search
-        className="pointer-events-none absolute left-4 top-1/2 size-5 -translate-y-1/2 text-mocha"
-        aria-hidden="true"
-      />
-      <input
+    <form onSubmit={handleSubmit} role="search">
+      <SearchInput
         id="home-search"
-        type="search"
+        label={t('home.searchLabel')}
         value={query}
-        onChange={(event) => setQuery(event.target.value)}
+        onChange={setQuery}
         placeholder={t('home.searchPlaceholder')}
-        enterKeyHint="search"
-        autoComplete="off"
-        className="min-h-14 w-full rounded-card border border-bisque bg-white/60 pl-12 pr-4 text-base text-espresso shadow-soft placeholder:text-mocha/80"
       />
     </form>
   );

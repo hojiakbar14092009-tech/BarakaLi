@@ -1,3 +1,4 @@
+import { ChevronDown } from 'lucide-react';
 import {
   forwardRef,
   useId,
@@ -93,21 +94,25 @@ interface SelectFieldProps extends SelectHTMLAttributes<HTMLSelectElement> {
   label: string;
   error?: string;
   options: { value: string; label: string }[];
+  /** Keeps the label for screen readers only (as `aria-label`), e.g. a sort control. */
+  hideLabel?: boolean;
 }
 
+/** Native select with the same 48 px box as text fields and a drawn chevron. */
 export const SelectField = forwardRef<HTMLSelectElement, SelectFieldProps>(function SelectField(
-  { label, error, options, className = '', id, ...rest },
+  { label, error, options, hideLabel = false, className = '', id, ...rest },
   ref,
 ) {
   const generated = useId();
   const selectId = id ?? generated;
-  return (
-    <FieldShell label={label} error={error} htmlFor={selectId}>
+  const control = (
+    <div className="relative">
       <select
         ref={ref}
         id={selectId}
+        aria-label={hideLabel ? label : undefined}
         aria-invalid={error ? true : undefined}
-        className={`${CONTROL} ${className}`}
+        className={`${CONTROL} h-12 cursor-pointer appearance-none pr-11 ${className}`}
         {...rest}
       >
         {options.map((option) => (
@@ -116,6 +121,17 @@ export const SelectField = forwardRef<HTMLSelectElement, SelectFieldProps>(funct
           </option>
         ))}
       </select>
+      <ChevronDown
+        className="pointer-events-none absolute right-4 top-1/2 size-5 -translate-y-1/2 text-mocha"
+        strokeWidth={1.75}
+        aria-hidden="true"
+      />
+    </div>
+  );
+  if (hideLabel) return control;
+  return (
+    <FieldShell label={label} error={error} htmlFor={selectId}>
+      {control}
     </FieldShell>
   );
 });

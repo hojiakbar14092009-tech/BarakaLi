@@ -1,9 +1,9 @@
-import { Search } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, Navigate, useLocation, useParams, useSearchParams } from 'react-router-dom';
 import { ALL_CATEGORIES_SLUG, CATEGORY_SLUGS, type ListQuery } from '@barakali/shared';
 import { SelectField } from '../../components/Field';
+import { SearchInput } from '../../components/ui/SearchInput';
 import { EmptyState, ErrorState, LoadingState } from '../../components/StateViews';
 import { errorMessage } from '../../lib/errors';
 import { Pagination } from './Pagination';
@@ -85,32 +85,31 @@ function CategoryListing({ kategoriya }: { kategoriya: string }) {
         ))}
       </ul>
 
-      <div className="grid gap-3 sm:grid-cols-[1fr_14rem]">
-        <form onSubmit={onSearch} role="search" className="relative">
-          <label htmlFor="catalog-search" className="sr-only">
-            {t('catalog.searchLabel')}
-          </label>
-          <Search
-            className="pointer-events-none absolute left-4 top-1/2 size-5 -translate-y-1/2 text-mocha"
-            aria-hidden="true"
-          />
-          <input
+      {/* Fixed-height controls: nothing below moves while typing or when results arrive. */}
+      <div className="grid items-start gap-3 md:grid-cols-[1fr_16rem]">
+        <form onSubmit={onSearch} role="search">
+          <SearchInput
             id="catalog-search"
-            type="search"
+            label={t('catalog.searchLabel')}
             value={draft}
-            onChange={(event) => setDraft(event.target.value)}
+            onChange={setDraft}
             placeholder={t('catalog.searchPlaceholder')}
-            enterKeyHint="search"
-            className="min-h-12 w-full rounded-field border border-wheat bg-white/70 pl-12 pr-4"
           />
         </form>
         <SelectField
           label={t('catalog.sortLabel')}
+          hideLabel
           value={sort}
           onChange={(event) => update({ sort: event.target.value, page: undefined })}
           options={SORTS.map((value) => ({ value, label: t(`catalog.sort.${value}`) }))}
         />
       </div>
+
+      <p className="min-h-7 text-mocha" aria-live="polite">
+        {products.data && products.data.items.length > 0
+          ? t('catalog.results', { count: products.data.total })
+          : '\u00a0'}
+      </p>
 
       {products.isPending && <LoadingState />}
       {products.isError && (
@@ -124,7 +123,6 @@ function CategoryListing({ kategoriya }: { kategoriya: string }) {
       )}
       {products.data && products.data.items.length > 0 && (
         <>
-          <p className="text-mocha">{t('catalog.results', { count: products.data.total })}</p>
           <ul className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
             {products.data.items.map((product) => (
               <ProductCard key={product.id} product={product} />

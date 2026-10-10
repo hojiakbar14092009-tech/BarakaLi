@@ -2,7 +2,7 @@
   "searchLabel": "Qidirish",
   "searchPlaceholder": "Mahsulot nomi boʻyicha qidirish",
   "results": "Topildi: {{count}}",
-  "sortLabel": "Tartib",
+  "sortLabel": "Saralash",
   "sort": {
     "new": "Yangilari",
     "price_asc": "Arzonroq",
