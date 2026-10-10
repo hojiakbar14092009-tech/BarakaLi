@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
+import { COMMISSION_RATE_PERCENT } from '@barakali/shared';
 import { EmptyState, ErrorState, LoadingState } from '../../components/StateViews';
 import { errorMessage } from '../../lib/errors';
 import { formatPrice } from '../../lib/format';
@@ -31,7 +32,9 @@ export default function EarningsPage() {
         <section className="space-y-1 rounded-card bg-mocha p-5 text-sugar">
           <p>{t('cabinet.earnings.month')}</p>
           <p className="text-4xl font-bold">{formatPrice(data.monthTotal, currency)}</p>
-          <p className="text-sm text-sugar/85">{t('cabinet.afterCommission')}</p>
+          <p className="text-sm text-sugar/85">
+            {t('cabinet.afterCommission', { percent: COMMISSION_RATE_PERCENT })}
+          </p>
         </section>
         <section className="space-y-1 rounded-card bg-bisque p-5">
           <p>{t('cabinet.earnings.allTime')}</p>

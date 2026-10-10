@@ -117,7 +117,7 @@ export class OrderService {
             order_id: id,
             worker_id: order.worker_id,
             amount: order.worker_amount,
-            commission: order.commission,
+            commission: order.commission_amount,
           })
           .execute();
       }
@@ -211,7 +211,8 @@ export class OrderService {
         customer_id: customerId,
         worker_id: workerId,
         total: split.total,
-        commission: split.commission,
+        commission_amount: split.commission,
+        commission_rate: split.commissionRate,
         worker_amount: split.workerAmount,
         fulfillment: input.fulfillment,
         delivery_address: input.fulfillment === 'delivery' ? (input.deliveryAddress ?? null) : null,

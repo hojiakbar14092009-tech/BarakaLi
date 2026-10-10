@@ -2,7 +2,7 @@
 
 Uyda ishlaydigan hunarmand ayollarni buyurtmachilar bilan bog'laydigan veb-ilova. Hunarmand ishlari va
 tayyor mahsulotlarini joylaydi (donalab va ulgurji), 3D modelini yuklaydi; buyurtmachi tanlaydi, to'laydi
-va holatini kuzatadi. Platforma har bir bajarilgan buyurtmadan 5% komissiya oladi.
+va holatini kuzatadi. Platforma har bir bajarilgan buyurtmadan 2% komissiya oladi; stavka har buyurtmada saqlanadi.
 
 Texnologiya: React 18 + Vite + Tailwind 4 (`apps/web`), Express 5 + Kysely + PostgreSQL (`apps/api`),
 umumiy zod sxemalari va konstantalar (`packages/shared`). To'liq reja: [CLAUDE.md](CLAUDE.md).
@@ -14,7 +14,7 @@ umumiy zod sxemalari va konstantalar (`packages/shared`). To'liq reja: [CLAUDE.m
 - Telefon + SMS kod orqali kirish (parolsiz), aylantiriladigan refresh token
 - Hunarmand kabineti: mahsulot qo'shish/tahrirlash, rasm (kameradan ham), `.glb` model, zaxira, daromad va jamg'arma maqsadi
 - Ish kalendari: bo'sh vaqt (Ertalab / Tushlik / Kechqurun), soatlik narx; xizmat buyurtmasi (tavsif, muddat, ≤ 5 rasm, slot tanlash). Slot to'qnashuvi DB darajasida bloklanadi
-- Savat, buyurtma, to'lov (platformaning o'z to'lov sahifasi), buyurtma holatlari, 5% komissiya va daromad
+- Savat, buyurtma, to'lov (platformaning o'z to'lov sahifasi), buyurtma holatlari, 2% komissiya va daromad
 - To'lanmagan buyurtma 15 daqiqada bekor bo'ladi; 24 soatda qabul qilinmasa pul avtomatik qaytariladi
 - Sharh (bir marta, reytingni yangilaydi) va shikoyat; hunarmand profilida sharhlar
 - Materiallar do'koni (chegirma bilan), darslar (`/darslar`)

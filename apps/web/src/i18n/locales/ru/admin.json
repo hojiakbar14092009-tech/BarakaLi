@@ -16,7 +16,7 @@
     "verified": "Подтверждённые",
     "pending": "Ждут подтверждения",
     "turnover": "Оборот",
-    "commission": "Комиссия (5%)",
+    "commission": "Комиссия ({{percent}}%)",
     "complaints": "Открытые жалобы",
     "hidden": "Скрытые отзывы",
     "byStatus": "Заказы по статусам"

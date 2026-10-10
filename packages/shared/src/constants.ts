@@ -1,4 +1,6 @@
-export const COMMISSION_RATE_PERCENT = 5;
+/** Platform commission on completed orders. Kept as a whole percent so money maths stays in integers. */
+export const COMMISSION_RATE_PERCENT = 2;
+export const COMMISSION_RATE = COMMISSION_RATE_PERCENT / 100;
 
 export const MAX_ORDER_IMAGES = 5;
 export const MAX_PRODUCT_IMAGES = 8;

@@ -72,7 +72,9 @@ export interface OrdersTable {
   worker_id: string;
   status: Generated<string>;
   total: number;
-  commission: number;
+  commission_amount: number;
+  /** numeric(5,4): parsed to a JS number by the driver. */
+  commission_rate: number;
   worker_amount: number;
   fulfillment: Generated<'pickup' | 'delivery'>;
   delivery_address: string | null;

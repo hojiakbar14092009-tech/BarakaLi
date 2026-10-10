@@ -90,7 +90,7 @@ Har papka ichida feature-asosli tuzilma: `features/orders`, `features/products`,
 - Bitta funksiya bitta ish qiladi, odatda 30 qatordan oshmaydi. Fayl 250 qatordan oshmaydi.
 - Nomlar inglizcha va ma'noli (`calculateCommission`, `OrderStatus`). **UI matni va URL'lar o'zbekcha**, kod inglizcha.
 - `any` taqiqlangan. Zarur bo'lsa `unknown` + zod bilan toraytirish.
-- Sehrli raqam/satr yo'q: hammasi `packages/shared/constants` da (`COMMISSION_RATE = 0.05`, `MAX_ORDER_IMAGES = 5`).
+- Sehrli raqam/satr yo'q: hammasi `packages/shared/constants` da (`COMMISSION_RATE = 0.02`, `MAX_ORDER_IMAGES = 5`).
 - Biznes mantiq **servis qatlamida**, controller faqat so'rovni qabul qilib javob qaytaradi. Controller → service → repository.
 - Xatolar: yagona `AppError` va markaziy error handler. API **xato kodi** (`ORDER_SLOT_TAKEN`) qaytaradi, frontend uni i18n orqali tushunarli o'zbekcha/ruscha matnga aylantiradi. Serverda to'liq log (maxfiy ma'lumotsiz).
 - Takrorlanish yo'q (DRY), lekin erta abstraksiya ham yo'q.
@@ -104,7 +104,7 @@ Har papka ichida feature-asosli tuzilma: `features/orders`, `features/products`,
 
 ### 5.1 Pul qoidalari
 - Pul **butun son** (so'm) sifatida saqlanadi (`bigint`/`integer`), hech qachon `float`.
-- Komissiya: `COMMISSION_RATE = 5%` (yagona konstanta). Hisoblash: `commission = Math.round(total * 5 / 100)`, `workerAmount = total - commission`. Yaxlitlash qoidasi bitta joyda va testlangan.
+- Komissiya: `COMMISSION_RATE = 2%` (yagona konstanta). Hisoblash: `commission = Math.round(total * 2 / 100)`, `workerAmount = total - commission`. Yaxlitlash qoidasi bitta joyda va testlangan. Har buyurtma oʻz stavkasini saqlaydi (`orders.commission_rate`, `commission_amount`): stavka oʻzgarsa eski buyurtmalar oʻzgarmaydi.
 - Komissiya **bajarilgan** (to'langan va topshirilgan) buyurtmadan olinadi. Hunarmand ko'radigan daromad **komissiya ayirilgan** summa.
 - `earnings` yozuvi, `payments` yozuvi va buyurtma holati o'zgarishi **bitta DB tranzaksiyasida**.
 
@@ -245,7 +245,7 @@ Ochilganda 4 ta katta kartochka:
 1. **Bugungi buyurtmalar**: yangi va qabul qilinganlar soni.
 2. **Ish kalendari**: bo'sh vaqtni belgilash (masalan 10:00–14:00), tez tugmalar: Ertalab, Tushlik, Kechqurun. Buyurtmalar faqat shu vaqtga tushadi.
 3. **Materiallar**: ip, mato, un, chegirma bilan.
-4. **Bu oy daromadi**: katta raqam, so'mda, **komissiya (5%) ayirilgan**.
+4. **Bu oy daromadi**: katta raqam, so'mda, **komissiya (2%) ayirilgan**.
 
 Qo'shimcha kirish: "Mening ishlarim" (6-bo'lim).
 
@@ -319,7 +319,7 @@ Qo'shimcha kirish: "Mening ishlarim" (6-bo'lim).
 - [ ] Hech qanday qattiq yozilgan matn yo'q; uz va ru to'liq tarjima qilingan
 - [ ] 360 / 768 / 1280 px da gorizontal scroll yo'q, tugmalar ≥ 48 px
 - [ ] Kontrast WCAG AA, fokus ko'rinadi, klaviatura bilan boshqariladi, `aria-label` bor
-- [ ] Komissiya 5%, pul butun son, testlangan
+- [ ] Komissiya 2%, pul butun son, har buyurtmada stavka saqlanadi, testlangan
 - [ ] Donalab/ulgurji narx serverda hisoblanadi, zaxira race-condition'dan himoyalangan
 - [ ] 3D model: hunarmand `.glb` yuklay oladi, haridor telefonda barmoq bilan va kompyuterda sichqoncha bilan aylantira oladi; WebGL yo'q bo'lsa rasmlarga qaytadi; `three` faqat 3D tab ochilganda yuklanadi
 - [ ] To'lov oqimi boshidan oxirigacha ishlaydi, callback idempotent

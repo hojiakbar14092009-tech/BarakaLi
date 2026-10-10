@@ -122,6 +122,8 @@ export interface OrderDto {
   viewerRole: 'customer' | 'worker';
   total: number;
   commission: number;
+  /** Rate applied to this order (e.g. 0.02); older orders keep the rate they were placed at. */
+  commissionRate: number;
   workerAmount: number;
   fulfillment: FulfillmentType;
   deliveryAddress: string | null;

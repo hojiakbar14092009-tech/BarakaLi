@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
+  COMMISSION_RATE,
   calculateCommission,
   canTransition,
   cardPaymentSchema,
+  commissionPercent,
   isValidCardNumber,
   normalizePhone,
   productInputSchema,
@@ -11,20 +13,32 @@ import {
 } from './index.js';
 
 describe('commission', () => {
-  it('takes 5% rounded to a whole som', () => {
-    expect(calculateCommission(100_000)).toBe(5_000);
-    expect(calculateCommission(10)).toBe(1);
-    expect(calculateCommission(9)).toBe(0);
+  it('takes 2% rounded to a whole som', () => {
+    expect(COMMISSION_RATE).toBe(0.02);
+    expect(calculateCommission(100_000)).toBe(2_000);
+    expect(calculateCommission(25)).toBe(1);
+    expect(calculateCommission(24)).toBe(0);
     expect(calculateCommission(0)).toBe(0);
   });
 
+  it('splits 142 500 som into 2 850 commission and 139 650 for the worker', () => {
+    expect(splitOrderAmount(142_500)).toEqual({
+      total: 142_500,
+      commission: 2_850,
+      workerAmount: 139_650,
+      commissionRate: 0.02,
+    });
+  });
+
   it('rounds half up and keeps commission + worker amount equal to total', () => {
-    for (const total of [1, 10, 11, 29, 30, 99_999, 123_457]) {
+    for (const total of [1, 10, 11, 25, 75, 99_999, 123_457]) {
       const split = splitOrderAmount(total);
       expect(Number.isInteger(split.commission)).toBe(true);
       expect(split.commission + split.workerAmount).toBe(total);
     }
-    expect(calculateCommission(30)).toBe(2);
+    expect(calculateCommission(75)).toBe(2);
+    expect(commissionPercent(0.02)).toBe(2);
+    expect(commissionPercent(0.05)).toBe(5);
   });
 });
 

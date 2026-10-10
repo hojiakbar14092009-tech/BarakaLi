@@ -216,7 +216,8 @@ interface OrderDto {
   viewerRole: 'customer' | 'worker';
   total: number;
   commission: number;
-  workerAmount: number; // commission = round(total × 5%)
+  commissionRate: number; // 0.02; buyurtma joylashtirilgan paytdagi stavka, keyin oʻzgarmaydi
+  workerAmount: number; // commission = round(total × commissionRate)
   fulfillment: 'pickup' | 'delivery';
   deliveryAddress: string | null;
   items: {

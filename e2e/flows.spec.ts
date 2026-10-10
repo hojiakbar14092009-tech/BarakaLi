@@ -96,9 +96,9 @@ for (const language of ['uz', 'ru'] as const) {
       await page.getByRole('button', { name: t('orders.complaint.submit') }).click();
       await expect(page.getByText(t('orders.complaint.sent'))).toBeVisible();
 
-      // 2 × 100 000 with 5% commission: the worker sees 190 000.
+      // 2 × 100 000 with 2% commission: the worker sees 196 000.
       await workerPage.goto('/daromad');
-      await expect(workerPage.getByText(/190\s000/).first()).toBeVisible();
+      await expect(workerPage.getByText(/196\s000/).first()).toBeVisible();
       await workerContext.close();
     });
   });

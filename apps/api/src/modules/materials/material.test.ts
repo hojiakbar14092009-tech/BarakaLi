@@ -260,8 +260,9 @@ describe('savings goal', () => {
         customer_id: customer.userId,
         worker_id: worker.workerId,
         total: 200_000,
-        commission: 10_000,
-        worker_amount: 190_000,
+        commission_amount: 4_000,
+        commission_rate: 0.02,
+        worker_amount: 196_000,
         delivery_address: null,
         start_time: null,
         end_time: null,
@@ -274,8 +275,8 @@ describe('savings goal', () => {
       .values({
         order_id: orderRow.id,
         worker_id: worker.workerId,
-        amount: 190_000,
-        commission: 10_000,
+        amount: 196_000,
+        commission: 4_000,
         created_at: new Date(goalRow.created_at.getTime() + 1_000),
       })
       .execute();
@@ -284,7 +285,7 @@ describe('savings goal', () => {
       .put('/api/my/savings-goal')
       .set(bearer(worker))
       .send({ targetAmount: 2_000_000 });
-    expect(updated.body.goal).toMatchObject({ targetAmount: 2_000_000, saved: 190_000 });
+    expect(updated.body.goal).toMatchObject({ targetAmount: 2_000_000, saved: 196_000 });
     expect(updated.body.goal.createdAt).toBe(goalRow.created_at.toISOString());
 
     const rows = await t.db

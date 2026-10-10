@@ -255,7 +255,7 @@ describe('statistics and order list', () => {
 
     const stats = await request(t.app).get('/api/admin/stats').set(bearer(admin));
     expect(stats.status).toBe(200);
-    expect(stats.body.commission).toBeGreaterThanOrEqual(5_000);
+    expect(stats.body.commission).toBeGreaterThanOrEqual(2_000);
     expect(stats.body.turnover).toBeGreaterThanOrEqual(100_000);
     expect(stats.body.ordersByStatus.delivered).toBeGreaterThanOrEqual(1);
     expect(stats.body.workers).toBeGreaterThanOrEqual(2);

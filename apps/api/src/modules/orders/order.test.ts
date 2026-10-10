@@ -99,10 +99,51 @@ describe('server-side pricing', () => {
     expect(res.body[0].total).toBe(50_000);
   });
 
-  it('computes the 5% commission with whole-som rounding', async () => {
+  it('computes the 2% commission with whole-som rounding and records the rate', async () => {
     const product = await makeProduct(t, seller, { retailPrice: 1_230, stock: 10 });
     const res = await placeOrder(buyer, [{ productId: product.id, quantity: 1 }]);
-    expect(res.body[0]).toMatchObject({ total: 1_230, commission: 62, workerAmount: 1_168 });
+    // 1 230 × 2% = 24.6 → 25
+    expect(res.body[0]).toMatchObject({
+      total: 1_230,
+      commission: 25,
+      commissionRate: 0.02,
+      workerAmount: 1_205,
+    });
+    const row = await t.db
+      .selectFrom('orders')
+      .select(['commission_amount', 'commission_rate'])
+      .where('id', '=', res.body[0].id)
+      .executeTakeFirstOrThrow();
+    expect(Number(row.commission_amount)).toBe(25);
+    expect(Number(row.commission_rate)).toBe(0.02);
+  });
+
+  it('charges 2 850 on a 142 500 som order and pays the worker 139 650', async () => {
+    const product = await makeProduct(t, seller, { retailPrice: 142_500, stock: 10 });
+    const res = await placeOrder(buyer, [{ productId: product.id, quantity: 1 }]);
+    expect(res.body[0]).toMatchObject({
+      total: 142_500,
+      commission: 2_850,
+      workerAmount: 139_650,
+    });
+  });
+
+  it('leaves orders placed under an earlier rate untouched', async () => {
+    const product = await makeProduct(t, seller, { retailPrice: 100_000, stock: 10 });
+    const res = await placeOrder(buyer, [{ productId: product.id, quantity: 1 }]);
+    const orderId = res.body[0].id as string;
+    // Simulate a row written before the rate change: 5% stays 5% forever.
+    await t.db
+      .updateTable('orders')
+      .set({ commission_amount: 5_000, commission_rate: 0.05, worker_amount: 95_000 })
+      .where('id', '=', orderId)
+      .execute();
+    const view = await request(t.app).get(`/api/orders/${orderId}`).set(bearer(buyer.token));
+    expect(view.body).toMatchObject({
+      commission: 5_000,
+      commissionRate: 0.05,
+      workerAmount: 95_000,
+    });
   });
 
   it('merges duplicate cart lines before choosing the price tier', async () => {
@@ -243,7 +284,7 @@ describe('fulfilment flow and earnings', () => {
   it('walks new → accepted → in_progress → ready → delivered and records earnings once', async () => {
     const product = await makeProduct(t, seller, { retailPrice: 100_000, stock: 5 });
     const order = await paidOrder(product, 2);
-    expect(order).toMatchObject({ total: 200_000, commission: 10_000, workerAmount: 190_000 });
+    expect(order).toMatchObject({ total: 200_000, commission: 4_000, workerAmount: 196_000 });
     for (const [action, status] of [
       ['accept', 'accepted'],
       ['start', 'in_progress'],
@@ -256,8 +297,8 @@ describe('fulfilment flow and earnings', () => {
     }
     const earnings = await request(t.app).get('/api/earnings').set(bearer(seller.token));
     const entry = earnings.body.history.find((h: { orderId: string }) => h.orderId === order.id);
-    expect(entry).toMatchObject({ amount: 190_000, commission: 10_000 });
-    expect(earnings.body.monthTotal).toBeGreaterThanOrEqual(190_000);
+    expect(entry).toMatchObject({ amount: 196_000, commission: 4_000 });
+    expect(earnings.body.monthTotal).toBeGreaterThanOrEqual(196_000);
     const repeat = await act(seller, order.id, 'deliver');
     expect(repeat.status).toBe(409);
     expect(repeat.body.error.code).toBe('ORDER_INVALID_TRANSITION');

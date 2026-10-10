@@ -4,6 +4,7 @@ import { Link, useParams } from 'react-router-dom';
 import {
   UNPAID_ORDER_TTL_MINUTES,
   WORKER_ACCEPT_TTL_HOURS,
+  commissionPercent,
   type OrderAction,
   type OrderDto,
   type OrderStatus,
@@ -182,7 +183,9 @@ export default function OrderDetailPage() {
           {isWorker && (
             <>
               <div className="flex justify-between text-mocha">
-                <dt>{t('orders.commission')}</dt>
+                <dt>
+                  {t('orders.commission', { percent: commissionPercent(order.commissionRate) })}
+                </dt>
                 <dd>− {formatPrice(order.commission, currency)}</dd>
               </div>
               <div className="flex justify-between font-semibold">

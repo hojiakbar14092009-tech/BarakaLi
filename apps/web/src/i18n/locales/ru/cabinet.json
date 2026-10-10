@@ -10,7 +10,7 @@
   "materials": "Материалы",
   "materialsText": "Нитки, ткань, мука: со скидкой.",
   "monthEarnings": "Доход за этот месяц",
-  "afterCommission": "За вычетом комиссии (5%)",
+  "afterCommission": "За вычетом комиссии ({{percent}}%)",
   "incoming": "Входящие заказы",
   "products": {
     "title": "Мои работы",

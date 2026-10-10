@@ -5,7 +5,7 @@ Brifdagi noaniqliklar bo'yicha qabul qilingan qarorlar. Yangi qaror oxiriga qo's
 ## MVP doirasi
 
 - 23:00 muddatiga MVP: poydevor, baza, kirish, katalog va mahsulot sahifasi (dona/ulgurji), hunarmand
-  kabineti (mahsulot + `.glb`), 3D ko'rsatkich, buyurtma va 5% komissiya. Qolgani `TODO.md` da.
+  kabineti (mahsulot + `.glb`), 3D ko'rsatkich, buyurtma va komissiya. Qolgani `TODO.md` da.
 - Kalendar, sharh, shikoyat, materiallar, jamg'arma, darslar sahifasi, admin paneli MVP'ga kirmaydi.
   Arxitektura (holatlar jadvali, `orders.type`, `StorageProvider`, `PaymentProvider`) ularga tayyor.
 
@@ -60,7 +60,7 @@ Brifdagi noaniqliklar bo'yicha qabul qilingan qarorlar. Yangi qaror oxiriga qo's
   Real foydalanuvchilar uchun `SmsProvider` adapteri ulanib, bu o'zgaruvchi `false` bo'lishi shart.
 - **To'lov:** `internal` provayder. Payme/Click/Uzum adapterlari bo'sh (`NotImplemented`), UI'da
   ular ulangan deb yozilmaydi. Karta ma'lumotlari saqlanmaydi va loglanmaydi.
-- **Komissiya:** buyurtma `delivered` bo'lganda `earnings` yoziladi: `commission = round(total*5/100)`.
+- **Komissiya:** buyurtma `delivered` bo'lganda `earnings` yoziladi: `commission = round(total*2/100)` (2026-10-10 gacha 5% edi, quyida).
 
 ## Kalendar va xizmat buyurtmalari
 
@@ -128,7 +128,7 @@ Brifdagi noaniqliklar bo'yicha qabul qilingan qarorlar. Yangi qaror oxiriga qo's
 
 - **E2E:** `e2e/flows.spec.ts` — uz va ru da: SMS kod bilan kirish (haqiqiy forma), mahsulot → savat
   → toʻlov → hunarmand holatlarni oʻtkazadi → haridor sharh va shikoyat qoldiradi → hunarmand
-  daromadi (5% ayirilgan); xizmat buyurtmasi: slot tanlash, toʻlov, band soat boshqa mijozga
+  daromadi (komissiya ayirilgan); xizmat buyurtmasi: slot tanlash, toʻlov, band soat boshqa mijozga
   koʻrinmasligi. Test matnlari ilovaning oʻz tarjima fayllaridan olinadi.
 - **Axe:** `e2e/accessibility-3d.spec.ts` — WCAG 2.1 A/AA qoidalari bilan 360/768/1280 px da ommaviy
   sahifalar, kirilgan hunarmand/mijoz/admin sahifalari. Topilgan kamchilik (yashirin fayl maydoniga
@@ -142,3 +142,14 @@ Brifdagi noaniqliklar bo'yicha qabul qilingan qarorlar. Yangi qaror oxiriga qo's
   Tuzatishlar: yuklanayotgan marshrut fallback'i balandligi (footer sakrashi, CLS 0.19 → 0.003),
   hunarmandlar skeleti haqiqiy kartochka balandligida, bosh sahifa asosiy bundle'ga olindi (qoʻshimcha
   chunk soʻrovi yoʻq), Inter uchun oʻlchamga mos zaxira shrift.
+
+## Komissiya 5% → 2% (2026-10-10)
+
+- Stavka `COMMISSION_RATE_PERCENT = 2` (butun foiz, pul hisobi floatsiz; `COMMISSION_RATE = 0.02` undan
+  olinadi). Hisob: `round(total × 2 / 100)`, 142 500 soʻm → 2 850 komissiya, 139 650 hunarmandga.
+- Har buyurtma oʻz stavkasini saqlaydi: `orders.commission_rate` (numeric) va `orders.commission_amount`
+  (eski `commission` ustuni qayta nomlandi, qiymatlar tegilmadi). Migratsiyagacha yozilgan buyurtmalar
+  5% bilan hisoblangan edi, shuning uchun ularga `0.05` yoziladi; summalari oʻzgarmaydi.
+- API `OrderDto.commissionRate` qaytaradi; buyurtma sahifasi foizni shu maydondan koʻrsatadi (eski buyurtma
+  5%, yangisi 2%). Kabinet, daromad va admin statistikasidagi umumiy yozuvlar joriy konstantadan oladi.
+- Materiallar doʻkonidan komissiya avvalgidek olinmaydi.

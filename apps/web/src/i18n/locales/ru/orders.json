@@ -18,7 +18,7 @@
     "refunded": "Деньги возвращены"
   },
   "total": "Итого",
-  "commission": "Комиссия платформы (5%)",
+  "commission": "Комиссия платформы ({{percent}}%)",
   "workerAmount": "Мастерице",
   "youReceive": "Вам достанется",
   "items": "Состав",

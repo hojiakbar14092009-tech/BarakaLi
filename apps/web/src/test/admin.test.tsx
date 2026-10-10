@@ -105,7 +105,7 @@ describe('admin panel', () => {
         pendingWorkers: 1,
         ordersByStatus: { delivered: 4 },
         turnover: 500_000,
-        commission: 25_000,
+        commission: 10_000,
         openComplaints: 1,
         hiddenReviews: 0,
       }),
@@ -115,7 +115,7 @@ describe('admin panel', () => {
     renderApp(<AdminPage />);
 
     expect(await screen.findByText('500 000 soʻm')).toBeInTheDocument();
-    expect(screen.getByText('25 000 soʻm')).toBeInTheDocument();
+    expect(screen.getByText('10 000 soʻm')).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('tab', { name: 'Hunarmandlar' }));
     expect(await screen.findByText('Dilfuza')).toBeInTheDocument();

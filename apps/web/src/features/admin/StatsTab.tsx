@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { ORDER_STATUSES } from '@barakali/shared';
+import { COMMISSION_RATE_PERCENT, ORDER_STATUSES } from '@barakali/shared';
 import { ErrorState, LoadingState } from '../../components/StateViews';
 import { errorMessage } from '../../lib/errors';
 import { formatPrice } from '../../lib/format';
@@ -35,7 +35,10 @@ export function StatsTab() {
         <Tile label={t('admin.stats.verified')} value={String(data.verifiedWorkers)} />
         <Tile label={t('admin.stats.pending')} value={String(data.pendingWorkers)} />
         <Tile label={t('admin.stats.turnover')} value={formatPrice(data.turnover, currency)} />
-        <Tile label={t('admin.stats.commission')} value={formatPrice(data.commission, currency)} />
+        <Tile
+          label={t('admin.stats.commission', { percent: COMMISSION_RATE_PERCENT })}
+          value={formatPrice(data.commission, currency)}
+        />
         <Tile label={t('admin.stats.complaints')} value={String(data.openComplaints)} />
         <Tile label={t('admin.stats.hidden')} value={String(data.hiddenReviews)} />
       </dl>

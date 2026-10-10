@@ -1,9 +1,11 @@
-import { COMMISSION_RATE_PERCENT, type PriceType } from './constants.js';
+import { COMMISSION_RATE, COMMISSION_RATE_PERCENT, type PriceType } from './constants.js';
 
 export interface CommissionSplit {
   total: number;
   commission: number;
   workerAmount: number;
+  /** Rate the commission was taken at (0.02), stored with the order so later rate changes never touch it. */
+  commissionRate: number;
 }
 
 export function calculateCommission(total: number): number {
@@ -12,7 +14,12 @@ export function calculateCommission(total: number): number {
 
 export function splitOrderAmount(total: number): CommissionSplit {
   const commission = calculateCommission(total);
-  return { total, commission, workerAmount: total - commission };
+  return { total, commission, workerAmount: total - commission, commissionRate: COMMISSION_RATE };
+}
+
+/** "0.02" → 2, for UI labels such as "Komissiya (2%)". */
+export function commissionPercent(rate: number): number {
+  return Math.round(rate * 100 * 100) / 100;
 }
 
 export interface PricedProduct {

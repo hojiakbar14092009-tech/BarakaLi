@@ -10,7 +10,7 @@
   "materials": "Materiallar",
   "materialsText": "Ip, mato, un: chegirma bilan.",
   "monthEarnings": "Bu oy daromadi",
-  "afterCommission": "Komissiya (5%) ayirilgan",
+  "afterCommission": "Komissiya ({{percent}}%) ayirilgan",
   "incoming": "Kelgan buyurtmalar",
   "products": {
     "title": "Mening ishlarim",

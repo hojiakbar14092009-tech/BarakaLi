@@ -16,7 +16,7 @@
     "verified": "Tasdiqlangan",
     "pending": "Tasdiq kutmoqda",
     "turnover": "Aylanma",
-    "commission": "Komissiya (5%)",
+    "commission": "Komissiya ({{percent}}%)",
     "complaints": "Ochiq shikoyatlar",
     "hidden": "Yashirilgan sharhlar",
     "byStatus": "Buyurtmalar holati boʻyicha"

@@ -2,6 +2,7 @@ import { CalendarDays, ClipboardList, Package, Wallet, Wheat } from 'lucide-reac
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
+import { COMMISSION_RATE_PERCENT } from '@barakali/shared';
 import { formatPrice } from '../../lib/format';
 import { useAuthStore } from '../../stores/auth';
 import { useEarnings } from '../orders/api';
@@ -63,7 +64,7 @@ export default function CabinetPage() {
           <span className="block text-2xl font-bold text-espresso">
             {formatPrice(earnings.data?.monthTotal ?? 0, currency)}
           </span>
-          {t('cabinet.afterCommission')}
+          {t('cabinet.afterCommission', { percent: COMMISSION_RATE_PERCENT })}
         </Card>
         <Card title={t('cabinet.myWorks')} icon={<Package className="size-6" />} to="/ishlar">
           {t('cabinet.myWorksText')}

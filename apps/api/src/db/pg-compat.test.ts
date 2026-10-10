@@ -62,7 +62,11 @@ describe('node-postgres driver (the production path)', () => {
       .post('/api/orders')
       .set('Authorization', `Bearer ${buyer.token}`)
       .send({ items: [{ productId: product.id, quantity: 20 }], fulfillment: 'pickup' });
-    expect(created.body[0]).toMatchObject({ total: 150_000, commission: 7_500 });
+    expect(created.body[0]).toMatchObject({
+      total: 150_000,
+      commission: 3_000,
+      commissionRate: 0.02,
+    });
     const orderId = created.body[0].id as string;
     const paid = await request(app)
       .post(`/api/orders/${orderId}/payment/confirm`)

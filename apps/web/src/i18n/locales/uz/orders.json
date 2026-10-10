@@ -18,7 +18,7 @@
     "refunded": "Pul qaytarilgan"
   },
   "total": "Jami",
-  "commission": "Platforma komissiyasi (5%)",
+  "commission": "Platforma komissiyasi ({{percent}}%)",
   "workerAmount": "Hunarmandga",
   "youReceive": "Sizga tegadi",
   "items": "Tarkibi",
