@@ -240,6 +240,18 @@ export interface NotificationsTable {
   created_at: CreatedAt;
 }
 
+export interface CateringRequestsTable {
+  id: Generated<string>;
+  name: string;
+  phone: string;
+  service_type_id: string;
+  event_date: string;
+  guests_count: number;
+  note: Generated<string>;
+  status: Generated<'new' | 'contacted' | 'closed'>;
+  created_at: CreatedAt;
+}
+
 export interface Database {
   categories: CategoriesTable;
   users: UsersTable;
@@ -264,4 +276,5 @@ export interface Database {
   material_payments: MaterialPaymentsTable;
   savings_goals: SavingsGoalsTable;
   notifications: NotificationsTable;
+  catering_requests: CateringRequestsTable;
 }

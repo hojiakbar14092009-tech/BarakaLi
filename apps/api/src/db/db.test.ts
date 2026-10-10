@@ -84,6 +84,34 @@ describe('database', () => {
     ).rejects.toThrow();
   });
 
+  it('stores catering requests and enforces guests and service type at the database level', async () => {
+    const base = {
+      name: 'Malika',
+      phone: '+998901234567',
+      service_type_id: 'pishiriq',
+      event_date: '2030-05-01',
+      guests_count: 30,
+    };
+    const saved = await db
+      .insertInto('catering_requests')
+      .values(base)
+      .returning(['status', 'note'])
+      .executeTakeFirstOrThrow();
+    expect(saved).toEqual({ status: 'new', note: '' });
+    await expect(
+      db
+        .insertInto('catering_requests')
+        .values({ ...base, guests_count: 0 })
+        .execute(),
+    ).rejects.toThrow();
+    await expect(
+      db
+        .insertInto('catering_requests')
+        .values({ ...base, service_type_id: 'masofaviy-ishlar' })
+        .execute(),
+    ).rejects.toThrow();
+  });
+
   it('parses migrations and requires the up marker', () => {
     expect(() => parseMigration('x.sql', 'select 1')).toThrow();
     expect(

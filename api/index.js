@@ -66688,7 +66688,7 @@ var migrations_default = [{ "name": "1760000000000_core.sql", "up": "CREATE EXTE
 -- chosen for new workers or products.
 ALTER TABLE categories ADD COLUMN is_active boolean NOT NULL DEFAULT true;
 
-UPDATE categories SET is_active = false WHERE slug = 'masofaviy-ishlar';` }];
+UPDATE categories SET is_active = false WHERE slug = 'masofaviy-ishlar';` }, { "name": "1760001000000_catering_requests.sql", "up": "-- Catering enquiries from the landing page. Not an order: no price, no payment; the team calls back.\n-- service_type_id mirrors CATERING_SERVICE_IDS in packages/shared.\nCREATE TABLE catering_requests (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  name text NOT NULL,\n  phone text NOT NULL,\n  service_type_id text NOT NULL\n    CHECK (service_type_id IN ('tikuvchilik', 'pishiriq', 'qolmehnat', 'dizayn', 'boshqa')),\n  event_date date NOT NULL,\n  guests_count integer NOT NULL CHECK (guests_count >= 1),\n  note text NOT NULL DEFAULT '',\n  status text NOT NULL DEFAULT 'new' CHECK (status IN ('new', 'contacted', 'closed')),\n  created_at timestamptz NOT NULL DEFAULT now()\n);\n\nCREATE INDEX catering_requests_status_created_idx ON catering_requests (status, created_at DESC);" }];
 
 // src/app.ts
 var import_cookie_parser = __toESM(require_cookie_parser(), 1);
@@ -72834,6 +72834,38 @@ function rangeContains(outer, inner) {
   return outer.start <= inner.start && inner.end <= outer.end;
 }
 
+// ../../packages/shared/src/catering/service-types.ts
+var CATERING_OTHER_SERVICE_ID = "boshqa";
+var CATERING_SERVICE_IDS = [
+  "tikuvchilik",
+  "pishiriq",
+  "qolmehnat",
+  "dizayn",
+  CATERING_OTHER_SERVICE_ID
+];
+
+// ../../packages/shared/src/catering/request.ts
+var CATERING_MIN_GUESTS = 1;
+var CATERING_MAX_GUESTS = 5e3;
+var CATERING_MAX_NOTE_LENGTH = 1e3;
+var HOUR_MS2 = 36e5;
+function tashkentToday(now = /* @__PURE__ */ new Date()) {
+  return new Date(now.getTime() + TASHKENT_UTC_OFFSET_HOURS * HOUR_MS2).toISOString().slice(0, 10);
+}
+function isFutureEventDate(date, now = /* @__PURE__ */ new Date()) {
+  const parsed = /* @__PURE__ */ new Date(`${date}T00:00:00Z`);
+  if (Number.isNaN(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== date) return false;
+  return date > tashkentToday(now);
+}
+var cateringRequestSchema = external_exports.object({
+  name: external_exports.string().trim().min(MIN_NAME_LENGTH).max(MAX_NAME_LENGTH),
+  phone: phoneSchema,
+  serviceTypeId: external_exports.enum(CATERING_SERVICE_IDS),
+  eventDate: external_exports.string().regex(/^\d{4}-\d{2}-\d{2}$/, "INVALID_DATE").refine((value) => isFutureEventDate(value), "DATE_NOT_IN_FUTURE"),
+  guestsCount: external_exports.number().int().min(CATERING_MIN_GUESTS).max(CATERING_MAX_GUESTS),
+  note: external_exports.string().trim().max(CATERING_MAX_NOTE_LENGTH).default("")
+});
+
 // src/modules/auth/tokens.ts
 var import_node_crypto2 = require("node:crypto");
 var import_jsonwebtoken = __toESM(require_jsonwebtoken(), 1);
@@ -74204,7 +74236,7 @@ var isExclusionViolation = (error) => hasCode(error, EXCLUSION_VIOLATION);
 
 // src/modules/jobs/order-expiry.ts
 var MINUTE_MS2 = 60 * 1e3;
-var HOUR_MS2 = 60 * MINUTE_MS2;
+var HOUR_MS3 = 60 * MINUTE_MS2;
 var REFUND_BATCH = 50;
 async function expireUnpaidOrders(db2, now) {
   const cutoff = new Date(now.getTime() - UNPAID_ORDER_TTL_MINUTES * MINUTE_MS2);
@@ -74220,7 +74252,7 @@ async function expireUnpaidOrders(db2, now) {
   });
 }
 async function refundUnacceptedOrders(ctx, now) {
-  const cutoff = new Date(now.getTime() - WORKER_ACCEPT_TTL_HOURS * HOUR_MS2);
+  const cutoff = new Date(now.getTime() - WORKER_ACCEPT_TTL_HOURS * HOUR_MS3);
   const stale = await ctx.db.selectFrom("orders").select("id").where("status", "=", "new").where("updated_at", "<", cutoff).orderBy("updated_at").limit(REFUND_BATCH).execute();
   let refunded = 0;
   for (const { id } of stale) {
@@ -74260,8 +74292,8 @@ async function expireUnpaidMaterialOrders(db2, now) {
 }
 
 // src/modules/calendar/availability.service.ts
-var HOUR_MS3 = 60 * 60 * 1e3;
-var DAY_MS2 = 24 * HOUR_MS3;
+var HOUR_MS4 = 60 * 60 * 1e3;
+var DAY_MS2 = 24 * HOUR_MS4;
 var AvailabilityService = class {
   constructor(ctx, now = () => /* @__PURE__ */ new Date()) {
     this.ctx = ctx;
@@ -74298,7 +74330,7 @@ var AvailabilityService = class {
     const now = this.now();
     const length2 = end.getTime() - start.getTime();
     const horizon = now.getTime() + AVAILABILITY_HORIZON_DAYS * DAY_MS2;
-    if (length2 <= 0 || length2 > MAX_AVAILABILITY_HOURS * HOUR_MS3 || start <= now) {
+    if (length2 <= 0 || length2 > MAX_AVAILABILITY_HOURS * HOUR_MS4 || start <= now) {
       throw AppError.badRequest("AVAILABILITY_INVALID");
     }
     if (start.getTime() > horizon) throw AppError.badRequest("AVAILABILITY_INVALID");
@@ -75059,7 +75091,7 @@ var OrderService = class {
 };
 
 // src/modules/orders/service-order.service.ts
-var HOUR_MS4 = 60 * 60 * 1e3;
+var HOUR_MS5 = 60 * 60 * 1e3;
 var NEW_REQUEST_SMS = "BarakaLi: yangi buyurtma / \u043D\u043E\u0432\u044B\u0439 \u0437\u0430\u043A\u0430\u0437";
 var IMAGE_CONTENT_TYPE = "image/webp";
 var ServiceOrderService = class {
@@ -75078,7 +75110,7 @@ var ServiceOrderService = class {
   async create(customerId, input) {
     const now = this.now();
     const start = new Date(input.startTime);
-    const end = new Date(start.getTime() + input.hours * HOUR_MS4);
+    const end = new Date(start.getTime() + input.hours * HOUR_MS5);
     if (start <= now) throw AppError.badRequest("SLOT_IN_PAST");
     await expireUnpaidOrders(this.ctx.db, now);
     const worker = await this.ctx.db.selectFrom("workers").select(["id", "user_id", "status"]).where("id", "=", input.workerId).executeTakeFirst();
