@@ -38,6 +38,17 @@ Bu ro'yxat `CLAUDE.md` dagi bosqichlardan MVP'ga kirmagan qismlarni o'z ichiga o
 - [ ] Shu toifadagi hunarmandlarga boshqa toifani tanlash imkonini berish (hozir profil sahifasi ochiladi,
       lekin toifa nomi koʻrsatilmaydi)
 
+## Admin tizimi (2026-10-10)
+
+- [x] `ADMIN_PHONES` bilan rol, audit jurnali, 403 sahifasi, admin `/admin` ga yoʻnaltiriladi
+- [x] Admin qobigʻi, panel, hunarmandlarni tasdiqlash/rad etish/toʻxtatish, mahsulot, buyurtma, foydalanuvchi boshqaruvi
+- [x] Sharh, shikoyat, xizmat turlari, sozlamalar; toast, dialoglar, boʻsh holatlar
+- [x] e2e: oddiy foydalanuvchi 403, admin kirishi, tasdiqlash, ommaviy koʻrinish; axe va 48 px tekshiruvi
+- [ ] Vercelʼda `ADMIN_PHONES=+998772105388` qoʻyish (foydalanuvchi qiladi)
+- [ ] Real SMS provayderi: hozir administrator kodini olishning yagona yoʻli hosting sozlamasiga bogʻliq
+- [ ] Production bazasida `catering_requests` jadvali boʻsh boʻlsa migratsiya uni oʻchirgan, qator boʻlsa qolgan — tekshirish
+- [ ] Admin roʻyxatlarida (buyurtma, mahsulot) sana oraligʻi filtri
+
 ## 8-bosqich: frontend qoldig'i
 
 - [x] Hunarmand kalendar sahifasi (boʻsh vaqt, band vaqtlar)

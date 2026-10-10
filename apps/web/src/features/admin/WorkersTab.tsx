@@ -73,6 +73,20 @@ export function WorkersTab() {
       {workers.data && workers.data.items.length === 0 && (
         <EmptyState
           title={q ? t('admin.workers.search.empty') : t(`admin.workers.empty.${filter}`)}
+          action={
+            q ? (
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  setDraft('');
+                  setQ('');
+                  setPage(1);
+                }}
+              >
+                {t('admin.emptyActions.clearSearch')}
+              </Button>
+            ) : undefined
+          }
         />
       )}
       <ul className="space-y-2">

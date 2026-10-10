@@ -195,27 +195,47 @@
     "emptyHint": "Birinchi tasdiqlash yoki rad etish shu yerda koʻrinadi.",
     "unknownAdmin": "Administrator",
     "actions": {
-      "worker.approve": "Hunarmand tasdiqlandi",
-      "worker.reject": "Hunarmand rad etildi",
-      "review.hide": "Sharh yashirildi",
-      "review.show": "Sharh qayta koʻrsatildi",
-      "complaint.resolve": "Shikoyat hal qilindi",
-      "complaint.dismiss": "Shikoyat rad etildi",
-      "order.refund": "Buyurtma puli qaytarildi",
-      "material.create": "Material qoʻshildi",
-      "material.update": "Material yangilandi",
-      "material_order.deliver": "Material buyurtmasi topshirildi",
-      "worker.suspend": "Hunarmand toʻxtatildi",
-      "order.status": "Buyurtma holati oʻzgartirildi",
-      "product.update": "Mahsulot tahrirlandi",
-      "product.hide": "Mahsulot yashirildi",
-      "product.show": "Mahsulot qayta koʻrsatildi",
-      "product.delete": "Mahsulot oʻchirildi",
-      "user.block": "Foydalanuvchi bloklandi",
-      "user.unblock": "Foydalanuvchi blokdan chiqarildi",
-      "complaint.review": "Shikoyat koʻrib chiqildi",
-      "category.update": "Toifa yangilandi",
-      "settings.update": "Sozlamalar yangilandi"
+      "worker": {
+        "approve": "Hunarmand tasdiqlandi",
+        "reject": "Hunarmand rad etildi",
+        "suspend": "Hunarmand toʻxtatildi"
+      },
+      "review": {
+        "hide": "Sharh yashirildi",
+        "show": "Sharh qayta koʻrsatildi"
+      },
+      "complaint": {
+        "resolve": "Shikoyat hal qilindi",
+        "dismiss": "Shikoyat rad etildi",
+        "review": "Shikoyat koʻrib chiqildi"
+      },
+      "order": {
+        "refund": "Buyurtma puli qaytarildi",
+        "status": "Buyurtma holati oʻzgartirildi"
+      },
+      "material": {
+        "create": "Material qoʻshildi",
+        "update": "Material yangilandi"
+      },
+      "material_order": {
+        "deliver": "Material buyurtmasi topshirildi"
+      },
+      "product": {
+        "update": "Mahsulot tahrirlandi",
+        "hide": "Mahsulot yashirildi",
+        "show": "Mahsulot qayta koʻrsatildi",
+        "delete": "Mahsulot oʻchirildi"
+      },
+      "user": {
+        "block": "Foydalanuvchi bloklandi",
+        "unblock": "Foydalanuvchi blokdan chiqarildi"
+      },
+      "category": {
+        "update": "Toifa yangilandi"
+      },
+      "settings": {
+        "update": "Sozlamalar yangilandi"
+      }
     }
   },
   "notReady": {
@@ -379,5 +399,9 @@
     "commissionTitle": "Komissiya",
     "commissionHint": "Stavka kod konstantasi; bu yerdan oʻzgartirilmaydi.",
     "saved": "Sozlamalar saqlandi."
+  },
+  "emptyActions": {
+    "clearSearch": "Qidiruvni tozalash",
+    "clearFilters": "Filtrlarni tozalash"
   }
 }

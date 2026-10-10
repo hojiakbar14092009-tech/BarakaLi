@@ -24,6 +24,7 @@ import type {
   ReviewStatus,
 } from '@barakali/shared';
 import { apiRequest } from '../../lib/api';
+import { useToastStore } from '../../stores/toast';
 
 const ADMIN = ['admin'] as const;
 
@@ -125,12 +126,20 @@ export const useAdminMaterialOrders = () =>
     queryFn: () => apiRequest<AdminMaterialOrderDto[]>('/admin/material-orders', { auth: true }),
   });
 
-/** One mutation factory: every admin action refreshes all admin lists and the public caches. */
-function useAdminAction<TVariables>(request: (variables: TVariables) => Promise<unknown>) {
+/**
+ * One mutation factory: every admin action refreshes all admin lists and the public caches, and
+ * confirms itself with a short toast (`toast.<messageKey>`).
+ */
+function useAdminAction<TVariables>(
+  messageKey: string,
+  request: (variables: TVariables) => Promise<unknown>,
+) {
   const client = useQueryClient();
+  const push = useToastStore((state) => state.push);
   return useMutation({
     mutationFn: request,
     onSuccess: () => {
+      push(messageKey);
       void client.invalidateQueries({ queryKey: ADMIN });
       void client.invalidateQueries({ queryKey: ['workers'] });
       void client.invalidateQueries({ queryKey: ['worker'] });
@@ -144,12 +153,12 @@ function useAdminAction<TVariables>(request: (variables: TVariables) => Promise<
 }
 
 export const useApproveWorker = () =>
-  useAdminAction((id: string) =>
+  useAdminAction('approved', (id: string) =>
     apiRequest<void>(`/admin/workers/${id}/approve`, { method: 'POST', auth: true }),
   );
 
 export const useRejectWorker = () =>
-  useAdminAction(({ id, reason }: { id: string; reason: string }) =>
+  useAdminAction('rejected', ({ id, reason }: { id: string; reason: string }) =>
     apiRequest<void>(`/admin/workers/${id}/reject`, {
       method: 'POST',
       body: { reason },
@@ -158,7 +167,7 @@ export const useRejectWorker = () =>
   );
 
 export const useSuspendWorker = () =>
-  useAdminAction(({ id, reason }: { id: string; reason: string }) =>
+  useAdminAction('suspended', ({ id, reason }: { id: string; reason: string }) =>
     apiRequest<void>(`/admin/workers/${id}/suspend`, {
       method: 'POST',
       body: { reason },
@@ -167,31 +176,33 @@ export const useSuspendWorker = () =>
   );
 
 export const useSetReviewStatus = () =>
-  useAdminAction(({ id, status, reason }: { id: string; status: ReviewStatus; reason?: string }) =>
-    apiRequest<void>(`/admin/reviews/${id}`, {
-      method: 'PATCH',
-      body: reason ? { status, reason } : { status },
-      auth: true,
-    }),
+  useAdminAction(
+    'done',
+    ({ id, status, reason }: { id: string; status: ReviewStatus; reason?: string }) =>
+      apiRequest<void>(`/admin/reviews/${id}`, {
+        method: 'PATCH',
+        body: reason ? { status, reason } : { status },
+        auth: true,
+      }),
   );
 
 export const useUpdateComplaint = () =>
-  useAdminAction(({ id, ...input }: ComplaintUpdate & { id: string }) =>
+  useAdminAction('done', ({ id, ...input }: ComplaintUpdate & { id: string }) =>
     apiRequest<void>(`/admin/complaints/${id}`, { method: 'PATCH', body: input, auth: true }),
   );
 
 export const useUpdateCategory = () =>
-  useAdminAction(({ id, input }: { id: string; input: CategoryUpdate }) =>
+  useAdminAction('saved', ({ id, input }: { id: string; input: CategoryUpdate }) =>
     apiRequest<void>(`/admin/categories/${id}`, { method: 'PATCH', body: input, auth: true }),
   );
 
 export const useSaveSettings = () =>
-  useAdminAction((input: SettingsUpdate) =>
+  useAdminAction('saved', (input: SettingsUpdate) =>
     apiRequest<PlatformSettingsDto>('/admin/settings', { method: 'PUT', body: input, auth: true }),
   );
 
 export const useRefundOrder = () =>
-  useAdminAction(({ orderId, reason }: { orderId: string; reason?: string }) =>
+  useAdminAction('refunded', ({ orderId, reason }: { orderId: string; reason?: string }) =>
     apiRequest<RefundDto>(`/admin/orders/${orderId}/refund`, {
       method: 'POST',
       body: reason ? { reason } : {},
@@ -200,7 +211,7 @@ export const useRefundOrder = () =>
   );
 
 export const useSetOrderStatus = () =>
-  useAdminAction(({ id, status }: { id: string; status: OrderStatus }) =>
+  useAdminAction('statusChanged', ({ id, status }: { id: string; status: OrderStatus }) =>
     apiRequest<void>(`/admin/orders/${id}/status`, {
       method: 'PATCH',
       body: { status },
@@ -209,12 +220,12 @@ export const useSetOrderStatus = () =>
   );
 
 export const useUpdateProduct = () =>
-  useAdminAction(({ id, input }: { id: string; input: AdminProductUpdate }) =>
+  useAdminAction('saved', ({ id, input }: { id: string; input: AdminProductUpdate }) =>
     apiRequest<void>(`/admin/products/${id}`, { method: 'PATCH', body: input, auth: true }),
   );
 
 export const useSetProductVisible = () =>
-  useAdminAction(({ id, visible }: { id: string; visible: boolean }) =>
+  useAdminAction('visibilityChanged', ({ id, visible }: { id: string; visible: boolean }) =>
     apiRequest<void>(`/admin/products/${id}/${visible ? 'show' : 'hide'}`, {
       method: 'POST',
       auth: true,
@@ -222,22 +233,22 @@ export const useSetProductVisible = () =>
   );
 
 export const useDeleteProduct = () =>
-  useAdminAction((id: string) =>
+  useAdminAction('deleted', (id: string) =>
     apiRequest<void>(`/admin/products/${id}`, { method: 'DELETE', auth: true }),
   );
 
 export const useBlockUser = () =>
-  useAdminAction(({ id, reason }: { id: string; reason: string }) =>
+  useAdminAction('blocked', ({ id, reason }: { id: string; reason: string }) =>
     apiRequest<void>(`/admin/users/${id}/block`, { method: 'POST', body: { reason }, auth: true }),
   );
 
 export const useUnblockUser = () =>
-  useAdminAction((id: string) =>
+  useAdminAction('unblocked', (id: string) =>
     apiRequest<void>(`/admin/users/${id}/unblock`, { method: 'POST', auth: true }),
   );
 
 export const useSaveMaterial = () =>
-  useAdminAction(({ id, input }: { id?: string; input: MaterialInputRaw }) =>
+  useAdminAction('done', ({ id, input }: { id?: string; input: MaterialInputRaw }) =>
     apiRequest<MaterialDto>(id ? `/admin/materials/${id}` : '/admin/materials', {
       method: id ? 'PUT' : 'POST',
       body: input,
@@ -246,6 +257,6 @@ export const useSaveMaterial = () =>
   );
 
 export const useDeliverMaterialOrder = () =>
-  useAdminAction((id: string) =>
+  useAdminAction('done', (id: string) =>
     apiRequest<void>(`/admin/material-orders/${id}/deliver`, { method: 'POST', auth: true }),
   );

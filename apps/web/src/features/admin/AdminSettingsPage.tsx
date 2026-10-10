@@ -46,12 +46,12 @@ export default function AdminSettingsPage() {
         <form onSubmit={submit} className="max-w-2xl space-y-6">
           <section className="space-y-3 rounded-card border border-bisque bg-sugar p-5">
             <h2 className="text-xl font-bold">{t('admin.settings.applicationsTitle')}</h2>
-            <label className="flex min-h-12 items-center gap-3">
+            <label className="flex min-h-12 cursor-pointer items-center gap-1">
               <input
                 type="checkbox"
                 checked={accept}
                 onChange={(event) => setAccept(event.target.checked)}
-                className="size-6 accent-mocha"
+                className="size-12 shrink-0 cursor-pointer accent-mocha"
               />
               <span>{t('admin.settings.acceptApplications')}</span>
             </label>

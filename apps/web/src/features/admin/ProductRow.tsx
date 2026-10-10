@@ -119,14 +119,17 @@ export function ProductRow({
       )}
       <div className="min-w-0 flex-1 space-y-1">
         <p className="font-semibold">
-          <Link to={`/mahsulot/${product.id}`} className="underline-offset-4 hover:underline">
+          <Link
+            to={`/mahsulot/${product.id}`}
+            className="inline-flex min-h-12 items-center underline-offset-4 hover:underline"
+          >
             {product.title}
           </Link>
         </p>
         <p className="text-sm text-mocha">
           <Link
             to={`/admin/hunarmandlar/${product.workerId}`}
-            className="underline-offset-4 hover:underline"
+            className="inline-flex min-h-12 items-center underline-offset-4 hover:underline"
           >
             {product.workerName}
           </Link>{' '}

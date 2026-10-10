@@ -2,6 +2,7 @@ import { Menu, X } from 'lucide-react';
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
+import { Toaster } from '../../components/ui/Toaster';
 import { ADMIN_NAV } from './adminNav';
 
 function AdminNavList({ onNavigate }: { onNavigate?: () => void }) {
@@ -128,6 +129,7 @@ export default function AdminLayout() {
       <div className="min-w-0 flex-1">
         <Outlet />
       </div>
+      <Toaster />
     </div>
   );
 }

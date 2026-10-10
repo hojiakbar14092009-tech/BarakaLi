@@ -140,5 +140,18 @@
     "title": "Bu sahifaga kirish mumkin emas",
     "text": "Bu boʻlim faqat administrator uchun. Sizning hisobingizda bunday huquq yoʻq.",
     "home": "Bosh sahifaga qaytish"
+  },
+  "toast": {
+    "done": "Bajarildi.",
+    "saved": "Saqlandi.",
+    "approved": "Hunarmand tasdiqlandi.",
+    "rejected": "Ariza rad etildi.",
+    "suspended": "Hunarmand toʻxtatildi.",
+    "refunded": "Pul qaytarildi.",
+    "statusChanged": "Buyurtma holati oʻzgartirildi.",
+    "deleted": "Oʻchirildi.",
+    "visibilityChanged": "Koʻrinish oʻzgartirildi.",
+    "blocked": "Foydalanuvchi bloklandi.",
+    "unblocked": "Foydalanuvchi blokdan chiqarildi."
   }
 }

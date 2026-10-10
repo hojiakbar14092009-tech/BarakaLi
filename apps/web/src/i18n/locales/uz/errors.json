@@ -1,5 +1,5 @@
 {
-  "NETWORK_ERROR": "Internet bilan aloqa yoʻq. Qayta urinib koʻring.",
+  "NETWORK_ERROR": "Tarmoqda muammo. Qayta urinib koʻring.",
   "INTERNAL_ERROR": "Nimadir xato ketdi. Birozdan soʻng qayta urinib koʻring.",
   "VALIDATION_ERROR": "Kiritilgan maʼlumotlarni tekshiring.",
   "UNAUTHENTICATED": "Davom etish uchun tizimga kiring.",

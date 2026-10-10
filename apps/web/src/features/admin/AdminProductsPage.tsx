@@ -113,7 +113,27 @@ export default function AdminProductsPage() {
           />
         )}
         {products.data && products.data.items.length === 0 && (
-          <EmptyState title={t('admin.products.empty')} hint={t('admin.products.emptyHint')} />
+          <EmptyState
+            title={t('admin.products.empty')}
+            hint={t('admin.products.emptyHint')}
+            action={
+              q || status || categoryId || workerId ? (
+                <Button
+                  variant="secondary"
+                  onClick={() => {
+                    setDraft('');
+                    setQ('');
+                    setStatus('');
+                    setCategoryId('');
+                    setParams({});
+                    setPage(1);
+                  }}
+                >
+                  {t('admin.emptyActions.clearFilters')}
+                </Button>
+              ) : undefined
+            }
+          />
         )}
         <ul className="space-y-2">
           {products.data?.items.map((product: AdminProductDto) => (

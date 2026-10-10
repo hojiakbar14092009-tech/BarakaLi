@@ -91,9 +91,22 @@ test.describe('accessibility (axe, WCAG 2.1 AA)', () => {
     expect(await violations(page), 'new service order').toEqual([]);
 
     await loginAsAdmin(context);
-    await page.goto('/admin');
-    await page.waitForLoadState('networkidle');
-    expect(await violations(page), 'admin').toEqual([]);
+    for (const route of [
+      '/admin',
+      '/admin/hunarmandlar',
+      '/admin/mahsulotlar',
+      '/admin/buyurtmalar',
+      '/admin/foydalanuvchilar',
+      '/admin/sharhlar',
+      '/admin/xizmat-turlari',
+      '/admin/materiallar',
+      '/admin/sozlamalar',
+      '/admin/audit',
+    ]) {
+      await page.goto(route);
+      await page.waitForLoadState('networkidle');
+      expect(await violations(page), route).toEqual([]);
+    }
   });
 });
 

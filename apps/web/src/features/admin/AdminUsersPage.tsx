@@ -67,7 +67,24 @@ export default function AdminUsersPage() {
           <ErrorState message={errorMessage(users.error, t)} onRetry={() => void users.refetch()} />
         )}
         {users.data && users.data.items.length === 0 && (
-          <EmptyState title={t('admin.users.empty')} />
+          <EmptyState
+            title={t('admin.users.empty')}
+            action={
+              q || filter ? (
+                <Button
+                  variant="secondary"
+                  onClick={() => {
+                    setDraft('');
+                    setQ('');
+                    setFilter('');
+                    setPage(1);
+                  }}
+                >
+                  {t('admin.emptyActions.clearSearch')}
+                </Button>
+              ) : undefined
+            }
+          />
         )}
         <ul className="space-y-2">
           {users.data?.items.map((user) => (
