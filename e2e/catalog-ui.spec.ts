@@ -87,8 +87,8 @@ for (const viewport of [
 }
 
 for (const viewport of [
-  { width: 390, height: 844, columns: 2, imageHeight: 180 },
-  { width: 768, height: 1024, columns: 3, imageHeight: 180 },
+  { width: 390, height: 844, columns: 2, imageHeight: 200 },
+  { width: 768, height: 1024, columns: 3, imageHeight: 200 },
 ]) {
   test.describe(`compact product cards (${viewport.width}px)`, () => {
     test.use({ viewport: { width: viewport.width, height: viewport.height } });

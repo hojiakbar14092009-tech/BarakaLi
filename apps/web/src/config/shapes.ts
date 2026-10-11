@@ -14,15 +14,15 @@ export interface CardShape {
 const ARCH: CardShape = {
   name: 'arch',
   span: '',
-  frame: 'xl:rounded-t-[999px] xl:rounded-b-3xl xl:px-6 xl:pt-10',
+  frame: 'xl:rounded-t-[999px] xl:rounded-b-3xl xl:px-3 xl:pt-8',
 };
 
 export const CARD_SHAPES: readonly CardShape[] = [
   ARCH,
-  { name: 'circle', span: '', frame: 'xl:rounded-full xl:p-8' },
-  { name: 'pill', span: 'xl:col-span-2', frame: 'xl:rounded-full xl:px-14 xl:py-4' },
-  { name: 'soft', span: '', frame: 'xl:rounded-[2.5rem] xl:p-4' },
-  { name: 'panorama', span: 'xl:col-span-2', frame: 'xl:rounded-3xl xl:px-10 xl:py-4' },
+  { name: 'circle', span: '', frame: 'xl:rounded-full xl:p-7' },
+  { name: 'pill', span: 'xl:col-span-2', frame: 'xl:rounded-full xl:px-10 xl:py-2' },
+  { name: 'soft', span: '', frame: 'xl:rounded-[2.5rem] xl:p-2' },
+  { name: 'panorama', span: 'xl:col-span-2', frame: 'xl:rounded-3xl xl:px-6 xl:py-2' },
 ];
 
 export function cardShape(index: number): CardShape {

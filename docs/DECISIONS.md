@@ -337,3 +337,16 @@ Brifdagi noaniqliklar bo'yicha qabul qilingan qarorlar. Yangi qaror oxiriga qo's
   soʻzlari va soʻrov formasi qaytarilmadi: asosiy tugma "Hunarmand boʻlish", ikkinchisi katalogga oʻtadi.
 - Fon: ikki yumshoq Bisque nur va sekin suzuvchi hunar ikonkalari (lucide, faqat bezak, `aria-hidden`);
   `prefers-reduced-motion` da harakat yoʻq. Telefonda faqat chekkadagi ikonkalar koʻrinadi, matn ustiga tushmaydi.
+
+## Mahsulot rasmlari: fon olib tashlanadi (2026-10-11)
+
+- Hunarmand yuklagan har bir mahsulot rasmi serverda (`apps/api/src/modules/uploads/cutout/`) fonidan
+  ajratiladi: chekkadan boshlab bir xil rangli fon "toʻldiriladi", qolgan buyum shaffof WebP sifatida
+  buyumga qirqiladi (4 % chekka). Kartochka va mahsulot sahifasida buyum toʻgʻridan-toʻgʻri Bisque
+  fonida, yumshoq soya bilan koʻrinadi (namuna: "Kashta ilingan sumka").
+- Fon oddiy boʻlmasa (devor + stol, naqshli fon, buyumning rangi fonga yaqin) natija ishonchsiz: fon
+  bir tekis (rang tarqalishi ≤ 15), chekkasi tekis (≤ 12) va buyum kadrning 4–90 % ini egallashi shart.
+  Aks holda asl rasm saqlanadi (buzilgan qirqimdan koʻra toʻliq rasm yaxshi). Tayyor namuna rasmlar
+  `pnpm --filter @barakali/api product:images` bilan, koʻz bilan tekshirilib (`reviewed`, vaza uchun
+  chizilgan kontur) yaratiladi.
+- Buyurtma rasmlari (haridorning namunalari) qirqilmaydi: ular maʼlumot uchun, vitrina uchun emas.

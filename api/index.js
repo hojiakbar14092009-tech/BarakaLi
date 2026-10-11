@@ -75703,22 +75703,241 @@ function fileOf(req) {
   return req.file.buffer;
 }
 
+// src/modules/uploads/cutout/mask.ts
+var BORDER_SAMPLES_PER_SIDE = 60;
+function colourDistanceSq(data, a, b) {
+  const dr = (data[a] ?? 0) - (data[b] ?? 0);
+  const dg = (data[a + 1] ?? 0) - (data[b + 1] ?? 0);
+  const db2 = (data[a + 2] ?? 0) - (data[b + 2] ?? 0);
+  return dr * dr + dg * dg + db2 * db2;
+}
+function borderPixels(width, height) {
+  const pixels = [];
+  for (let x = 0; x < width; x += 1) pixels.push(x, (height - 1) * width + x);
+  for (let y = 1; y < height - 1; y += 1) pixels.push(y * width, y * width + width - 1);
+  return pixels;
+}
+function borderPalette({ data, width, height }) {
+  const all = borderPixels(width, height);
+  const step = Math.max(1, Math.floor(all.length / (BORDER_SAMPLES_PER_SIDE * 4)));
+  const palette = [];
+  for (let i = 0; i < all.length; i += step) {
+    const p = (all[i] ?? 0) * 4;
+    palette.push([data[p] ?? 0, data[p + 1] ?? 0, data[p + 2] ?? 0]);
+  }
+  return palette;
+}
+function nearPalette(data, offset, palette, tolerance) {
+  const limit = tolerance * tolerance;
+  for (const [r, g, b] of palette) {
+    const dr = (data[offset] ?? 0) - r;
+    const dg = (data[offset + 1] ?? 0) - g;
+    const db2 = (data[offset + 2] ?? 0) - b;
+    if (dr * dr + dg * dg + db2 * db2 <= limit) return true;
+  }
+  return false;
+}
+function neighbours(p, width, size) {
+  const x = p % width;
+  const result = [];
+  if (x > 0) result.push(p - 1);
+  if (x < width - 1) result.push(p + 1);
+  if (p >= width) result.push(p - width);
+  if (p + width < size) result.push(p + width);
+  return result;
+}
+function backdropMask(raster, tolerances) {
+  const { data, width, height } = raster;
+  const size = width * height;
+  const palette = borderPalette(raster);
+  const mask = new Uint8Array(size).fill(255);
+  const queue = new Int32Array(size);
+  let head = 0;
+  let tail = 0;
+  const stepLimit = tolerances.step * tolerances.step;
+  for (const p of borderPixels(width, height)) {
+    if (mask[p] === 0 || !nearPalette(data, p * 4, palette, tolerances.border)) continue;
+    mask[p] = 0;
+    queue[tail++] = p;
+  }
+  while (head < tail) {
+    const p = queue[head++] ?? 0;
+    for (const n of neighbours(p, width, size)) {
+      if (mask[n] === 0) continue;
+      if (colourDistanceSq(data, p * 4, n * 4) > stepLimit) continue;
+      if (!nearPalette(data, n * 4, palette, tolerances.border)) continue;
+      mask[n] = 0;
+      queue[tail++] = n;
+    }
+  }
+  return mask;
+}
+function dropSmallRegions(mask, width, minArea) {
+  const seen = new Uint8Array(mask.length);
+  const stack = new Int32Array(mask.length);
+  for (let start = 0; start < mask.length; start += 1) {
+    if (mask[start] === 0 || seen[start]) continue;
+    const region = [];
+    let top = 0;
+    stack[top++] = start;
+    seen[start] = 1;
+    while (top > 0) {
+      const p = stack[--top] ?? 0;
+      region.push(p);
+      for (const n of neighbours(p, width, mask.length)) {
+        if (seen[n] || mask[n] === 0) continue;
+        seen[n] = 1;
+        stack[top++] = n;
+      }
+    }
+    if (region.length < minArea) for (const p of region) mask[p] = 0;
+  }
+}
+function boundingBox(alpha, width, threshold = 24) {
+  const height = alpha.length / width;
+  let [left, top, right, bottom] = [width, height, -1, -1];
+  for (let p = 0; p < alpha.length; p += 1) {
+    if ((alpha[p] ?? 0) < threshold) continue;
+    const x = p % width;
+    const y = (p - x) / width;
+    left = Math.min(left, x);
+    right = Math.max(right, x);
+    top = Math.min(top, y);
+    bottom = Math.max(bottom, y);
+  }
+  return right < 0 ? null : { left, top, width: right - left + 1, height: bottom - top + 1 };
+}
+function backdropSpread({ data }, mask) {
+  let count = 0;
+  const sum = [0, 0, 0];
+  const squares = [0, 0, 0];
+  for (let p = 0; p < mask.length; p += 1) {
+    if (mask[p] !== 0) continue;
+    count += 1;
+    for (let c = 0; c < 3; c += 1) {
+      const value = data[p * 4 + c] ?? 0;
+      sum[c] = (sum[c] ?? 0) + value;
+      squares[c] = (squares[c] ?? 0) + value * value;
+    }
+  }
+  if (count === 0) return Infinity;
+  let variance = 0;
+  for (let c = 0; c < 3; c += 1)
+    variance += (squares[c] ?? 0) / count - ((sum[c] ?? 0) / count) ** 2;
+  return Math.sqrt(variance / 3);
+}
+function raggedness(mask, width) {
+  let edge = 0;
+  let area = 0;
+  for (let p = 0; p < mask.length; p += 1) {
+    if (mask[p] === 0) continue;
+    area += 1;
+    if (neighbours(p, width, mask.length).some((n) => mask[n] === 0)) edge += 1;
+  }
+  return area === 0 ? Infinity : edge / Math.sqrt(area);
+}
+function productShare(mask) {
+  let product = 0;
+  for (const value of mask) if (value !== 0) product += 1;
+  return mask.length === 0 ? 0 : product / mask.length;
+}
+function backdropShare(mask, pixels) {
+  if (pixels.length === 0) return 0;
+  let backdrop = 0;
+  for (const p of pixels) if (mask[p] === 0) backdrop += 1;
+  return backdrop / pixels.length;
+}
+
+// src/modules/uploads/cutout/index.ts
+var CUTOUT_MAX_SIDE = 1e3;
+var DEFAULT_TOLERANCES = { step: 14, border: 58 };
+var FEATHER_SIGMA = 1.2;
+var MARGIN = 0.04;
+var SPECK_AREA = 2e-3;
+var MIN_BORDER_BACKDROP = 0.9;
+var MAX_BACKDROP_SPREAD = 15;
+var MAX_RAGGEDNESS = 12;
+var MIN_PRODUCT_SHARE = 0.04;
+var MAX_PRODUCT_SHARE = 0.9;
+async function loadRaster(input) {
+  const { default: sharp } = await import("sharp");
+  const { data, info } = await sharp(input).rotate().resize({ width: CUTOUT_MAX_SIDE, height: CUTOUT_MAX_SIDE, fit: "inside" }).removeAlpha().ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+  return { data: new Uint8Array(data), width: info.width, height: info.height };
+}
+async function outlineMask(width, height, shapes) {
+  const { default: sharp } = await import("sharp");
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}"><g fill="#fff">${shapes}</g></svg>`;
+  const mask = await sharp(Buffer.from(svg)).resize(width, height).extractChannel(0).raw().toBuffer();
+  return new Uint8Array(mask);
+}
+async function productMask(raster, options) {
+  const { width, height } = raster;
+  if (options.outline) return outlineMask(width, height, options.outline);
+  const mask = backdropMask(raster, { ...DEFAULT_TOLERANCES, ...options.tolerances });
+  dropSmallRegions(mask, width, Math.round(width * height * SPECK_AREA));
+  return options.reviewed || isTrustworthy(raster, mask) ? mask : null;
+}
+function isTrustworthy(raster, mask) {
+  const { width, height } = raster;
+  const share = productShare(mask);
+  return backdropShare(mask, borderPixels(width, height)) >= MIN_BORDER_BACKDROP && share >= MIN_PRODUCT_SHARE && share <= MAX_PRODUCT_SHARE && backdropSpread(raster, mask) <= MAX_BACKDROP_SPREAD && raggedness(mask, width) <= MAX_RAGGEDNESS;
+}
+async function featherAlpha(mask, width, height) {
+  const { default: sharp } = await import("sharp");
+  return sharp(Buffer.from(mask), { raw: { width, height, channels: 1 } }).blur(FEATHER_SIGMA).extractChannel(0).raw().toBuffer();
+}
+async function trimmedPng(raster, box) {
+  const { default: sharp } = await import("sharp");
+  const pad = Math.round(Math.max(box.width, box.height) * MARGIN);
+  const transparent = { r: 0, g: 0, b: 0, alpha: 0 };
+  return sharp(Buffer.from(raster.data), {
+    raw: { width: raster.width, height: raster.height, channels: 4 }
+  }).extract(box).extend({ top: pad, bottom: pad, left: pad, right: pad, background: transparent }).png().toBuffer();
+}
+async function cutoutProduct(input, options = {}) {
+  const raster = await loadRaster(input);
+  const { width, height } = raster;
+  const mask = await productMask(raster, options);
+  if (!mask) return null;
+  const alpha = await featherAlpha(mask, width, height);
+  for (let p = 0; p < width * height; p += 1) raster.data[p * 4 + 3] = alpha[p] ?? 0;
+  const box = boundingBox(new Uint8Array(alpha), width);
+  return box ? trimmedPng(raster, box) : null;
+}
+
 // src/modules/uploads/image.ts
 var MAX_DIMENSION = 1600;
 var WEBP_QUALITY = 80;
+var ALPHA_QUALITY = 90;
 var FORMAT_TO_MIME = {
   jpeg: "image/jpeg",
   png: "image/png",
   webp: "image/webp"
 };
+async function assertAllowedFormat(input) {
+  const { default: sharp } = await import("sharp");
+  const meta = await sharp(input).metadata();
+  const mime = FORMAT_TO_MIME[meta.format ?? ""];
+  if (!mime || !ALLOWED_IMAGE_MIME_TYPES.includes(mime)) {
+    throw AppError.badRequest("IMAGE_INVALID_FORMAT");
+  }
+}
+async function processProductImage(input) {
+  const { default: sharp } = await import("sharp");
+  try {
+    await assertAllowedFormat(input);
+    const cut = await cutoutProduct(input);
+    if (!cut) return await processImage(input);
+    return await sharp(cut).webp({ quality: WEBP_QUALITY, alphaQuality: ALPHA_QUALITY }).toBuffer();
+  } catch (error) {
+    if (error instanceof AppError) throw error;
+    throw AppError.badRequest("IMAGE_INVALID_FORMAT");
+  }
+}
 async function processImage(input) {
   const { default: sharp } = await import("sharp");
   try {
-    const meta = await sharp(input).metadata();
-    const mime = FORMAT_TO_MIME[meta.format ?? ""];
-    if (!mime || !ALLOWED_IMAGE_MIME_TYPES.includes(mime)) {
-      throw AppError.badRequest("IMAGE_INVALID_FORMAT");
-    }
+    await assertAllowedFormat(input);
     return await sharp(input).rotate().resize({
       width: MAX_DIMENSION,
       height: MAX_DIMENSION,
@@ -81291,7 +81510,7 @@ var ProductService = class {
     await this.assertOwner(workerId, id);
     const existing = await this.repo.listImages(id);
     if (existing.length >= MAX_PRODUCT_IMAGES) throw AppError.conflict("IMAGE_LIMIT_REACHED");
-    const webp = await processImage(file);
+    const webp = await processProductImage(file);
     const url = await this.ctx.storage.put(`${(0, import_node_crypto6.randomUUID)()}.webp`, webp, "image/webp");
     await this.repo.addImage(id, url, existing.length);
     return this.get(id);

@@ -158,3 +158,10 @@ pnpm db:audit-orders
       "Bu raqam admin emas" javobi qaysi raqam admin ekanini ham bildiradi
 - [ ] `/kirish`: `EXPOSE_SMS_CODE=false` boʻlganda kod SMS orqali kelishi kerak, lekin `SmsProvider` hozir faqat
       konsol (Eskiz / Play Mobile adapteri yozilmagan)
+
+## Mahsulot rasmlari: avtomatik fon olib tashlash (2026-10-11)
+
+- [x] Yangi yuklangan mahsulot rasmlari serverda fonidan ajratiladi; fon murakkab boʻlsa asl rasm qoladi
+- [ ] Production'da shu oʻzgarishdan **oldin** yuklangan hunarmand rasmlari qayta ishlanmagan (eski rasmlar
+      oʻz fonida koʻrinadi). Kerak boʻlsa: rasmni qayta yuklash yoki bir martalik qayta ishlash skripti
+- [ ] Murakkab fonli rasmlar uchun haqiqiy AI segmentatsiya (masalan, alohida servis) — hozir ulanmagan

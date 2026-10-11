@@ -9,7 +9,7 @@ import {
 import type { AppContext } from '../../context.js';
 import { AppError } from '../../errors.js';
 import { validateGlb } from '../uploads/glb.js';
-import { processImage } from '../uploads/image.js';
+import { processProductImage } from '../uploads/image.js';
 import { ProductRepository } from './product.repository.js';
 
 export class ProductService {
@@ -72,7 +72,7 @@ export class ProductService {
     await this.assertOwner(workerId, id);
     const existing = await this.repo.listImages(id);
     if (existing.length >= MAX_PRODUCT_IMAGES) throw AppError.conflict('IMAGE_LIMIT_REACHED');
-    const webp = await processImage(file);
+    const webp = await processProductImage(file);
     const url = await this.ctx.storage.put(`${randomUUID()}.webp`, webp, 'image/webp');
     await this.repo.addImage(id, url, existing.length);
     return this.get(id);
