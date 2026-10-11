@@ -160,7 +160,20 @@
     "stockLine": "zaxira: {{count}}",
     "orders": "Hunarmandlarning buyurtmalari",
     "noOrders": "Hozircha buyurtma yoʻq.",
-    "deliver": "Topshirildi"
+    "deliver": "Topshirildi",
+    "ordersIntro": "Toʻlangan buyurtmani tayyorlang, yetkazib beruvchi bilan yoʻlga chiqaring, keyin topshirilganini belgilang. Hunarmandga har bosqichda xabar boradi.",
+    "ship": "Yoʻlga chiqarish",
+    "shipTitle": "Yetkazib beruvchi",
+    "courierName": "Yetkazib beruvchining ismi",
+    "courierPhone": "Yetkazib beruvchining telefoni",
+    "shipConfirm": "Yoʻlga chiqarish va hunarmandga xabar berish",
+    "new": "Yangi",
+    "workerPhone": "Hunarmand: {{phone}}",
+    "callWorker": "Hunarmandga qoʻngʻiroq qilish: {{name}}",
+    "address": "Manzil: {{address}}",
+    "noAddress": "Manzil koʻrsatilmagan: hunarmandga qoʻngʻiroq qilib aniqlang.",
+    "courier": "Yetkazib beruvchi: {{name}}, {{phone}}",
+    "unread": "{{count}} ta yangi material buyurtmasi"
   },
   "nav": {
     "label": "Boshqaruv boʻlimlari",
@@ -218,7 +231,8 @@
         "update": "Material yangilandi"
       },
       "material_order": {
-        "deliver": "Material buyurtmasi topshirildi"
+        "deliver": "Material buyurtmasi topshirildi",
+        "ship": "Material buyurtmasi yoʻlga chiqarildi"
       },
       "product": {
         "update": "Mahsulot tahrirlandi",

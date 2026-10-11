@@ -66713,7 +66713,7 @@ CREATE TABLE platform_settings (
   updated_at timestamptz NOT NULL DEFAULT now(),
   updated_by uuid REFERENCES users (id) ON DELETE SET NULL
 );
-INSERT INTO platform_settings (id) VALUES (1);` }, { "name": "1760001600000_hide_somsa.sql", "up": "-- Somsa is a meal, not baking: products named like it leave the Pishiriq catalog. They are hidden,\n-- never deleted, so order history keeps pointing at them.\nUPDATE products p\nSET status = 'hidden', updated_at = now()\nFROM categories c\nWHERE c.id = p.category_id\n  AND c.slug = 'pishiriq'\n  AND p.status <> 'hidden'\n  AND (uz_normalize(p.title) LIKE '%samsa%' OR uz_normalize(p.title) LIKE '%somsa%');" }];
+INSERT INTO platform_settings (id) VALUES (1);` }, { "name": "1760001600000_hide_somsa.sql", "up": "-- Somsa is a meal, not baking: products named like it leave the Pishiriq catalog. They are hidden,\n-- never deleted, so order history keeps pointing at them.\nUPDATE products p\nSET status = 'hidden', updated_at = now()\nFROM categories c\nWHERE c.id = p.category_id\n  AND c.slug = 'pishiriq'\n  AND p.status <> 'hidden'\n  AND (uz_normalize(p.title) LIKE '%samsa%' OR uz_normalize(p.title) LIKE '%somsa%');" }, { "name": "1760001700000_material_delivery.sql", "up": "-- Materials are delivered by the platform: once paid, an administrator sends the order out with a\n-- courier ('shipped'), then marks it delivered. The worker gives the address when ordering; the\n-- courier reaches the worker on the account phone, and the worker sees who is bringing the order.\nALTER TABLE material_orders DROP CONSTRAINT IF EXISTS material_orders_status_check;\nALTER TABLE material_orders\n  ADD CONSTRAINT material_orders_status_check\n    CHECK (status IN ('awaiting_payment', 'paid', 'shipped', 'delivered', 'cancelled'));\n\n-- Nullable: orders placed before delivery existed have no address.\nALTER TABLE material_orders ADD COLUMN delivery_address text;\nALTER TABLE material_orders ADD COLUMN courier_name text;\nALTER TABLE material_orders ADD COLUMN courier_phone text;\nALTER TABLE material_orders ADD COLUMN shipped_at timestamptz;\nALTER TABLE material_orders ADD COLUMN delivered_at timestamptz;\nALTER TABLE material_orders\n  ADD CONSTRAINT material_orders_shipped_has_courier\n    CHECK (status NOT IN ('shipped') OR (courier_name IS NOT NULL AND courier_phone IS NOT NULL));\n\nALTER TABLE notifications\n  ADD COLUMN material_order_id uuid REFERENCES material_orders (id) ON DELETE CASCADE;\nCREATE INDEX notifications_material_order_idx ON notifications (material_order_id)\n  WHERE material_order_id IS NOT NULL;\n\nALTER TABLE notifications DROP CONSTRAINT IF EXISTS notifications_kind_check;\nALTER TABLE notifications\n  ADD CONSTRAINT notifications_kind_check CHECK (\n    kind IN (\n      'order_new',\n      'worker_application_received',\n      'worker_approved',\n      'worker_rejected',\n      'worker_suspended',\n      'material_order_paid',\n      'material_order_shipped'\n    )\n  );" }];
 
 // src/app.ts
 var import_cookie_parser = __toESM(require_cookie_parser(), 1);
@@ -71377,6 +71377,7 @@ var MAX_TELEGRAM_USERNAME_LENGTH = 32;
 var MAX_TITLE_LENGTH = 120;
 var MAX_DESCRIPTION_LENGTH = 2e3;
 var MAX_ADDRESS_LENGTH = 300;
+var MIN_ADDRESS_LENGTH = 5;
 var MAX_CART_ITEMS = 30;
 var MAX_ITEM_QUANTITY = 1e4;
 var MAX_PRICE_SOM = 1e9;
@@ -71607,7 +71608,12 @@ var materialOrderSchema = external_exports.object({
       materialId: external_exports.string().uuid(),
       quantity: external_exports.number().int().min(1).max(MAX_ITEM_QUANTITY)
     })
-  ).min(1).max(MAX_CART_ITEMS)
+  ).min(1).max(MAX_CART_ITEMS),
+  deliveryAddress: external_exports.string().trim().min(MIN_ADDRESS_LENGTH).max(MAX_ADDRESS_LENGTH)
+});
+var materialShipSchema = external_exports.object({
+  courierName: nameSchema,
+  courierPhone: phoneSchema
 });
 var savingsGoalSchema = external_exports.object({ targetAmount: moneySchema });
 var workerRejectionSchema = external_exports.object({
@@ -73547,7 +73553,90 @@ function createAuthRouter(ctx) {
 // src/modules/admin/admin.routes.ts
 var import_express2 = __toESM(require_express2(), 1);
 
-// src/modules/materials/material.service.ts
+// src/modules/notifications/material-notifications.ts
+async function notifyAdminsOfMaterialOrder(trx, materialOrderId) {
+  const admins = await trx.selectFrom("users").select("id").where("role", "=", "admin").where("blocked_at", "is", null).execute();
+  if (admins.length === 0) return;
+  await trx.insertInto("notifications").values(
+    admins.map((admin) => ({
+      user_id: admin.id,
+      kind: "material_order_paid",
+      material_order_id: materialOrderId
+    }))
+  ).execute();
+}
+async function notifyWorkerOfShipment(trx, materialOrderId, courierName) {
+  const worker = await trx.selectFrom("material_orders as m").innerJoin("workers as w", "w.id", "m.worker_id").innerJoin("users as u", "u.id", "w.user_id").select(["u.id as user_id", "u.phone"]).where("m.id", "=", materialOrderId).executeTakeFirstOrThrow();
+  await trx.insertInto("notifications").values({
+    user_id: worker.user_id,
+    kind: "material_order_shipped",
+    material_order_id: materialOrderId,
+    detail: courierName
+  }).execute();
+  return worker.phone;
+}
+
+// src/modules/notifications/notification.service.ts
+var LIST_LIMIT = 30;
+var MATERIAL_KINDS = ["material_order_paid", "material_order_shipped"];
+async function notifyWorkerOfNewOrder(trx, orderId3) {
+  const worker = await trx.selectFrom("orders as o").innerJoin("workers as w", "w.id", "o.worker_id").innerJoin("users as u", "u.id", "w.user_id").select(["u.id as user_id", "u.phone"]).where("o.id", "=", orderId3).executeTakeFirstOrThrow();
+  await trx.insertInto("notifications").values({ user_id: worker.user_id, kind: "order_new", order_id: orderId3 }).execute();
+  return worker.phone;
+}
+async function sendNewOrderSms(ctx, phone, message) {
+  try {
+    await ctx.sms.send(phone, message);
+  } catch (error) {
+    logger.warn("Order SMS was not sent", {
+      message: error instanceof Error ? error.message : "unknown"
+    });
+  }
+}
+var NotificationService = class {
+  constructor(ctx) {
+    this.ctx = ctx;
+  }
+  async list(userId) {
+    const [items, unread] = await Promise.all([
+      this.ctx.db.selectFrom("notifications").selectAll().where("user_id", "=", userId).orderBy("created_at", "desc").limit(LIST_LIMIT).execute(),
+      this.unreadCounts(userId)
+    ]);
+    return {
+      ...unread,
+      items: items.map((row) => ({
+        id: row.id,
+        kind: row.kind,
+        detail: row.detail,
+        orderId: row.order_id,
+        materialOrderId: row.material_order_id,
+        readAt: row.read_at ? row.read_at.toISOString() : null,
+        createdAt: row.created_at.toISOString()
+      }))
+    };
+  }
+  /** One query, two counters: new orders badge the orders entry, materials badge the store. */
+  async unreadCounts(userId) {
+    const row = await this.ctx.db.selectFrom("notifications").select((eb) => [
+      eb.fn.countAll().filterWhere("kind", "=", "order_new").as("orders"),
+      eb.fn.countAll().filterWhere("kind", "in", MATERIAL_KINDS).as("materials")
+    ]).where("user_id", "=", userId).where("read_at", "is", null).executeTakeFirstOrThrow();
+    return { unread: Number(row.orders), unreadMaterials: Number(row.materials) };
+  }
+  /** Opening the materials page (store or admin list) counts as having seen its notices. */
+  async markMaterialsRead(userId) {
+    await this.ctx.db.updateTable("notifications").set({ read_at: /* @__PURE__ */ new Date() }).where("user_id", "=", userId).where("kind", "in", MATERIAL_KINDS).where("read_at", "is", null).execute();
+  }
+  /** Marks everything about one order as read; opening the order is the natural "seen". */
+  async markOrderRead(userId, orderId3) {
+    await this.ctx.db.updateTable("notifications").set({ read_at: /* @__PURE__ */ new Date() }).where("user_id", "=", userId).where("order_id", "=", orderId3).where("read_at", "is", null).execute();
+  }
+  async markAllRead(userId) {
+    await this.ctx.db.updateTable("notifications").set({ read_at: /* @__PURE__ */ new Date() }).where("user_id", "=", userId).where("read_at", "is", null).execute();
+  }
+};
+
+// src/modules/materials/material.mapper.ts
 function toMaterialDto(row) {
   return {
     id: row.id,
@@ -73560,6 +73649,80 @@ function toMaterialDto(row) {
     isActive: row.is_active
   };
 }
+function courierOf(row) {
+  return row.courier_name && row.courier_phone ? { name: row.courier_name, phone: row.courier_phone } : null;
+}
+async function toMaterialOrderDtos(db2, rows) {
+  if (rows.length === 0) return [];
+  const items = await db2.selectFrom("material_order_items").selectAll().where(
+    "material_order_id",
+    "in",
+    rows.map((row) => row.id)
+  ).execute();
+  return rows.map((row) => ({
+    id: row.id,
+    status: row.status,
+    total: row.total,
+    deliveryAddress: row.delivery_address,
+    courier: courierOf(row),
+    shippedAt: row.shipped_at ? row.shipped_at.toISOString() : null,
+    deliveredAt: row.delivered_at ? row.delivered_at.toISOString() : null,
+    createdAt: row.created_at.toISOString(),
+    items: items.filter((item) => item.material_order_id === row.id).map((item) => ({
+      id: item.id,
+      materialId: item.material_id,
+      name: item.name_snapshot,
+      unitPrice: item.unit_price,
+      quantity: item.quantity
+    }))
+  }));
+}
+
+// src/modules/materials/material-delivery.service.ts
+var ADMIN_LIST_LIMIT = 50;
+var SHIPPED_SMS = "BarakaLi: materiallar yo\u2018lga chiqdi / \u043C\u0430\u0442\u0435\u0440\u0438\u0430\u043B\u044B \u0432 \u043F\u0443\u0442\u0438";
+var MaterialDeliveryService = class {
+  constructor(ctx, now = () => /* @__PURE__ */ new Date()) {
+    this.ctx = ctx;
+    this.now = now;
+  }
+  /** Paid orders first (they need action), then the rest, newest first. */
+  async list() {
+    const rows = await this.ctx.db.selectFrom("material_orders as m").innerJoin("workers as w", "w.id", "m.worker_id").innerJoin("users as u", "u.id", "w.user_id").selectAll("m").select(["w.display_name as worker_name", "u.phone as worker_phone"]).where("m.status", "!=", "awaiting_payment").orderBy((eb) => eb.case().when("m.status", "=", "paid").then(0).else(1).end()).orderBy("m.created_at", "desc").limit(ADMIN_LIST_LIMIT).execute();
+    const dtos = await toMaterialOrderDtos(this.ctx.db, rows);
+    const workers = new Map(rows.map((row) => [row.id, row]));
+    return dtos.map((dto) => ({
+      ...dto,
+      workerName: workers.get(dto.id)?.worker_name ?? "",
+      workerPhone: workers.get(dto.id)?.worker_phone ?? ""
+    }));
+  }
+  /** Status, courier and the worker's notice change together; the SMS copy follows the commit. */
+  async ship(orderId3, input) {
+    const phone = await this.ctx.db.transaction().execute(async (trx) => {
+      const result = await trx.updateTable("material_orders").set({
+        status: "shipped",
+        courier_name: input.courierName,
+        courier_phone: input.courierPhone,
+        shipped_at: this.now(),
+        updated_at: this.now()
+      }).where("id", "=", orderId3).where("status", "=", "paid").executeTakeFirst();
+      if (Number(result.numUpdatedRows) !== 1) {
+        throw AppError.conflict("MATERIAL_ORDER_INVALID_TRANSITION");
+      }
+      return notifyWorkerOfShipment(trx, orderId3, input.courierName);
+    });
+    await sendNewOrderSms(this.ctx, phone, SHIPPED_SMS);
+  }
+  async markDelivered(orderId3) {
+    const result = await this.ctx.db.updateTable("material_orders").set({ status: "delivered", delivered_at: this.now(), updated_at: this.now() }).where("id", "=", orderId3).where("status", "=", "shipped").executeTakeFirst();
+    if (Number(result.numUpdatedRows) !== 1) {
+      throw AppError.conflict("MATERIAL_ORDER_INVALID_TRANSITION");
+    }
+  }
+};
+
+// src/modules/materials/material.service.ts
 async function reserveMaterialStock(trx, orderId3) {
   const items = await trx.selectFrom("material_order_items").select(["material_id", "quantity"]).where("material_order_id", "=", orderId3).execute();
   for (const item of items) {
@@ -73606,26 +73769,15 @@ var MaterialService = class {
   }
   /** Prices come from the catalog on the server; the client only names materials and amounts. */
   async createOrder(workerId, input) {
-    const merged = /* @__PURE__ */ new Map();
-    for (const item of input.items) {
-      merged.set(item.materialId, (merged.get(item.materialId) ?? 0) + item.quantity);
-    }
-    const rows = await this.ctx.db.selectFrom("materials").selectAll().where("id", "in", [...merged.keys()]).execute();
-    const byId = new Map(rows.map((row) => [row.id, row]));
-    const lines = [...merged].map(([materialId, quantity]) => {
-      const material = byId.get(materialId);
-      if (!material || !material.is_active) throw AppError.notFound("MATERIAL_UNAVAILABLE");
-      if (material.stock < quantity) throw AppError.conflict("INSUFFICIENT_STOCK");
-      return {
-        materialId,
-        name: material.name,
-        unitPrice: discountedPrice(material.price, material.discount_percent),
-        quantity
-      };
-    });
+    const lines = await this.priceLines(input);
     const total = lines.reduce((sum, line) => sum + line.unitPrice * line.quantity, 0);
     const orderId3 = await this.ctx.db.transaction().execute(async (trx) => {
-      const order = await trx.insertInto("material_orders").values({ worker_id: workerId, total, updated_at: this.now() }).returning("id").executeTakeFirstOrThrow();
+      const order = await trx.insertInto("material_orders").values({
+        worker_id: workerId,
+        total,
+        delivery_address: input.deliveryAddress,
+        updated_at: this.now()
+      }).returning("id").executeTakeFirstOrThrow();
       await trx.insertInto("material_order_items").values(
         lines.map((line) => ({
           material_order_id: order.id,
@@ -73639,23 +73791,31 @@ var MaterialService = class {
     });
     return this.getOwned(workerId, orderId3);
   }
+  async priceLines(input) {
+    const merged = /* @__PURE__ */ new Map();
+    for (const item of input.items) {
+      merged.set(item.materialId, (merged.get(item.materialId) ?? 0) + item.quantity);
+    }
+    const rows = await this.ctx.db.selectFrom("materials").selectAll().where("id", "in", [...merged.keys()]).execute();
+    const byId = new Map(rows.map((row) => [row.id, row]));
+    return [...merged].map(([materialId, quantity]) => {
+      const material = byId.get(materialId);
+      if (!material || !material.is_active) throw AppError.notFound("MATERIAL_UNAVAILABLE");
+      if (material.stock < quantity) throw AppError.conflict("INSUFFICIENT_STOCK");
+      return {
+        materialId,
+        name: material.name,
+        unitPrice: discountedPrice(material.price, material.discount_percent),
+        quantity
+      };
+    });
+  }
   async startPayment(workerId, orderId3) {
     const order = await this.findOwnedRow(workerId, orderId3);
     const existing = await this.ctx.db.selectFrom("material_payments").selectAll().where("material_order_id", "=", orderId3).executeTakeFirst();
     if (existing?.status === "paid") throw AppError.conflict("PAYMENT_ALREADY_PAID");
     if (order.status !== "awaiting_payment") throw AppError.conflict("MATERIAL_ORDER_NOT_PAYABLE");
-    let payment = existing;
-    if (!payment) {
-      const created = await this.ctx.payments.createPayment({ orderId: orderId3, amount: order.total });
-      await this.ctx.db.insertInto("material_payments").values({
-        material_order_id: orderId3,
-        amount: order.total,
-        provider: this.ctx.payments.name,
-        provider_ref: created.providerRef,
-        idempotency_key: `material:${orderId3}`
-      }).onConflict((oc) => oc.column("idempotency_key").doNothing()).execute();
-      payment = await this.ctx.db.selectFrom("material_payments").selectAll().where("material_order_id", "=", orderId3).executeTakeFirstOrThrow();
-    }
+    const payment = existing ?? await this.openPayment(orderId3, order.total);
     return {
       paymentId: payment.id,
       orderId: orderId3,
@@ -73664,7 +73824,21 @@ var MaterialService = class {
       redirectUrl: `/materiallar/tolov/${orderId3}`
     };
   }
-  /** Idempotent: a repeated confirmation of a paid order returns it without touching stock again. */
+  async openPayment(orderId3, amount) {
+    const created = await this.ctx.payments.createPayment({ orderId: orderId3, amount });
+    await this.ctx.db.insertInto("material_payments").values({
+      material_order_id: orderId3,
+      amount,
+      provider: this.ctx.payments.name,
+      provider_ref: created.providerRef,
+      idempotency_key: `material:${orderId3}`
+    }).onConflict((oc) => oc.column("idempotency_key").doNothing()).execute();
+    return this.ctx.db.selectFrom("material_payments").selectAll().where("material_order_id", "=", orderId3).executeTakeFirstOrThrow();
+  }
+  /**
+   * Idempotent: a repeated confirmation of a paid order returns it without touching stock again.
+   * Stock, payment, status and the administrators' notice change in one transaction.
+   */
   async confirmPayment(workerId, orderId3, card) {
     const outcome = await this.ctx.db.transaction().execute(async (trx) => {
       const order = await trx.selectFrom("material_orders").selectAll().where("id", "=", orderId3).forUpdate().executeTakeFirst();
@@ -73683,6 +73857,7 @@ var MaterialService = class {
       await reserveMaterialStock(trx, orderId3);
       await trx.updateTable("material_payments").set({ status: "paid", provider_ref: result.providerRef }).where("id", "=", payment.id).execute();
       await trx.updateTable("material_orders").set({ status: "paid", updated_at: this.now() }).where("id", "=", orderId3).execute();
+      await notifyAdminsOfMaterialOrder(trx, orderId3);
       return "paid";
     });
     if (outcome === "declined") throw new AppError("PAYMENT_DECLINED", 402);
@@ -73690,50 +73865,18 @@ var MaterialService = class {
   }
   async listForWorker(workerId) {
     const rows = await this.ctx.db.selectFrom("material_orders").selectAll().where("worker_id", "=", workerId).orderBy("created_at", "desc").limit(30).execute();
-    return this.withItems(rows);
+    return toMaterialOrderDtos(this.ctx.db, rows);
   }
   async getOwned(workerId, orderId3) {
     const row = await this.findOwnedRow(workerId, orderId3);
-    const [dto] = await this.withItems([row]);
+    const [dto] = await toMaterialOrderDtos(this.ctx.db, [row]);
     if (!dto) throw AppError.notFound();
     return dto;
-  }
-  async adminList() {
-    const rows = await this.ctx.db.selectFrom("material_orders as m").innerJoin("workers as w", "w.id", "m.worker_id").selectAll("m").select("w.display_name as worker_name").where("m.status", "!=", "awaiting_payment").orderBy("m.created_at", "desc").limit(50).execute();
-    const dtos = await this.withItems(rows);
-    const names = new Map(rows.map((row) => [row.id, row.worker_name]));
-    return dtos.map((dto) => ({ ...dto, workerName: names.get(dto.id) ?? "" }));
-  }
-  async markDelivered(orderId3) {
-    const result = await this.ctx.db.updateTable("material_orders").set({ status: "delivered", updated_at: this.now() }).where("id", "=", orderId3).where("status", "=", "paid").executeTakeFirst();
-    if (Number(result.numUpdatedRows) !== 1) throw AppError.conflict("ORDER_INVALID_TRANSITION");
   }
   async findOwnedRow(workerId, orderId3) {
     const row = await this.ctx.db.selectFrom("material_orders").selectAll().where("id", "=", orderId3).executeTakeFirst();
     if (!row || row.worker_id !== workerId) throw AppError.notFound();
     return row;
-  }
-  /** One IN query for the items of any number of orders (no N+1). */
-  async withItems(rows) {
-    if (rows.length === 0) return [];
-    const items = await this.ctx.db.selectFrom("material_order_items").selectAll().where(
-      "material_order_id",
-      "in",
-      rows.map((row) => row.id)
-    ).execute();
-    return rows.map((row) => ({
-      id: row.id,
-      status: row.status,
-      total: row.total,
-      createdAt: row.created_at.toISOString(),
-      items: items.filter((item) => item.material_order_id === row.id).map((item) => ({
-        id: item.id,
-        materialId: item.material_id,
-        name: item.name_snapshot,
-        unitPrice: item.unit_price,
-        quantity: item.quantity
-      }))
-    }));
   }
 };
 
@@ -74382,6 +74525,7 @@ function createAdminRouter(ctx) {
   const router = (0, import_express2.Router)();
   const admin = new AdminService(ctx);
   const materials = new MaterialService(ctx);
+  const deliveries = new MaterialDeliveryService(ctx);
   const { requireAdmin } = createAuthMiddleware(ctx);
   router.use("/admin", requireAdmin);
   const adminId = (req) => req.auth?.userId ?? "";
@@ -74455,10 +74599,22 @@ function createAdminRouter(ctx) {
     res.json(updated);
   });
   router.get("/admin/material-orders", async (_req, res) => {
-    res.json(await materials.adminList());
+    res.json(await deliveries.list());
+  });
+  router.post("/admin/material-orders/:id/ship", async (req, res) => {
+    const input = materialShipSchema.parse(req.body);
+    await deliveries.ship(idParam(req), input);
+    await writeAudit(ctx.db, {
+      adminId: adminId(req),
+      action: "material_order.ship",
+      targetType: "material_order",
+      targetId: idParam(req),
+      details: { courierName: input.courierName }
+    });
+    res.status(204).end();
   });
   router.post("/admin/material-orders/:id/deliver", async (req, res) => {
-    await materials.markDelivered(idParam(req));
+    await deliveries.markDelivered(idParam(req));
     await writeAudit(ctx.db, {
       adminId: adminId(req),
       action: "material_order.deliver",
@@ -74475,52 +74631,6 @@ var import_express3 = __toESM(require_express2(), 1);
 
 // src/modules/admin/admin-orders.service.ts
 init_esm();
-
-// src/modules/notifications/notification.service.ts
-var LIST_LIMIT = 30;
-async function notifyWorkerOfNewOrder(trx, orderId3) {
-  const worker = await trx.selectFrom("orders as o").innerJoin("workers as w", "w.id", "o.worker_id").innerJoin("users as u", "u.id", "w.user_id").select(["u.id as user_id", "u.phone"]).where("o.id", "=", orderId3).executeTakeFirstOrThrow();
-  await trx.insertInto("notifications").values({ user_id: worker.user_id, kind: "order_new", order_id: orderId3 }).execute();
-  return worker.phone;
-}
-async function sendNewOrderSms(ctx, phone, message) {
-  try {
-    await ctx.sms.send(phone, message);
-  } catch (error) {
-    logger.warn("Order SMS was not sent", {
-      message: error instanceof Error ? error.message : "unknown"
-    });
-  }
-}
-var NotificationService = class {
-  constructor(ctx) {
-    this.ctx = ctx;
-  }
-  async list(userId) {
-    const [items, unread] = await Promise.all([
-      this.ctx.db.selectFrom("notifications").selectAll().where("user_id", "=", userId).orderBy("created_at", "desc").limit(LIST_LIMIT).execute(),
-      this.ctx.db.selectFrom("notifications").select((eb) => eb.fn.countAll().as("n")).where("user_id", "=", userId).where("read_at", "is", null).executeTakeFirstOrThrow()
-    ]);
-    return {
-      unread: Number(unread.n),
-      items: items.map((row) => ({
-        id: row.id,
-        kind: row.kind,
-        detail: row.detail,
-        orderId: row.order_id,
-        readAt: row.read_at ? row.read_at.toISOString() : null,
-        createdAt: row.created_at.toISOString()
-      }))
-    };
-  }
-  /** Marks everything about one order as read; opening the order is the natural "seen". */
-  async markOrderRead(userId, orderId3) {
-    await this.ctx.db.updateTable("notifications").set({ read_at: /* @__PURE__ */ new Date() }).where("user_id", "=", userId).where("order_id", "=", orderId3).where("read_at", "is", null).execute();
-  }
-  async markAllRead(userId) {
-    await this.ctx.db.updateTable("notifications").set({ read_at: /* @__PURE__ */ new Date() }).where("user_id", "=", userId).where("read_at", "is", null).execute();
-  }
-};
 
 // src/modules/orders/order.repository.ts
 init_esm();
@@ -75581,6 +75691,10 @@ function createNotificationRouter(ctx) {
   });
   router.post("/my/notifications/read", requireAuth, async (req, res) => {
     await service.markAllRead(userId(req));
+    res.status(204).end();
+  });
+  router.post("/my/notifications/materials/read", requireAuth, async (req, res) => {
+    await service.markMaterialsRead(userId(req));
     res.status(204).end();
   });
   router.post("/my/notifications/orders/:orderId/read", requireAuth, async (req, res) => {

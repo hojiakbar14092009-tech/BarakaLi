@@ -2,6 +2,7 @@ import { z } from 'zod';
 import {
   FULFILLMENT_TYPES,
   MAX_ADDRESS_LENGTH,
+  MIN_ADDRESS_LENGTH,
   MAX_CART_ITEMS,
   MAX_DESCRIPTION_LENGTH,
   MAX_ITEM_QUANTITY,
@@ -246,8 +247,16 @@ export const materialOrderSchema = z.object({
     )
     .min(1)
     .max(MAX_CART_ITEMS),
+  deliveryAddress: z.string().trim().min(MIN_ADDRESS_LENGTH).max(MAX_ADDRESS_LENGTH),
 });
 export type MaterialOrderInput = z.infer<typeof materialOrderSchema>;
+
+/** Sending a paid materials order out: who carries it, so the worker knows who will call. */
+export const materialShipSchema = z.object({
+  courierName: nameSchema,
+  courierPhone: phoneSchema,
+});
+export type MaterialShipInput = z.infer<typeof materialShipSchema>;
 
 export const savingsGoalSchema = z.object({ targetAmount: moneySchema });
 export type SavingsGoalInput = z.infer<typeof savingsGoalSchema>;

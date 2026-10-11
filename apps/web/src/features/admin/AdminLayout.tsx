@@ -3,10 +3,13 @@ import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { Toaster } from '../../components/ui/Toaster';
+import { useNotifications } from '../notifications/api';
 import { ADMIN_NAV } from './adminNav';
 
 function AdminNavList({ onNavigate }: { onNavigate?: () => void }) {
   const { t } = useTranslation();
+  // Paid materials orders waiting to be sent out.
+  const unreadMaterials = useNotifications().data?.unreadMaterials ?? 0;
   return (
     <ul className="flex flex-col gap-1">
       {ADMIN_NAV.map(({ to, key, icon: Icon, end }) => (
@@ -23,6 +26,14 @@ function AdminNavList({ onNavigate }: { onNavigate?: () => void }) {
           >
             <Icon className="size-5 shrink-0" strokeWidth={1.5} aria-hidden="true" />
             {t(`admin.nav.${key}`)}
+            {key === 'materials' && unreadMaterials > 0 && (
+              <span
+                aria-label={t('admin.materials.unread', { count: unreadMaterials })}
+                className="ml-auto grid min-w-6 place-items-center rounded-full bg-mocha px-1.5 text-xs font-bold text-sugar"
+              >
+                {unreadMaterials}
+              </span>
+            )}
           </NavLink>
         </li>
       ))}

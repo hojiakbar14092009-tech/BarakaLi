@@ -30,8 +30,13 @@ async function createMaterial(body: Record<string, unknown>): Promise<MaterialDt
   return res.body as MaterialDto;
 }
 
+const ADDRESS = 'Chilonzor tumani, 9-mavze, 14-uy';
+
 async function order(who: Session, items: { materialId: string; quantity: number }[]) {
-  return request(t.app).post('/api/material-orders').set(bearer(who)).send({ items });
+  return request(t.app)
+    .post('/api/material-orders')
+    .set(bearer(who))
+    .send({ items, deliveryAddress: ADDRESS });
 }
 
 async function pay(who: Session, orderId: string, card = CARD) {
@@ -218,22 +223,6 @@ describe('material orders and payment', () => {
     expect(row.body.status).toBe('cancelled');
     const late = await pay(worker, created.body.id);
     expect(late.status).toBe(409);
-  });
-
-  it('lets the admin mark a paid order delivered, once', async () => {
-    const material = await createMaterial({ name: 'Boʻyoq', price: 7_000, stock: 5 });
-    const created = await order(worker, [{ materialId: material.id, quantity: 1 }]);
-    await pay(worker, created.body.id);
-    const list = await request(t.app).get('/api/admin/material-orders').set(bearer(admin));
-    expect(list.body.some((o: { id: string }) => o.id === created.body.id)).toBe(true);
-    const first = await request(t.app)
-      .post(`/api/admin/material-orders/${created.body.id}/deliver`)
-      .set(bearer(admin));
-    expect(first.status).toBe(204);
-    const second = await request(t.app)
-      .post(`/api/admin/material-orders/${created.body.id}/deliver`)
-      .set(bearer(admin));
-    expect(second.status).toBe(409);
   });
 });
 

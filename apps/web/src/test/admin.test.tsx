@@ -284,7 +284,7 @@ describe('materials store', () => {
     expect(more.className).toContain('size-12');
   });
 
-  it('creates the order from ids and quantities only', async () => {
+  it('creates the order from ids, quantities and the delivery address only', async () => {
     const fetchMock = mockApi({
       'GET /materials': () => materials,
       'GET /material-orders': () => [],
@@ -307,6 +307,9 @@ describe('materials store', () => {
     const more = within(group).getByRole('button', { name: 'Koʻpaytirish' });
     fireEvent.click(more);
     fireEvent.click(more);
+    fireEvent.change(screen.getByLabelText('Yetkazib berish manzili'), {
+      target: { value: '  Chilonzor, 9-mavze, 14-uy ' },
+    });
     fireEvent.click(screen.getByRole('button', { name: 'Buyurtma berish' }));
     expect(await screen.findByText('Toʻlov')).toBeInTheDocument();
     const call = fetchMock.mock.calls.find(
@@ -314,7 +317,46 @@ describe('materials store', () => {
     );
     expect(JSON.parse(String((call?.[1] as RequestInit).body))).toEqual({
       items: [{ materialId: 'm1', quantity: 2 }],
+      deliveryAddress: 'Chilonzor, 9-mavze, 14-uy',
     });
+  });
+
+  it('asks for the address before ordering and sends nothing without it', async () => {
+    const fetchMock = mockApi({
+      'GET /materials': () => materials,
+      'GET /material-orders': () => [],
+    });
+    renderApp(<MaterialsPage />);
+    const group = await screen.findByRole('group', { name: 'Paxta ip' });
+    fireEvent.click(within(group).getByRole('button', { name: 'Koʻpaytirish' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Buyurtma berish' }));
+    expect(await screen.findByText('Yetkazib berish manzilini kiriting.')).toBeInTheDocument();
+    expect(screen.getByLabelText('Yetkazib berish manzili')).toHaveFocus();
+    expect(fetchMock.mock.calls.some(([, init]) => init?.method === 'POST')).toBe(false);
+  });
+
+  it('shows a shipped order with its courier and a call button', async () => {
+    mockApi({
+      'GET /materials': () => materials,
+      'GET /material-orders': () => [
+        {
+          id: 'mo2',
+          status: 'shipped',
+          total: 17_000,
+          items: [{ id: 'i1', materialId: 'm1', name: 'Paxta ip', unitPrice: 8_500, quantity: 2 }],
+          deliveryAddress: 'Chilonzor, 9-mavze, 14-uy',
+          courier: { name: 'Jasur', phone: '+998901234567' },
+          shippedAt: '2026-01-02T09:00:00.000Z',
+          deliveredAt: null,
+          createdAt: '2026-01-01T00:00:00.000Z',
+        },
+      ],
+    });
+    renderApp(<MaterialsPage />);
+    expect(await screen.findByText('Yoʻlda')).toBeInTheDocument();
+    expect(screen.getByText('Yetkazib beruvchi: Jasur')).toBeInTheDocument();
+    const call = screen.getByRole('link', { name: 'Yetkazib beruvchiga qoʻngʻiroq qilish: Jasur' });
+    expect(call).toHaveAttribute('href', 'tel:+998901234567');
   });
 });
 

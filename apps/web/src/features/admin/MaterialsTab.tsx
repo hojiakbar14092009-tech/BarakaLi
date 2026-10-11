@@ -11,12 +11,8 @@ import { Field } from '../../components/Field';
 import { ErrorState, LoadingState } from '../../components/StateViews';
 import { errorMessage } from '../../lib/errors';
 import { formatPrice } from '../../lib/format';
-import {
-  useAdminMaterialOrders,
-  useAdminMaterials,
-  useDeliverMaterialOrder,
-  useSaveMaterial,
-} from './api';
+import { AdminMaterialOrders } from './AdminMaterialOrders';
+import { useAdminMaterials, useSaveMaterial } from './api';
 
 interface Draft {
   id?: string;
@@ -126,8 +122,6 @@ function MaterialForm({ draft, onDone }: { draft: Draft; onDone: () => void }) {
 export function MaterialsTab() {
   const { t } = useTranslation();
   const materials = useAdminMaterials();
-  const orders = useAdminMaterialOrders();
-  const deliver = useDeliverMaterialOrder();
   const [editing, setEditing] = useState<Draft | null>(null);
   const currency = t('common.currency');
 
@@ -184,36 +178,7 @@ export function MaterialsTab() {
         </ul>
       </section>
 
-      <section aria-labelledby="admin-material-orders" className="space-y-3">
-        <h2 id="admin-material-orders" className="text-lg font-bold">
-          {t('admin.materials.orders')}
-        </h2>
-        {orders.data?.length === 0 && <p className="text-mocha">{t('admin.materials.noOrders')}</p>}
-        <ul className="space-y-2">
-          {orders.data?.map((order) => (
-            <li
-              key={order.id}
-              className="flex flex-wrap items-center justify-between gap-3 rounded-card border border-bisque bg-white/60 p-4"
-            >
-              <div>
-                <p className="font-semibold">{order.workerName}</p>
-                <p className="text-sm text-mocha">
-                  {order.items.map((item) => `${item.name} × ${item.quantity}`).join(', ')}
-                </p>
-                <p className="text-sm font-semibold">{formatPrice(order.total, currency)}</p>
-              </div>
-              {order.status === 'paid' ? (
-                <Button disabled={deliver.isPending} onClick={() => deliver.mutate(order.id)}>
-                  {t('admin.materials.deliver')}
-                </Button>
-              ) : (
-                <span className="font-medium">{t(`materials.status.${order.status}`)}</span>
-              )}
-            </li>
-          ))}
-        </ul>
-        {deliver.isError && <p role="alert">{errorMessage(deliver.error, t)}</p>}
-      </section>
+      <AdminMaterialOrders />
     </div>
   );
 }

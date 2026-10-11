@@ -45,8 +45,10 @@ describe('application lifecycle', () => {
     const me = await request(t.app).get('/api/me').set(bearer(applicant));
     expect(me.body).toMatchObject({ workerStatus: 'pending', workerRejectReason: null });
     const mine = await inbox(applicant);
-    expect(mine.items.map((n) => n.kind)).toContain('worker_application_received');
-    expect(mine.unread).toBe(1);
+    const received = mine.items.find((n) => n.kind === 'worker_application_received');
+    expect(received?.readAt).toBeNull();
+    // `unread` badges the orders entry, so an application notice must not count as a new order.
+    expect(mine.unread).toBe(0);
   });
 
   it('approves with reviewer and time recorded and notifies the worker', async () => {

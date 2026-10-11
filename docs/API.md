@@ -302,11 +302,12 @@ uchun 404; `accept` uchun 403 `WORKER_NOT_APPROVED`). Egasi o'z mahsulotlarini b
 
 ## Bildirishnomalar
 
-| Yo'l                                          | Kim    | Javob                                               |
-| --------------------------------------------- | ------ | --------------------------------------------------- |
-| `GET /my/notifications`                       | kirgan | `{ unread, items: NotificationDto[] }` (30 tagacha) |
-| `POST /my/notifications/read`                 | kirgan | 204, hammasi o'qilgan                               |
-| `POST /my/notifications/orders/:orderId/read` | kirgan | 204, shu buyurtmaga oidlari o'qilgan                |
+| Yo'l                                          | Kim    | Javob                                                                                            |
+| --------------------------------------------- | ------ | ------------------------------------------------------------------------------------------------ |
+| `GET /my/notifications`                       | kirgan | `{ unread, unreadMaterials, items: NotificationDto[] }` (30 tagacha); `unread` faqat `order_new` |
+| `POST /my/notifications/materials/read`       | kirgan | 204, material xabarlari o'qilgan                                                                 |
+| `POST /my/notifications/read`                 | kirgan | 204, hammasi o'qilgan                                                                            |
+| `POST /my/notifications/orders/:orderId/read` | kirgan | 204, shu buyurtmaga oidlari o'qilgan                                                             |
 
 ```ts
 interface NotificationDto {
@@ -324,17 +325,17 @@ xizmat so'rovi). SMS nusxasi `SmsProvider` ga beriladi; shlyuz ulanmaguncha u ye
 
 ## Hunarmand: materiallar va jamg'arma
 
-| Yo'l                                        | So'rov                                          | Javob                              |
-| ------------------------------------------- | ----------------------------------------------- | ---------------------------------- |
-| `GET /materials`                            | —                                               | `MaterialDto[]` (faqat faol)       |
-| `POST /material-orders`                     | `{ items: { materialId, quantity }[] }` (1..30) | 201 `MaterialOrderDto`             |
-| `GET /material-orders`                      | —                                               | `MaterialOrderDto[]` (30 tagacha)  |
-| `GET /material-orders/:id`                  | —                                               | `MaterialOrderDto`                 |
-| `POST /material-orders/:id/payment`         | —                                               | `PaymentSessionDto`                |
-| `POST /material-orders/:id/payment/confirm` | karta (yuqoridagi kabi)                         | `MaterialOrderDto`                 |
-| `GET /my/savings-goal`                      | —                                               | `{ goal: SavingsGoalDto \| null }` |
-| `PUT /my/savings-goal`                      | `{ targetAmount: 1..1_000_000_000 }`            | `{ goal: SavingsGoalDto }`         |
-| `DELETE /my/savings-goal`                   | —                                               | 204                                |
+| Yo'l                                        | So'rov                                                                    | Javob                              |
+| ------------------------------------------- | ------------------------------------------------------------------------- | ---------------------------------- |
+| `GET /materials`                            | —                                                                         | `MaterialDto[]` (faqat faol)       |
+| `POST /material-orders`                     | `{ items: { materialId, quantity }[] (1..30), deliveryAddress (5..300) }` | 201 `MaterialOrderDto`             |
+| `GET /material-orders`                      | —                                                                         | `MaterialOrderDto[]` (30 tagacha)  |
+| `GET /material-orders/:id`                  | —                                                                         | `MaterialOrderDto`                 |
+| `POST /material-orders/:id/payment`         | —                                                                         | `PaymentSessionDto`                |
+| `POST /material-orders/:id/payment/confirm` | karta (yuqoridagi kabi)                                                   | `MaterialOrderDto`                 |
+| `GET /my/savings-goal`                      | —                                                                         | `{ goal: SavingsGoalDto \| null }` |
+| `PUT /my/savings-goal`                      | `{ targetAmount: 1..1_000_000_000 }`                                      | `{ goal: SavingsGoalDto }`         |
+| `DELETE /my/savings-goal`                   | —                                                                         | 204                                |
 
 ```ts
 interface MaterialDto {
@@ -349,8 +350,12 @@ interface MaterialDto {
 }
 interface MaterialOrderDto {
   id: string;
-  status: 'awaiting_payment' | 'paid' | 'delivered' | 'cancelled';
+  status: 'awaiting_payment' | 'paid' | 'shipped' | 'delivered' | 'cancelled';
   total: number; // komissiyasiz
+  deliveryAddress: string | null; // yetkazib berishdan oldingi buyurtmalarda null
+  courier: { name: string; phone: string } | null; // yo'lga chiqqanda
+  shippedAt: string | null;
+  deliveredAt: string | null;
   items: {
     id: string;
     materialId: string | null;
@@ -435,8 +440,9 @@ Ro'yxatlar `?page` (20 tadan) va `?status` qabul qiladi.
 | `PATCH /admin/complaints/:id`                           | `{ status: 'resolved'\|'dismissed' }` | 204; ochiq bo'lmasa 409 `COMPLAINT_NOT_OPEN`                                                   |
 | `GET /admin/materials`                                  | —                                     | `MaterialDto[]` (yashirinlari ham)                                                             |
 | `POST /admin/materials`, `PUT /admin/materials/:id`     | `MaterialInput`                       | `MaterialDto`                                                                                  |
-| `GET /admin/material-orders`                            | —                                     | `(MaterialOrderDto & { workerName })[]` (toʻlanganlar)                                         |
-| `POST /admin/material-orders/:id/deliver`               | —                                     | 204; faqat `paid` dan                                                                          |
+| `GET /admin/material-orders`                            | —                                     | `(MaterialOrderDto & { workerName, workerPhone })[]`; avval `paid`, keyin yangilari            |
+| `POST /admin/material-orders/:id/ship`                  | `{ courierName, courierPhone }`       | 204; faqat `paid` dan; hunarmandga `material_order_shipped` xabari, aks holda 409              |
+| `POST /admin/material-orders/:id/deliver`               | —                                     | 204; faqat `shipped` dan, aks holda 409 `MATERIAL_ORDER_INVALID_TRANSITION`                    |
 
 ```ts
 interface MaterialInput {

@@ -1,12 +1,16 @@
-import { Minus, Plus } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { Minus, Plus, Truck } from 'lucide-react';
+import { useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { MAX_ADDRESS_LENGTH, MIN_ADDRESS_LENGTH } from '@barakali/shared';
 import { Button } from '../../components/Button';
+import { Field } from '../../components/Field';
 import { EmptyState, ErrorState, LoadingState } from '../../components/StateViews';
 import { errorMessage } from '../../lib/errors';
 import { formatPrice } from '../../lib/format';
 import { useCreateMaterialOrder, useMaterialOrders, useMaterials } from './api';
+import { MaterialOrderList } from './MaterialOrderList';
+import { useShippedNotices } from './useShippedNotices';
 
 function Stepper({
   value,
@@ -53,8 +57,15 @@ export default function MaterialsPage() {
   const materials = useMaterials();
   const orders = useMaterialOrders();
   const create = useCreateMaterialOrder();
+  const shipped = useShippedNotices();
   const [quantities, setQuantities] = useState<Record<string, number>>({});
+  const [addressDraft, setAddressDraft] = useState<string | null>(null);
+  const [addressError, setAddressError] = useState(false);
+  const addressInput = useRef<HTMLInputElement>(null);
   const currency = t('common.currency');
+  // The last address the worker used is the likely one; it can be edited before ordering.
+  const lastAddress = orders.data?.find((order) => order.deliveryAddress)?.deliveryAddress ?? '';
+  const address = addressDraft ?? lastAddress;
 
   const picked = useMemo(
     () =>
@@ -65,11 +76,21 @@ export default function MaterialsPage() {
   );
   const total = picked.reduce((sum, line) => sum + line.material.unitPrice * line.quantity, 0);
 
-  const submit = () =>
+  const submit = () => {
+    const deliveryAddress = address.trim();
+    if (deliveryAddress.length < MIN_ADDRESS_LENGTH) {
+      setAddressError(true);
+      addressInput.current?.focus();
+      return;
+    }
     create.mutate(
-      { items: picked.map((line) => ({ materialId: line.material.id, quantity: line.quantity })) },
+      {
+        items: picked.map((line) => ({ materialId: line.material.id, quantity: line.quantity })),
+        deliveryAddress,
+      },
       { onSuccess: (order) => void navigate(`/materiallar/tolov/${order.id}`) },
     );
+  };
 
   if (materials.isPending) return <LoadingState />;
   if (materials.isError) {
@@ -87,6 +108,17 @@ export default function MaterialsPage() {
         <h1 className="text-3xl font-bold">{t('materials.title')}</h1>
         <p className="text-mocha">{t('materials.intro')}</p>
       </header>
+
+      {shipped.map((notice) => (
+        <p
+          key={notice.id}
+          role="status"
+          className="flex items-start gap-3 rounded-card bg-pistachio px-4 py-3 font-medium text-espresso"
+        >
+          <Truck className="mt-0.5 size-5 shrink-0" strokeWidth={1.75} aria-hidden="true" />
+          {t('materials.shippedNotice', { name: notice.detail ?? '' })}
+        </p>
+      ))}
 
       {materials.data.length === 0 ? (
         <EmptyState title={t('materials.empty')} hint={t('materials.emptyHint')} />
@@ -135,6 +167,25 @@ export default function MaterialsPage() {
       )}
 
       {picked.length > 0 && (
+        <section className="rounded-card border border-bisque bg-white/60 p-4">
+          <Field
+            ref={addressInput}
+            label={t('materials.address')}
+            hint={t('materials.addressHint')}
+            placeholder={t('materials.addressPlaceholder')}
+            autoComplete="street-address"
+            maxLength={MAX_ADDRESS_LENGTH}
+            value={address}
+            error={addressError ? t('validation.ADDRESS_REQUIRED') : undefined}
+            onChange={(event) => {
+              setAddressDraft(event.target.value);
+              setAddressError(false);
+            }}
+          />
+        </section>
+      )}
+
+      {picked.length > 0 && (
         <div className="fixed inset-x-0 bottom-16 z-20 border-t border-bisque bg-sugar p-3 sm:static sm:rounded-card sm:border">
           <div className="mx-auto flex max-w-xl items-center justify-between gap-3">
             <p className="font-bold">
@@ -152,38 +203,7 @@ export default function MaterialsPage() {
         </div>
       )}
 
-      {orders.data && orders.data.length > 0 && (
-        <section aria-labelledby="mat-orders" className="space-y-3">
-          <h2 id="mat-orders" className="text-xl font-bold">
-            {t('materials.myOrders')}
-          </h2>
-          <ul className="space-y-2">
-            {orders.data.map((order) => (
-              <li
-                key={order.id}
-                className="flex flex-wrap items-center justify-between gap-3 rounded-card border border-bisque bg-white/60 p-4"
-              >
-                <div>
-                  <p className="font-semibold">
-                    {order.items.map((item) => `${item.name} × ${item.quantity}`).join(', ')}
-                  </p>
-                  <p className="text-sm text-mocha">
-                    {t(`materials.status.${order.status}`)} · {formatPrice(order.total, currency)}
-                  </p>
-                </div>
-                {order.status === 'awaiting_payment' && (
-                  <Link
-                    to={`/materiallar/tolov/${order.id}`}
-                    className="inline-flex min-h-12 items-center rounded-field bg-mocha px-5 font-semibold text-sugar"
-                  >
-                    {t('orders.payNow')}
-                  </Link>
-                )}
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
+      <MaterialOrderList orders={orders.data ?? []} />
     </div>
   );
 }

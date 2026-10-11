@@ -68,3 +68,16 @@ mumkin.
 
 **Audit jurnali** har administrator amalini koʻrsatadi: kim, nima, qachon va (boʻlsa) sabab. Telefon
 raqamlari, SMS kodlari va tokenlar jurnalga yozilmaydi.
+
+## Materiallar: yetkazib berish
+
+1. Hunarmand material buyurtmasini manzil bilan beradi va toʻlaydi. Toʻlov tasdiqlangan zahoti har bir
+   administratorga xabar boradi: **Materiallar** boʻlimi yonida son chiqadi, buyurtma "Yangi" belgisi bilan
+   roʻyxat boshida turadi.
+2. Kartochkada hunarmandning telefoni (bosilsa qoʻngʻiroq) va manzil bor: yetkazib beruvchi shu raqam
+   orqali hunarmand bilan bogʻlanadi.
+3. Materiallarni tayyorlab, **Yoʻlga chiqarish** ni bosing, yetkazib beruvchining ismi va telefonini
+   kiriting. Hunarmandga "Buyurtmangiz yoʻlga chiqdi" xabari boradi, u yetkazib beruvchining ismi va
+   raqamini koʻradi (bosilsa qoʻngʻiroq).
+4. Topshirilgach **Topshirildi** ni bosing. Holatlar faqat shu tartibda: toʻlangan → yoʻlda → yetkazildi.
+   Audit jurnaliga faqat yetkazib beruvchining ismi yoziladi, telefon raqami yozilmaydi.

@@ -27,6 +27,11 @@ export function createNotificationRouter(ctx: AppContext): Router {
     res.status(204).end();
   });
 
+  router.post('/my/notifications/materials/read', requireAuth, async (req, res) => {
+    await service.markMaterialsRead(userId(req));
+    res.status(204).end();
+  });
+
   router.post('/my/notifications/orders/:orderId/read', requireAuth, async (req, res) => {
     await service.markOrderRead(userId(req), orderIdParam(req));
     res.status(204).end();

@@ -1,4 +1,4 @@
-import { CalendarDays, ClipboardList, Package, Wallet, Wheat } from 'lucide-react';
+import { CalendarDays, ClipboardList, Package, Truck, Wallet, Wheat } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
@@ -41,7 +41,9 @@ export default function CabinetPage() {
   const user = useAuthStore((s) => s.user);
   const orders = useOrders('worker');
   const earnings = useEarnings();
-  const unread = useNotifications().data?.unread ?? 0;
+  const notifications = useNotifications().data;
+  const unread = notifications?.unread ?? 0;
+  const unreadMaterials = notifications?.unreadMaterials ?? 0;
   const incoming = orders.data ?? [];
   const newCount = incoming.filter((order) => order.status === 'new').length;
   const acceptedCount = incoming.filter((order) => order.status === 'accepted').length;
@@ -59,6 +61,16 @@ export default function CabinetPage() {
           <p role="status" className="rounded-field bg-pistachio px-4 py-2 font-semibold">
             {t('cabinet.unreadOrders', { count: unread })}
           </p>
+        )}
+        {unreadMaterials > 0 && (
+          <Link
+            to="/materiallar"
+            role="status"
+            className="flex min-h-12 items-center gap-3 rounded-field bg-pistachio px-4 py-2 font-semibold text-espresso"
+          >
+            <Truck className="size-5 shrink-0" strokeWidth={1.75} aria-hidden="true" />
+            {t('cabinet.materialsShipped')}
+          </Link>
         )}
       </header>
       <ApplicationStatus />

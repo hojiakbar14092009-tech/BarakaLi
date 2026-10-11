@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type {
+  MaterialShipInput,
   AdminAuditEntryDto,
   AdminCategoryDto,
   CategoryUpdate,
@@ -251,6 +252,15 @@ export const useSaveMaterial = () =>
   useAdminAction('done', ({ id, input }: { id?: string; input: MaterialInputRaw }) =>
     apiRequest<MaterialDto>(id ? `/admin/materials/${id}` : '/admin/materials', {
       method: id ? 'PUT' : 'POST',
+      body: input,
+      auth: true,
+    }),
+  );
+
+export const useShipMaterialOrder = () =>
+  useAdminAction('materialShipped', ({ id, input }: { id: string; input: MaterialShipInput }) =>
+    apiRequest<void>(`/admin/material-orders/${id}/ship`, {
+      method: 'POST',
       body: input,
       auth: true,
     }),

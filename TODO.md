@@ -165,3 +165,12 @@ pnpm db:audit-orders
 - [ ] Production'da shu oʻzgarishdan **oldin** yuklangan hunarmand rasmlari qayta ishlanmagan (eski rasmlar
       oʻz fonida koʻrinadi). Kerak boʻlsa: rasmni qayta yuklash yoki bir martalik qayta ishlash skripti
 - [ ] Murakkab fonli rasmlar uchun haqiqiy AI segmentatsiya (masalan, alohida servis) — hozir ulanmagan
+
+## Materiallar yetkazib berish (2026-10-11)
+
+- [x] Toʻlangan material buyurtmasi adminlarga ilova ichidagi xabar sifatida boradi (toʻlov tranzaksiyasida)
+- [x] Admin yetkazib beruvchining ismi va telefoni bilan "yoʻlga chiqaradi"; hunarmandga xabar boradi, u yetkazib
+      beruvchiga qoʻngʻiroq qila oladi; admin va yetkazib beruvchi hunarmandning raqamini koʻradi
+- [ ] Adminga SMS yoki Telegram orqali xabar: hozir faqat ilova ichida (SMS provayder ulanmagan)
+- [ ] Hunarmandga "yoʻlga chiqdi" SMS nusxasi kodda bor, lekin SMS provayder ulanmaguncha yetib bormaydi
+- [ ] Yetkazib berish narxi va hududi hisobga olinmaydi (hozircha bepul, manzil erkin matn)

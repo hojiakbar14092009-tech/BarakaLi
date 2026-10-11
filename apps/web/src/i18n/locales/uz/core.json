@@ -181,6 +181,7 @@
     "deleted": "Oʻchirildi.",
     "visibilityChanged": "Koʻrinish oʻzgartirildi.",
     "blocked": "Foydalanuvchi bloklandi.",
-    "unblocked": "Foydalanuvchi blokdan chiqarildi."
+    "unblocked": "Foydalanuvchi blokdan chiqarildi.",
+    "materialShipped": "Buyurtma yoʻlga chiqdi, hunarmandga xabar yuborildi."
   }
 }

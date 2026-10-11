@@ -79,6 +79,8 @@ export const MAX_TELEGRAM_USERNAME_LENGTH = 32;
 export const MAX_TITLE_LENGTH = 120;
 export const MAX_DESCRIPTION_LENGTH = 2000;
 export const MAX_ADDRESS_LENGTH = 300;
+/** A materials delivery address needs at least a street and a house to be findable. */
+export const MIN_ADDRESS_LENGTH = 5;
 export const MAX_CART_ITEMS = 30;
 export const MAX_ITEM_QUANTITY = 10_000;
 export const MAX_PRICE_SOM = 1_000_000_000;
@@ -100,6 +102,7 @@ export type QuickSlot = keyof typeof QUICK_SLOTS;
 export const MATERIAL_ORDER_STATUSES = [
   'awaiting_payment',
   'paid',
+  'shipped',
   'delivered',
   'cancelled',
 ] as const;

@@ -202,8 +202,13 @@ export interface MaterialsTable {
 export interface MaterialOrdersTable {
   id: Generated<string>;
   worker_id: string;
-  status: Generated<'awaiting_payment' | 'paid' | 'delivered' | 'cancelled'>;
+  status: Generated<'awaiting_payment' | 'paid' | 'shipped' | 'delivered' | 'cancelled'>;
   total: number;
+  delivery_address: string | null;
+  courier_name: string | null;
+  courier_phone: string | null;
+  shipped_at: Date | null;
+  delivered_at: Date | null;
   created_at: CreatedAt;
   updated_at: Timestamp;
 }
@@ -244,9 +249,12 @@ export interface NotificationsTable {
     | 'worker_application_received'
     | 'worker_approved'
     | 'worker_rejected'
-    | 'worker_suspended';
+    | 'worker_suspended'
+    | 'material_order_paid'
+    | 'material_order_shipped';
   detail: string | null;
   order_id: string | null;
+  material_order_id: string | null;
   read_at: Date | null;
   created_at: CreatedAt;
 }

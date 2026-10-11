@@ -350,3 +350,16 @@ Brifdagi noaniqliklar bo'yicha qabul qilingan qarorlar. Yangi qaror oxiriga qo's
   `pnpm --filter @barakali/api product:images` bilan, koʻz bilan tekshirilib (`reviewed`, vaza uchun
   chizilgan kontur) yaratiladi.
 - Buyurtma rasmlari (haridorning namunalari) qirqilmaydi: ular maʼlumot uchun, vitrina uchun emas.
+
+## Materiallarni yetkazib berish (2026-10-11)
+
+- Holatlar: `paid → shipped → delivered` (`awaiting_payment` va `cancelled` oʻzgarmadi). Har oʻtish
+  `UPDATE … WHERE status = …` bilan, boshqa oʻtish 409 `MATERIAL_ORDER_INVALID_TRANSITION`.
+- Manzil buyurtma berishda majburiy (5–300 belgi); eski buyurtmalarda `null`. Yetkazib beruvchi hunarmandga
+  hisobidagi telefon orqali qoʻngʻiroq qiladi: raqam faqat admin roʻyxatida (`workerPhone`) chiqadi.
+- Xabarlar `notifications` jadvalida (`material_order_id` ustuni): `material_order_paid` toʻlov
+  tranzaksiyasida har bir bloklanmagan adminga, `material_order_shipped` yoʻlga chiqarish tranzaksiyasida
+  hunarmandga (`detail` = yetkazib beruvchi ismi). Sahifa ochilganda oʻqilgan boʻladi.
+- `NotificationsDto.unread` endi faqat `order_new` ni sanaydi ("N ta yangi buyurtma" belgisi); ilgari ariza
+  xabarlari ham qoʻshilib, yangi buyurtma boʻlmasa ham son chiqardi. Material xabarlari `unreadMaterials` da.
+- SMS matnida telefon raqami yoʻq: konsol SMS provayderi dev rejimida matnni loglashi mumkin.

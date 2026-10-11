@@ -16,6 +16,16 @@ export function useNotifications() {
   });
 }
 
+/** Opening the materials page (store or admin list) counts as having seen its notices. */
+export function useMarkMaterialsRead() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: () =>
+      apiRequest<void>('/my/notifications/materials/read', { method: 'POST', auth: true }),
+    onSuccess: () => client.invalidateQueries({ queryKey: KEY }),
+  });
+}
+
 /** Opening an order counts as having seen its notifications. */
 export function useMarkOrderRead() {
   const client = useQueryClient();

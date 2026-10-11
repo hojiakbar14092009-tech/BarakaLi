@@ -11,13 +11,24 @@
   "order": "Buyurtma berish",
   "myOrders": "Mening buyurtmalarim",
   "paid": "Toʻlov qabul qilindi",
-  "paidText": "Materiallar tayyorlanadi, topshirilgach buyurtma holati yangilanadi.",
+  "paidText": "Materiallar tayyorlanadi va yetkazib beruvchi bilan yuboriladi. Yoʻlga chiqqanda xabar olasiz.",
   "notPayable": "Bu buyurtmani toʻlab boʻlmaydi",
   "backToStore": "Doʻkonga qaytish",
   "status": {
     "awaiting_payment": "Toʻlov kutilmoqda",
-    "paid": "Toʻlangan",
-    "delivered": "Topshirilgan",
+    "paid": "Tayyorlanmoqda",
+    "shipped": "Yoʻlda",
+    "delivered": "Yetkazildi",
     "cancelled": "Bekor qilingan"
-  }
+  },
+  "address": "Yetkazib berish manzili",
+  "addressHint": "Tuman, koʻcha, uy va xonadon. Yetkazib beruvchi telefon orqali siz bilan bogʻlanadi.",
+  "addressPlaceholder": "Masalan: Chilonzor tumani, 9-mavze, 14-uy",
+  "deliverTo": "Manzil: {{address}}",
+  "preparing": "Buyurtma tayyorlanmoqda, tez orada yoʻlga chiqadi.",
+  "courier": "Yetkazib beruvchi: {{name}}",
+  "callCourier": "Qoʻngʻiroq qilish",
+  "callCourierLabel": "Yetkazib beruvchiga qoʻngʻiroq qilish: {{name}}",
+  "shippedNotice": "Buyurtmangiz yoʻlga chiqdi. Yetkazib beruvchi {{name}} siz bilan telefon orqali bogʻlanadi.",
+  "deliveredOn": "Yetkazildi: {{date}}"
 }

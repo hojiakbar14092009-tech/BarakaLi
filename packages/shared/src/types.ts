@@ -47,6 +47,7 @@ export interface NotificationDto {
   /** Extra text for the notification, e.g. the reason an application was rejected. */
   detail: string | null;
   orderId: string | null;
+  materialOrderId: string | null;
   readAt: string | null;
   createdAt: string;
 }
@@ -56,10 +57,17 @@ export type NotificationKind =
   | 'worker_application_received'
   | 'worker_approved'
   | 'worker_rejected'
-  | 'worker_suspended';
+  | 'worker_suspended'
+  /** To every administrator: a worker paid for materials, the order is waiting to go out. */
+  | 'material_order_paid'
+  /** To the worker: the materials order is on its way with a courier. */
+  | 'material_order_shipped';
 
 export interface NotificationsDto {
+  /** Unread new-order notifications (the badge on the orders entry). */
   unread: number;
+  /** Unread materials notifications (the badge on the materials entry). */
+  unreadMaterials: number;
   items: NotificationDto[];
 }
 
@@ -222,11 +230,22 @@ export interface MaterialOrderItemDto {
   quantity: number;
 }
 
+export interface MaterialCourierDto {
+  name: string;
+  phone: string;
+}
+
 export interface MaterialOrderDto {
   id: string;
   status: MaterialOrderStatus;
   total: number;
   items: MaterialOrderItemDto[];
+  /** Null on orders placed before materials were delivered. */
+  deliveryAddress: string | null;
+  /** Set once an administrator sends the order out. */
+  courier: MaterialCourierDto | null;
+  shippedAt: string | null;
+  deliveredAt: string | null;
   createdAt: string;
 }
 
@@ -421,4 +440,6 @@ export interface AdminComplaintDto {
 
 export interface AdminMaterialOrderDto extends MaterialOrderDto {
   workerName: string;
+  /** The worker's account phone: the courier calls it to hand the order over. Admins only. */
+  workerPhone: string;
 }

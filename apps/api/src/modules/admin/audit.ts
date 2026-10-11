@@ -13,6 +13,7 @@ export type AuditAction =
   | 'order.refund'
   | 'material.create'
   | 'material.update'
+  | 'material_order.ship'
   | 'material_order.deliver'
   | 'order.status'
   | 'product.update'

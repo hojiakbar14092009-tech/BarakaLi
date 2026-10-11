@@ -76,5 +76,6 @@
   },
   "calendarText": "Boʻsh vaqtingiz va xizmat narxini belgilang.",
   "workerAs": "Hunarmand profili: {{name}}",
-  "unreadOrders": "Sizga {{count}} ta yangi buyurtma keldi"
+  "unreadOrders": "Sizga {{count}} ta yangi buyurtma keldi",
+  "materialsShipped": "Material buyurtmangiz yoʻlga chiqdi: yetkazib beruvchi siz bilan bogʻlanadi."
 }

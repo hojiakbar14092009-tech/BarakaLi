@@ -3,12 +3,14 @@ import {
   adminListQuerySchema,
   complaintUpdateSchema,
   materialInputSchema,
+  materialShipSchema,
   reviewModerationSchema,
   workerRejectionSchema,
 } from '@barakali/shared';
 import type { AppContext } from '../../context.js';
 import { AppError } from '../../errors.js';
 import { createAuthMiddleware } from '../../middleware/auth.js';
+import { MaterialDeliveryService } from '../materials/material-delivery.service.js';
 import { MaterialService } from '../materials/material.service.js';
 import { AdminService } from './admin.service.js';
 import { listAudit, writeAudit } from './audit.js';
@@ -26,6 +28,7 @@ export function createAdminRouter(ctx: AppContext): Router {
   const router = Router();
   const admin = new AdminService(ctx);
   const materials = new MaterialService(ctx);
+  const deliveries = new MaterialDeliveryService(ctx);
   const { requireAdmin } = createAuthMiddleware(ctx);
 
   router.use('/admin', requireAdmin);
@@ -116,11 +119,24 @@ export function createAdminRouter(ctx: AppContext): Router {
   });
 
   router.get('/admin/material-orders', async (_req, res) => {
-    res.json(await materials.adminList());
+    res.json(await deliveries.list());
+  });
+
+  router.post('/admin/material-orders/:id/ship', async (req, res) => {
+    const input = materialShipSchema.parse(req.body);
+    await deliveries.ship(idParam(req), input);
+    await writeAudit(ctx.db, {
+      adminId: adminId(req),
+      action: 'material_order.ship',
+      targetType: 'material_order',
+      targetId: idParam(req),
+      details: { courierName: input.courierName },
+    });
+    res.status(204).end();
   });
 
   router.post('/admin/material-orders/:id/deliver', async (req, res) => {
-    await materials.markDelivered(idParam(req));
+    await deliveries.markDelivered(idParam(req));
     await writeAudit(ctx.db, {
       adminId: adminId(req),
       action: 'material_order.deliver',
