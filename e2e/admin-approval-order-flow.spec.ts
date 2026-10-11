@@ -13,10 +13,6 @@ import { translator } from './i18n';
 
 const t = translator('uz');
 
-async function fillExposedCode(page: Page): Promise<void> {
-  await page.getByRole('button', { name: t('auth.fillCode') }).click();
-}
-
 async function payWithCard(page: Page): Promise<void> {
   await page.getByLabel(t('payment.cardNumber')).fill(CARD.number);
   await page.getByLabel(t('payment.expiry')).fill(CARD.expiry);
@@ -50,10 +46,11 @@ test.describe('admin approval -> worker product -> customer order (360px)', () =
     await page.goto('/royxatdan-otish?rol=hunarmand');
     expect(await hasHorizontalScroll(page), 'signup page scrolls sideways').toBe(false);
     await page.getByLabel(t('auth.phoneLabel')).fill(freshPhone().slice(4));
-    await page.getByRole('button', { name: t('auth.sendCode') }).click();
-    await fillExposedCode(page);
     await page.getByLabel(t('auth.nameLabel')).fill(workerName);
-    await page.getByRole('button', { name: t('auth.verify') }).click();
+    await page
+      .getByRole('main')
+      .getByRole('button', { name: t('auth.submit'), exact: true })
+      .click();
 
     await expect(page.getByRole('heading', { name: t('auth.workerTitle') })).toBeVisible();
     await page.getByLabel(t('auth.displayNameLabel')).fill(workerName);

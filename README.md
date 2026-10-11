@@ -11,7 +11,7 @@ umumiy zod sxemalari va konstantalar (`packages/shared`). To'liq reja: [CLAUDE.m
 
 - Bosh sahifa, kategoriyalar, qidiruv (o'zbekcha apostrof variantlari bir xil), sahifalash
 - Mahsulot sahifasi: dona va ulgurji narx (hisoblash serverda), zaxira, 3D ko'rinish (faqat 3D tab ochilganda yuklanadi, WebGL yo'q bo'lsa rasmlarga qaytadi)
-- Telefon + SMS kod orqali kirish (parolsiz), aylantiriladigan refresh token
+- Telefon raqami bilan kirish (parol ham, SMS kod ham yo'q), aylantiriladigan refresh token
 - Hunarmand kabineti: mahsulot qo'shish/tahrirlash, rasm (kameradan ham), `.glb` model, zaxira, daromad va jamg'arma maqsadi
 - Ish kalendari: bo'sh vaqt (Ertalab / Tushlik / Kechqurun), xizmat buyurtmasi (tavsif, muddat, ≤ 5 rasm, slot tanlash) to'lovsiz: vaqt va aloqa uchun. Slot to'qnashuvi DB darajasida bloklanadi
 - Savat, buyurtma, to'lov (platformaning o'z to'lov sahifasi), buyurtma holatlari, 2% komissiya va daromad
@@ -31,7 +31,7 @@ Talab: Node.js 20+ va pnpm 12 (`npm i -g pnpm`). Docker yoki alohida PostgreSQL 
 
 ```bash
 pnpm install
-cp .env.example .env        # lokalda EXPOSE_SMS_CODE=true qo'ying: kod kirish formasida ko'rinadi
+cp .env.example .env
 pnpm db:seed                # kategoriyalar, 4 hunarmand, 10 mahsulot, 1 ta 3D model
 pnpm db:audit-orders        # faqat o'qiydi: mahsulot egasi va buyurtma hunarmandi mos kelmagan buyurtmalar
 pnpm dev                    # web: http://localhost:5173, api: http://localhost:3001
@@ -61,7 +61,6 @@ ekanini tekshiradi, so'ng `api/index.js` (Vercel funksiyasi) ni qayta yaratadi.
 | `JWT_ACCESS_SECRET`  | Access token siri, kamida 32 belgi. Productionda majburiy                                                            |
 | `JWT_REFRESH_SECRET` | Refresh token va kod hash siri, kamida 32 belgi. Productionda majburiy                                               |
 | `ADMIN_PHONES`       | Vergul bilan ajratilgan raqamlar: kirishda `admin` roli. Bu raqamlarning kodi javobda qaytmaydi (serverga loglanadi) |
-| `EXPOSE_SMS_CODE`    | `true` bo'lsa kod API javobida qaytadi (SMS shlyuzi ulanmaguncha). Xavfli                                            |
 | `SEED_SAMPLE_DATA`   | `true` bo'lsa birinchi so'rovda namuna hunarmand va mahsulotlar qo'shiladi                                           |
 | `PAYMENT_PROVIDER`   | `internal` (hozir yagona ishlaydigan)                                                                                |
 | `ALLOWED_ORIGINS`    | CORS uchun qo'shimcha originlar (bir domen ichida kerak emas)                                                        |
@@ -73,7 +72,7 @@ Vercel bo'yicha qadamlar: [docs/DEPLOY.md](docs/DEPLOY.md).
 
 ## Muhim cheklovlar (halol ro'yxat)
 
-- **SMS shlyuzi ulanmagan.** `EXPOSE_SMS_CODE=true` bo'lmasa, foydalanuvchi kodni ololmaydi.
+- **Kirishda SMS kod yo'q** (egasining qarori): raqamga egalik tekshirilmaydi, `docs/SECURITY.md`.
 - **Haqiqiy to'lov provayderi ulanmagan.** To'lov platforma ichida qayd etiladi, kartadan pul yechilmaydi;
   Payme, Click va Uzum adapterlari bo'sh.
 - Vercel funksiyasi so'rov tanasini 4,5 MB bilan cheklaydi: amalda `.glb` 4,5 MB gacha (S3 adapteri TODO'da).

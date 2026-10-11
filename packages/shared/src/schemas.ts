@@ -17,7 +17,6 @@ import {
   MAX_TITLE_LENGTH,
   MIN_NAME_LENGTH,
   PRODUCT_STATUSES,
-  SMS_CODE_LENGTH,
   DEFAULT_PAGE_SIZE,
   MAX_DISCOUNT_PERCENT,
   MAX_REJECT_REASON_LENGTH,
@@ -50,16 +49,15 @@ export const phoneSchema = z
 const nameSchema = z.string().trim().min(MIN_NAME_LENGTH).max(MAX_NAME_LENGTH);
 const moneySchema = z.number().int().positive().max(MAX_PRICE_SOM);
 
-export const requestCodeSchema = z.object({ phone: phoneSchema });
-export type RequestCodeInput = z.infer<typeof requestCodeSchema>;
-
-export const verifyCodeSchema = z.object({
+/** Sign-in by phone number alone (no SMS code); the first sign-in creates the account. */
+export const loginSchema = z.object({
   phone: phoneSchema,
-  code: z.string().regex(new RegExp(`^\\d{${SMS_CODE_LENGTH}}$`), 'INVALID_CODE'),
-  role: z.enum(['customer', 'worker']).optional(),
   name: nameSchema.optional(),
 });
-export type VerifyCodeInput = z.infer<typeof verifyCodeSchema>;
+export type LoginInput = z.infer<typeof loginSchema>;
+
+export const adminLoginSchema = z.object({ phone: phoneSchema });
+export type AdminLoginInput = z.infer<typeof adminLoginSchema>;
 
 export const updateProfileSchema = z.object({
   name: nameSchema,

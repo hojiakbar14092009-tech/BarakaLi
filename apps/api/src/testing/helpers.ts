@@ -20,7 +20,7 @@ export async function createTestApp(env: Record<string, string> = {}): Promise<T
   const db = await createTestDb((event) => {
     if (event.level === 'query') queries.count += 1;
   });
-  const config = loadConfig({ NODE_ENV: 'test', EXPOSE_SMS_CODE: 'true', ...env });
+  const config = loadConfig({ NODE_ENV: 'test', ...env });
   return { app: createApp({ db, config }), db, queries, close: () => db.destroy() };
 }
 
@@ -41,12 +41,11 @@ export async function login(
   phone = nextPhone(),
   name: string | null = 'Test User',
 ): Promise<Session> {
-  const codeRes = await request(app).post('/api/auth/request-code').send({ phone });
   // A null name is the plain sign-in form, which never asks for one.
-  const verify = await request(app)
-    .post('/api/auth/verify')
-    .send({ phone, code: codeRes.body.code, ...(name === null ? {} : { name }) });
-  const body = verify.body as AuthResponse;
+  const res = await request(app)
+    .post('/api/auth/login')
+    .send({ phone, ...(name === null ? {} : { name }) });
+  const body = res.body as AuthResponse;
   return { token: body.accessToken, userId: body.user.id, phone };
 }
 

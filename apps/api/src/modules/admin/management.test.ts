@@ -274,12 +274,9 @@ describe('admin users', () => {
     expect(me.status).toBe(403);
     expect(me.body.error.code).toBe('USER_BLOCKED');
 
-    const code = await request(t.app).post('/api/auth/request-code').send({ phone: victim.phone });
-    const verify = await request(t.app)
-      .post('/api/auth/verify')
-      .send({ phone: victim.phone, code: code.body.code });
-    expect(verify.status).toBe(403);
-    expect(verify.body.error.code).toBe('USER_BLOCKED');
+    const again = await request(t.app).post('/api/auth/login').send({ phone: victim.phone });
+    expect(again.status).toBe(403);
+    expect(again.body.error.code).toBe('USER_BLOCKED');
 
     const detail = await request(t.app).get(`/api/admin/users/${victim.userId}`).set(bearer(admin));
     expect(detail.body).toMatchObject({ blockReason: REASON });

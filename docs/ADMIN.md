@@ -7,15 +7,16 @@ Qisqa yoʻriqnoma: BarakaLi boshqaruv paneli (`/admin`) bilan ishlash.
 - Administrator roli faqat `ADMIN_PHONES` muhit oʻzgaruvchisidan keladi: vergul bilan ajratilgan
   `+998XXXXXXXXX` raqamlar. Qiymatni hosting muhitida (masalan, Vercel) egasi oʻzi qoʻyadi, u
   repozitoriyga yozilmaydi.
-- Navbardagi **Kirish** → **Admin** → `/admin-kirish`. Shu raqamni kiriting: `EXPOSE_SMS_CODE=true`
-  boʻlsa kod shu sahifada chiqadi (SMS yuborilmaydi); kodni tasdiqlang va `/admin` ga oʻtasiz.
+- Navbardagi **Kirish** → **Admin** → `/admin-kirish`. Shu raqamni kiriting: SMS kod yoʻq, darhol
+  `/admin` ga oʻtasiz.
   Roʻyxatda boʻlmagan raqamga kod berilmaydi ("Bu raqam admin emas"); roʻyxat boʻsh boʻlsa sahifa
   "Admin kirish sozlanmagan" deydi. `/kirish` sahifasi admin kodini hech qachon koʻrsatmaydi.
 - Roʻyxatdan chiqarilgan raqam keyingi kirishda oddiy foydalanuvchiga qaytadi.
 - Oddiy foydalanuvchi `/admin` ga kirsa 403 sahifasi va "Bosh sahifaga qaytish" tugmasi chiqadi.
   Haqiqiy himoya serverda: har `/api/admin/*` soʻrovi rolni tekshiradi.
-- **Sinov rejimi.** Ommaviy ishga tushirishdan oldin `EXPOSE_SMS_CODE=false` va real SMS provayder
-  ulanishi shart: hozir admin raqamini bilgan har kim kira oladi. SMS provayder hali ulanmagan (TODO.md).
+- **Xavfsizlik.** Kirish faqat telefon raqami bilan (SMS kod yoʻq): admin raqamini bilgan kishi admin
+  boʻlib kira oladi. Raqamni oshkor qilmang; ommaviy ishga tushirishdan oldin tasdiqlashni qaytarish
+  tavsiya etiladi (`docs/SECURITY.md`).
 
 ## Hunarmandni tasdiqlash
 

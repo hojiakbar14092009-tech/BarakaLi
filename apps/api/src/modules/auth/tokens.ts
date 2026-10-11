@@ -1,4 +1,4 @@
-import { createHash, createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
+import { createHash, randomBytes } from 'node:crypto';
 import jwt from 'jsonwebtoken';
 import { ACCESS_TOKEN_TTL_SECONDS, USER_ROLES, type UserRole } from '@barakali/shared';
 
@@ -33,14 +33,4 @@ export function generateRefreshToken(): string {
 
 export function hashToken(token: string): string {
   return createHash('sha256').update(token).digest('hex');
-}
-
-export function hashCode(phone: string, code: string, secret: string): string {
-  return createHmac('sha256', secret).update(`${phone}:${code}`).digest('hex');
-}
-
-export function safeEqual(a: string, b: string): boolean {
-  const left = Buffer.from(a);
-  const right = Buffer.from(b);
-  return left.length === right.length && timingSafeEqual(left, right);
 }

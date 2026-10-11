@@ -27,24 +27,24 @@ Holat kodlari: 400 validatsiya, 401 `UNAUTHENTICATED`, 402 `PAYMENT_DECLINED`, 4
 
 **Sahifalash.** `Page<T> = { items: T[]; page: number; pageSize: number; total: number }`.
 
-**Cheklovlar.** Umumiy: 600 so'rov / 15 daqiqa / IP; kirish: 30; SMS kod: 8 (telefon + IP).
+**Cheklovlar.** Umumiy: 600 so'rov / 15 daqiqa / IP; refresh: 30; telefon bilan kirish: 8 (telefon + IP).
 Yozuvchi so'rovlarda `Origin` boshqa domendan bo'lsa 403.
 
 ## Kirish
 
-| Yo'l                      | Kim       | So'rov                                                                                         | Javob                                      |
-| ------------------------- | --------- | ---------------------------------------------------------------------------------------------- | ------------------------------------------ |
-| `POST /auth/request-code` | hamma     | `{ phone }` — `+998XXXXXXXXX`, `90 123 45 67` kabi variantlar                                  | `{ expiresInSeconds, code? }` ¹            |
-| `POST /auth/verify`       | hamma     | `{ phone, code (6 raqam), role?: 'customer'\|'worker', name? (2–80) }`                         | `AuthResponse`, refresh cookie o'rnatiladi |
-| `POST /auth/refresh`      | cookie    | —                                                                                              | `AuthResponse`, yangi refresh cookie       |
-| `POST /auth/logout`       | cookie    | —                                                                                              | 204                                        |
-| `GET /me`                 | kirgan    | —                                                                                              | `UserDto`                                  |
-| `PATCH /me`               | kirgan    | `{ name (2–80), language?: 'uz'\|'ru' }`                                                       | `UserDto`                                  |
-| `POST /me/worker`         | kirgan    | `{ displayName (2–80), categoryId (uuid), bio? (≤2000) }`                                      | 201 `UserDto` (`workerId` to'ldirilgan)    |
-| `PATCH /me/worker`        | hunarmand | `{ telegramUsername: string \| null }` — `@` olib tashlanadi, 5–32 belgi, faqat harf/raqam/`_` | `UserDto`                                  |
+| Yo'l                     | Kim       | So'rov                                                                                         | Javob                                      |
+| ------------------------ | --------- | ---------------------------------------------------------------------------------------------- | ------------------------------------------ |
+| `POST /auth/login`       | hamma     | `{ phone, name? (2–80) }` — `+998XXXXXXXXX`, `90 123 45 67` kabi variantlar; SMS kod yo'q ¹    | `AuthResponse`, refresh cookie o'rnatiladi |
+| `POST /auth/admin/login` | hamma     | `{ phone }`; faqat `ADMIN_PHONES`: aks holda 403 `NOT_ADMIN_PHONE`, ro'yxat bo'sh bo'lsa 503   | `AuthResponse`, refresh cookie o'rnatiladi |
+| `POST /auth/refresh`     | cookie    | —                                                                                              | `AuthResponse`, yangi refresh cookie       |
+| `POST /auth/logout`      | cookie    | —                                                                                              | 204                                        |
+| `GET /me`                | kirgan    | —                                                                                              | `UserDto`                                  |
+| `PATCH /me`              | kirgan    | `{ name (2–80), language?: 'uz'\|'ru' }`                                                       | `UserDto`                                  |
+| `POST /me/worker`        | kirgan    | `{ displayName (2–80), categoryId (uuid), bio? (≤2000) }`                                      | 201 `UserDto` (`workerId` to'ldirilgan)    |
+| `PATCH /me/worker`       | hunarmand | `{ telegramUsername: string \| null }` — `@` olib tashlanadi, 5–32 belgi, faqat harf/raqam/`_` | `UserDto`                                  |
 
-¹ `code` faqat `EXPOSE_SMS_CODE=true` bo'lsa va raqam `ADMIN_PHONES` da bo'lmasa qaytadi. Kod 5 daqiqa
-amal qiladi, 5 noto'g'ri urinishdan keyin bloklanadi, bazada hash holida saqlanadi.
+¹ Egasining qarori (2026-10-11): kirish faqat telefon raqami bilan, SMS kod yo'q. Birinchi kirishda hisob
+yaratiladi; bloklangan hisob 403 `USER_BLOCKED`. Raqamga egalik tekshirilmaydi (`docs/SECURITY.md`).
 
 ```ts
 interface AuthResponse {

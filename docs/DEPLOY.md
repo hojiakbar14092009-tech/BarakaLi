@@ -19,7 +19,6 @@ Vercel loyihasida **Storage → Create Database → Neon (Postgres)** ni tanlang
    | -------------------- | ----------------------------------------------------------------------- |
    | `JWT_ACCESS_SECRET`  | tasodifiy 32+ belgi (`openssl rand -base64 48`)                         |
    | `JWT_REFRESH_SECRET` | boshqa tasodifiy 32+ belgi                                              |
-   | `EXPOSE_SMS_CODE`    | `true` (SMS shlyuzi ulanmaguncha; real foydalanuvchilar uchun `false`)  |
    | `SEED_SAMPLE_DATA`   | `true` (birinchi ochilishda namuna hunarmand va mahsulotlar qo'shiladi) |
    | `ADMIN_PHONES`       | ixtiyoriy: `+998901234567`                                              |
 
@@ -30,9 +29,9 @@ Vercel loyihasida **Storage → Create Database → Neon (Postgres)** ni tanlang
 
 ## 3. Admin sifatida kirish
 
-`ADMIN_PHONES` dagi raqam bilan kirishda tasdiqlash kodi **ekranda ko'rsatilmaydi** (aks holda `EXPOSE_SMS_CODE=true`
-bilan istalgan kishi admin bo'lib kira olardi). SMS shlyuzi ulanmaguncha kodni Vercel → Logs dan oling
-(`Administrator sign-in code issued`): u 5 daqiqa amal qiladi va bir marta ishlaydi.
+Navbardagi **Kirish → Admin** (`/admin-kirish`) sahifasida `ADMIN_PHONES` dagi raqamni kiriting: SMS kod
+yo'q, darhol `/admin` ga o'tasiz. Ro'yxatda bo'lmagan raqamga sessiya berilmaydi. `EXPOSE_SMS_CODE`
+o'zgaruvchisi endi ishlatilmaydi: Vercel'da qolsa ham zarari yo'q.
 
 ## 4. Tekshiruv
 

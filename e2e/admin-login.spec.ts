@@ -5,9 +5,12 @@ import { translator } from './i18n';
 const t = translator('uz');
 const localDigits = (phone: string) => phone.replace('+998', '');
 
-async function askCode(page: Page, phone: string) {
+async function signInWith(page: Page, phone: string) {
   await page.getByLabel(t('auth.phoneLabel')).fill(localDigits(phone));
-  await page.getByRole('button', { name: t('auth.sendCode') }).click();
+  await page
+    .getByRole('main')
+    .getByRole('button', { name: t('auth.submit'), exact: true })
+    .click();
 }
 
 const ROLES = [
@@ -65,20 +68,16 @@ for (const width of [360, 1280]) {
 }
 
 test.describe('/admin-kirish', () => {
-  test('a number outside ADMIN_PHONES gets no code', async ({ page }) => {
+  test('a number outside ADMIN_PHONES is refused and stays signed out', async ({ page }) => {
     await page.goto('/admin-kirish');
-    await askCode(page, freshPhone());
+    await signInWith(page, freshPhone());
     await expect(page.getByRole('alert')).toHaveText(t('errors.NOT_ADMIN_PHONE'));
-    await expect(page.getByText(/Tasdiqlash kodingiz/)).toHaveCount(0);
-    await expect(page.getByLabel(t('auth.codeLabel'))).toHaveCount(0);
+    await expect(page).toHaveURL(/\/admin-kirish$/);
   });
 
-  test('the admin number sees its code on the page and lands on /admin', async ({ page }) => {
+  test('the admin number goes straight to /admin, with no code step', async ({ page }) => {
     await page.goto('/admin-kirish');
-    await askCode(page, ADMIN_PHONE);
-    await expect(page.getByText(/Tasdiqlash kodingiz: \d{6}/)).toBeVisible();
-    await page.getByRole('button', { name: t('auth.fillCode') }).click();
-    await page.getByRole('button', { name: t('auth.verify') }).click();
+    await signInWith(page, ADMIN_PHONE);
     await expect(page).toHaveURL(/\/admin$/);
     // The number never travels in the address bar.
     expect(page.url()).not.toContain(localDigits(ADMIN_PHONE));

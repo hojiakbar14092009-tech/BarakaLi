@@ -385,3 +385,13 @@ Brifdagi noaniqliklar bo'yicha qabul qilingan qarorlar. Yangi qaror oxiriga qo's
   qaytadi): Mijoz → `/kirish` (birinchi SMS tasdiqlashda hisob oʻzi yaratiladi), Hunarmand →
   `/royxatdan-otish?rol=hunarmand`, Admin → `/admin-kirish`. Avvalgi alohida "Admin" tugmasi shu menyuga
   koʻchirildi: bitta joyda uch rol, telefonda header bir qatorda qoladi.
+
+## Kirish: faqat telefon raqami, SMS kod yoʻq (2026-10-11)
+
+- Egasining aniq qarori (variantlar va xavf koʻrsatilgandan keyin tanlangan): kod serverdan butunlay olib
+  tashlandi. `POST /auth/login { phone, name? }` hisobni topadi yoki yaratadi; `POST /auth/admin/login { phone }`
+  faqat `ADMIN_PHONES` ga sessiya beradi (boʻsh roʻyxat 503, boshqa raqam 403). `/auth/request-code`,
+  `/auth/verify`, `EXPOSE_SMS_CODE` va kod tekshiruvi olib tashlandi.
+- Saqlangan himoyalar: bloklangan hisob kira olmaydi, admin roli faqat env'dan, refresh token aylanishi,
+  kirishga telefon+IP boʻyicha qattiq rate limit (8 / 15 daqiqa) — kod yoʻqligida yagona toʻsiq shu.
+- `sms_codes` jadvali bazada qoldirildi (maʼlumot oʻchirilmaydi), kod undan foydalanmaydi.

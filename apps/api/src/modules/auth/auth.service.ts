@@ -1,21 +1,14 @@
-import { randomInt } from 'node:crypto';
 import {
   REFRESH_TOKEN_TTL_DAYS,
-  SMS_CODE_LENGTH,
-  SMS_CODE_TTL_MINUTES,
-  SMS_MAX_ATTEMPTS,
   type AuthResponse,
-  type RequestCodeResponse,
+  type LoginInput,
   type UserDto,
-  type VerifyCodeInput,
 } from '@barakali/shared';
 import { AppError } from '../../errors.js';
 import type { AppContext } from '../../context.js';
 import { AuthRepository } from './auth.repository.js';
-import { generateRefreshToken, hashCode, hashToken, safeEqual, signAccessToken } from './tokens.js';
+import { generateRefreshToken, hashToken, signAccessToken } from './tokens.js';
 
-const MAX_CODES_PER_WINDOW = 5;
-const CODE_WINDOW_MINUTES = 15;
 const MINUTE_MS = 60_000;
 const DAY_MS = 24 * 60 * MINUTE_MS;
 
@@ -35,55 +28,22 @@ export class AuthService {
     this.repo = new AuthRepository(ctx.db);
   }
 
-  async requestCode(phone: string): Promise<RequestCodeResponse> {
-    const code = await this.issueCode(phone);
-    await this.ctx.sms.send(phone, code);
-    const response: RequestCodeResponse = { expiresInSeconds: SMS_CODE_TTL_MINUTES * 60 };
-    if (this.ctx.config.exposeSmsCode && !this.isWithheldAdmin(phone)) response.code = code;
-    return response;
-  }
-
   /**
-   * /admin-kirish: only ADMIN_PHONES numbers get a code. While EXPOSE_SMS_CODE is on the code is
-   * shown on that page and no SMS goes out; with it off the code goes through the SMS provider.
+   * Phone-number sign-in, no SMS code (an owner decision, see docs/DECISIONS.md): the first
+   * sign-in creates the account. Blocked accounts are refused; the auth rate limit still applies.
    */
-  async requestAdminCode(phone: string): Promise<RequestCodeResponse> {
-    const { adminPhones, exposeSmsCode } = this.ctx.config;
-    if (adminPhones.length === 0) throw new AppError('ADMIN_LOGIN_NOT_CONFIGURED', 503);
-    if (!adminPhones.includes(phone)) throw new AppError('NOT_ADMIN_PHONE', 403);
-    const code = await this.issueCode(phone);
-    const response: RequestCodeResponse = { expiresInSeconds: SMS_CODE_TTL_MINUTES * 60 };
-    if (exposeSmsCode) response.code = code;
-    else await this.ctx.sms.send(phone, code);
-    return response;
-  }
-
-  /** The general sign-in page never shows an administrator's code; /admin-kirish does that. */
-  private isWithheldAdmin(phone: string): boolean {
-    const { adminPhones, nodeEnv } = this.ctx.config;
-    return adminPhones.includes(phone) && nodeEnv !== 'test';
-  }
-
-  private async issueCode(phone: string): Promise<string> {
-    const windowStart = new Date(this.now().getTime() - CODE_WINDOW_MINUTES * MINUTE_MS);
-    if ((await this.repo.countRecentCodes(phone, windowStart)) >= MAX_CODES_PER_WINDOW) {
-      throw new AppError('RATE_LIMITED', 429);
-    }
-    const code = String(randomInt(0, 10 ** SMS_CODE_LENGTH)).padStart(SMS_CODE_LENGTH, '0');
-    const expiresAt = new Date(this.now().getTime() + SMS_CODE_TTL_MINUTES * MINUTE_MS);
-    await this.repo.insertCode(
-      phone,
-      hashCode(phone, code, this.ctx.config.jwtRefreshSecret),
-      expiresAt,
-    );
-    return code;
-  }
-
-  async verifyCode(input: VerifyCodeInput): Promise<IssuedSession> {
-    await this.checkCode(input.phone, input.code);
+  async login(input: LoginInput): Promise<IssuedSession> {
     const user = await this.findOrCreateUser(input);
     if (await this.repo.isBlocked(user.id)) throw new AppError('USER_BLOCKED', 403);
     return this.issueSession(user);
+  }
+
+  /** /admin-kirish: only ADMIN_PHONES numbers get in; others get a clear answer and no session. */
+  async adminLogin(phone: string): Promise<IssuedSession> {
+    const { adminPhones } = this.ctx.config;
+    if (adminPhones.length === 0) throw new AppError('ADMIN_LOGIN_NOT_CONFIGURED', 503);
+    if (!adminPhones.includes(phone)) throw new AppError('NOT_ADMIN_PHONE', 403);
+    return this.login({ phone });
   }
 
   async refresh(refreshToken: string | undefined): Promise<IssuedSession> {
@@ -117,26 +77,12 @@ export class AuthService {
     return this.getUser(userId);
   }
 
-  private async checkCode(phone: string, code: string): Promise<void> {
-    const stored = await this.repo.findActiveCode(phone);
-    if (!stored) throw new AppError('INVALID_CODE', 400);
-    if (stored.attempts >= SMS_MAX_ATTEMPTS) throw new AppError('TOO_MANY_ATTEMPTS', 429);
-    if (stored.expires_at.getTime() <= this.now().getTime())
-      throw new AppError('CODE_EXPIRED', 400);
-    const expected = hashCode(phone, code, this.ctx.config.jwtRefreshSecret);
-    if (!safeEqual(stored.code_hash, expected)) {
-      await this.repo.incrementAttempts(stored.id);
-      throw new AppError('INVALID_CODE', 400);
-    }
-    if (!(await this.repo.consumeCode(stored.id))) throw new AppError('INVALID_CODE', 400);
-  }
-
   /**
    * ADMIN_PHONES is the only source of the admin role: a listed number is promoted on every
    * sign-in, a number that left the list is demoted back to its ordinary role, and an empty list
    * means nobody is an administrator.
    */
-  private async findOrCreateUser(input: VerifyCodeInput): Promise<UserDto> {
+  private async findOrCreateUser(input: LoginInput): Promise<UserDto> {
     const { adminPhones, adminName } = this.ctx.config;
     const isAdminPhone = adminPhones.includes(input.phone);
     const existing = await this.repo.findUserByPhone(input.phone);

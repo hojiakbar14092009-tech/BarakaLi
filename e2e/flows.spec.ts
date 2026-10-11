@@ -43,12 +43,13 @@ for (const language of ['uz', 'ru'] as const) {
         stock: 10,
       });
 
-      // Customer signs in through the real form (SMS code is shown in the form for this server).
+      // Customer signs in through the real form: phone number only, no SMS code.
       await page.goto('/kirish');
       await page.getByLabel(t('auth.phoneLabel')).fill(freshPhone().slice(4));
-      await page.getByRole('button', { name: t('auth.sendCode') }).click();
-      await page.getByRole('button', { name: t('auth.fillCode') }).click();
-      await page.getByRole('button', { name: t('auth.verify') }).click();
+      await page
+        .getByRole('main')
+        .getByRole('button', { name: t('auth.submit'), exact: true })
+        .click();
       await expect(page).toHaveURL(/\/$/);
 
       // Product -> cart -> checkout.

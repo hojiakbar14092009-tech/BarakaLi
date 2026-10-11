@@ -27025,12 +27025,12 @@ var require_jwa = __commonJS({
       };
     }
     var bufferEqual;
-    var timingSafeEqual2 = "timingSafeEqual" in crypto ? function timingSafeEqual3(a, b) {
+    var timingSafeEqual = "timingSafeEqual" in crypto ? function timingSafeEqual2(a, b) {
       if (a.byteLength !== b.byteLength) {
         return false;
       }
       return crypto.timingSafeEqual(a, b);
-    } : function timingSafeEqual3(a, b) {
+    } : function timingSafeEqual2(a, b) {
       if (!bufferEqual) {
         bufferEqual = require_buffer_equal_constant_time();
       }
@@ -27039,7 +27039,7 @@ var require_jwa = __commonJS({
     function createHmacVerifier(bits) {
       return function verify(thing, signature, secret) {
         var computedSig = createHmacSigner(bits)(thing, secret);
-        return timingSafeEqual2(Buffer3.from(signature), Buffer3.from(computedSig));
+        return timingSafeEqual(Buffer3.from(signature), Buffer3.from(computedSig));
       };
     }
     function createKeySigner(bits) {
@@ -71355,9 +71355,6 @@ var ALL_CATEGORIES_SLUG = "barchasi";
 var DEFAULT_PAGE_SIZE = 12;
 var MAX_PAGE_SIZE = 20;
 var PHONE_COUNTRY_PREFIX = "+998";
-var SMS_CODE_LENGTH = 6;
-var SMS_CODE_TTL_MINUTES = 5;
-var SMS_MAX_ATTEMPTS = 5;
 var ACCESS_TOKEN_TTL_SECONDS = 15 * 60;
 var REFRESH_TOKEN_TTL_DAYS = 30;
 var UNPAID_ORDER_TTL_MINUTES = 15;
@@ -71473,13 +71470,11 @@ var phoneSchema = external_exports.string().trim().transform((value, ctx) => {
 });
 var nameSchema = external_exports.string().trim().min(MIN_NAME_LENGTH).max(MAX_NAME_LENGTH);
 var moneySchema = external_exports.number().int().positive().max(MAX_PRICE_SOM);
-var requestCodeSchema = external_exports.object({ phone: phoneSchema });
-var verifyCodeSchema = external_exports.object({
+var loginSchema = external_exports.object({
   phone: phoneSchema,
-  code: external_exports.string().regex(new RegExp(`^\\d{${SMS_CODE_LENGTH}}$`), "INVALID_CODE"),
-  role: external_exports.enum(["customer", "worker"]).optional(),
   name: nameSchema.optional()
 });
+var adminLoginSchema = external_exports.object({ phone: phoneSchema });
 var updateProfileSchema = external_exports.object({
   name: nameSchema,
   language: external_exports.enum(["uz", "ru"]).optional()
@@ -71697,7 +71692,6 @@ var envSchema = external_exports.object({
   ),
   ADMIN_NAME: external_exports.string().trim().min(1).default("Hojiakbar"),
   SMS_PROVIDER: external_exports.enum(["console"]).default("console"),
-  EXPOSE_SMS_CODE: booleanString,
   SEED_SAMPLE_DATA: booleanString,
   PAYMENT_PROVIDER: external_exports.enum(["internal", "payme", "click", "uzum"]).default("internal"),
   STORAGE_PROVIDER: external_exports.enum(["db"]).default("db")
@@ -71725,7 +71719,6 @@ function loadConfig(env = process.env) {
     adminPhones: parsed.ADMIN_PHONES,
     adminName: parsed.ADMIN_NAME,
     smsProvider: parsed.SMS_PROVIDER,
-    exposeSmsCode: parsed.EXPOSE_SMS_CODE,
     seedSampleData: parsed.SEED_SAMPLE_DATA,
     paymentProvider: parsed.PAYMENT_PROVIDER,
     storageProvider: parsed.STORAGE_PROVIDER
@@ -72921,7 +72914,7 @@ function limiter(limit, keyGenerator) {
 }
 var generalLimiter = (enabled) => enabled ? limiter(600) : (_req, _res, next) => next();
 var authLimiter = (enabled) => enabled ? limiter(30) : (_req, _res, next) => next();
-var smsLimiter = (enabled) => enabled ? limiter(8, (req) => {
+var loginLimiter = (enabled) => enabled ? limiter(8, (req) => {
   const phone = typeof req.body?.phone === "string" ? req.body.phone : "";
   return `${ipKeyGenerator(req.ip ?? "")}|${phone.replace(/\D/g, "")}`;
 }) : (_req, _res, next) => next();
@@ -72955,14 +72948,6 @@ function generateRefreshToken() {
 }
 function hashToken(token) {
   return (0, import_node_crypto2.createHash)("sha256").update(token).digest("hex");
-}
-function hashCode(phone, code, secret) {
-  return (0, import_node_crypto2.createHmac)("sha256", secret).update(`${phone}:${code}`).digest("hex");
-}
-function safeEqual(a, b) {
-  const left = Buffer.from(a);
-  const right = Buffer.from(b);
-  return left.length === right.length && (0, import_node_crypto2.timingSafeEqual)(left, right);
 }
 
 // src/middleware/auth.ts
@@ -73262,9 +73247,6 @@ var WorkersService = class {
   }
 };
 
-// src/modules/auth/auth.service.ts
-var import_node_crypto3 = require("node:crypto");
-
 // src/modules/auth/auth.repository.ts
 function toUserDto(row) {
   return {
@@ -73283,23 +73265,6 @@ function toUserDto(row) {
 var AuthRepository = class {
   constructor(db2) {
     this.db = db2;
-  }
-  async countRecentCodes(phone, since) {
-    const row = await this.db.selectFrom("sms_codes").select((eb) => eb.fn.countAll().as("count")).where("phone", "=", phone).where("created_at", ">", since).executeTakeFirstOrThrow();
-    return Number(row.count);
-  }
-  async insertCode(phone, codeHash, expiresAt) {
-    await this.db.insertInto("sms_codes").values({ phone, code_hash: codeHash, expires_at: expiresAt }).execute();
-  }
-  async findActiveCode(phone) {
-    return this.db.selectFrom("sms_codes").selectAll().where("phone", "=", phone).where("consumed_at", "is", null).orderBy("created_at", "desc").limit(1).executeTakeFirst();
-  }
-  async incrementAttempts(id) {
-    await this.db.updateTable("sms_codes").set((eb) => ({ attempts: eb("attempts", "+", 1) })).where("id", "=", id).execute();
-  }
-  async consumeCode(id) {
-    const result = await this.db.updateTable("sms_codes").set({ consumed_at: /* @__PURE__ */ new Date() }).where("id", "=", id).where("consumed_at", "is", null).executeTakeFirst();
-    return Number(result.numUpdatedRows) === 1;
   }
   async findUserById(id) {
     const row = await this.userQuery().where("u.id", "=", id).executeTakeFirst();
@@ -73358,8 +73323,6 @@ var AuthRepository = class {
 };
 
 // src/modules/auth/auth.service.ts
-var MAX_CODES_PER_WINDOW = 5;
-var CODE_WINDOW_MINUTES = 15;
 var MINUTE_MS = 6e4;
 var DAY_MS = 24 * 60 * MINUTE_MS;
 var AuthService = class {
@@ -73369,51 +73332,21 @@ var AuthService = class {
     this.repo = new AuthRepository(ctx.db);
   }
   repo;
-  async requestCode(phone) {
-    const code = await this.issueCode(phone);
-    await this.ctx.sms.send(phone, code);
-    const response = { expiresInSeconds: SMS_CODE_TTL_MINUTES * 60 };
-    if (this.ctx.config.exposeSmsCode && !this.isWithheldAdmin(phone)) response.code = code;
-    return response;
-  }
   /**
-   * /admin-kirish: only ADMIN_PHONES numbers get a code. While EXPOSE_SMS_CODE is on the code is
-   * shown on that page and no SMS goes out; with it off the code goes through the SMS provider.
+   * Phone-number sign-in, no SMS code (an owner decision, see docs/DECISIONS.md): the first
+   * sign-in creates the account. Blocked accounts are refused; the auth rate limit still applies.
    */
-  async requestAdminCode(phone) {
-    const { adminPhones, exposeSmsCode } = this.ctx.config;
-    if (adminPhones.length === 0) throw new AppError("ADMIN_LOGIN_NOT_CONFIGURED", 503);
-    if (!adminPhones.includes(phone)) throw new AppError("NOT_ADMIN_PHONE", 403);
-    const code = await this.issueCode(phone);
-    const response = { expiresInSeconds: SMS_CODE_TTL_MINUTES * 60 };
-    if (exposeSmsCode) response.code = code;
-    else await this.ctx.sms.send(phone, code);
-    return response;
-  }
-  /** The general sign-in page never shows an administrator's code; /admin-kirish does that. */
-  isWithheldAdmin(phone) {
-    const { adminPhones, nodeEnv } = this.ctx.config;
-    return adminPhones.includes(phone) && nodeEnv !== "test";
-  }
-  async issueCode(phone) {
-    const windowStart = new Date(this.now().getTime() - CODE_WINDOW_MINUTES * MINUTE_MS);
-    if (await this.repo.countRecentCodes(phone, windowStart) >= MAX_CODES_PER_WINDOW) {
-      throw new AppError("RATE_LIMITED", 429);
-    }
-    const code = String((0, import_node_crypto3.randomInt)(0, 10 ** SMS_CODE_LENGTH)).padStart(SMS_CODE_LENGTH, "0");
-    const expiresAt = new Date(this.now().getTime() + SMS_CODE_TTL_MINUTES * MINUTE_MS);
-    await this.repo.insertCode(
-      phone,
-      hashCode(phone, code, this.ctx.config.jwtRefreshSecret),
-      expiresAt
-    );
-    return code;
-  }
-  async verifyCode(input) {
-    await this.checkCode(input.phone, input.code);
+  async login(input) {
     const user = await this.findOrCreateUser(input);
     if (await this.repo.isBlocked(user.id)) throw new AppError("USER_BLOCKED", 403);
     return this.issueSession(user);
+  }
+  /** /admin-kirish: only ADMIN_PHONES numbers get in; others get a clear answer and no session. */
+  async adminLogin(phone) {
+    const { adminPhones } = this.ctx.config;
+    if (adminPhones.length === 0) throw new AppError("ADMIN_LOGIN_NOT_CONFIGURED", 503);
+    if (!adminPhones.includes(phone)) throw new AppError("NOT_ADMIN_PHONE", 403);
+    return this.login({ phone });
   }
   async refresh(refreshToken) {
     if (!refreshToken) throw AppError.unauthenticated();
@@ -73441,19 +73374,6 @@ var AuthService = class {
   async updateProfile(userId, name, language) {
     await this.repo.updateProfile(userId, name, language);
     return this.getUser(userId);
-  }
-  async checkCode(phone, code) {
-    const stored = await this.repo.findActiveCode(phone);
-    if (!stored) throw new AppError("INVALID_CODE", 400);
-    if (stored.attempts >= SMS_MAX_ATTEMPTS) throw new AppError("TOO_MANY_ATTEMPTS", 429);
-    if (stored.expires_at.getTime() <= this.now().getTime())
-      throw new AppError("CODE_EXPIRED", 400);
-    const expected = hashCode(phone, code, this.ctx.config.jwtRefreshSecret);
-    if (!safeEqual(stored.code_hash, expected)) {
-      await this.repo.incrementAttempts(stored.id);
-      throw new AppError("INVALID_CODE", 400);
-    }
-    if (!await this.repo.consumeCode(stored.id)) throw new AppError("INVALID_CODE", 400);
   }
   /**
    * ADMIN_PHONES is the only source of the admin role: a listed number is promoted on every
@@ -73511,16 +73431,14 @@ function createAuthRouter(ctx) {
   const workers = new WorkersService(ctx);
   const { requireAuth, requireWorker } = createAuthMiddleware(ctx);
   const limited = ctx.config.nodeEnv !== "test";
-  router.post("/auth/request-code", smsLimiter(limited), async (req, res) => {
-    const { phone } = requestCodeSchema.parse(req.body);
-    res.json(await auth.requestCode(phone));
+  router.post("/auth/login", loginLimiter(limited), async (req, res) => {
+    const session = await auth.login(loginSchema.parse(req.body));
+    setRefreshCookie(res, session, ctx.config.isProduction);
+    res.json(session.response);
   });
-  router.post("/auth/admin/request-code", smsLimiter(limited), async (req, res) => {
-    const { phone } = requestCodeSchema.parse(req.body);
-    res.json(await auth.requestAdminCode(phone));
-  });
-  router.post("/auth/verify", authLimiter(limited), async (req, res) => {
-    const session = await auth.verifyCode(verifyCodeSchema.parse(req.body));
+  router.post("/auth/admin/login", loginLimiter(limited), async (req, res) => {
+    const { phone } = adminLoginSchema.parse(req.body);
+    const session = await auth.adminLogin(phone);
     setRefreshCookie(res, session, ctx.config.isProduction);
     res.json(session.response);
   });
@@ -75795,7 +75713,7 @@ function createSavingsRouter(ctx) {
 }
 
 // src/modules/orders/order.routes.ts
-var import_node_crypto4 = require("node:crypto");
+var import_node_crypto3 = require("node:crypto");
 var import_express11 = __toESM(require_express2(), 1);
 
 // src/middleware/upload.ts
@@ -76380,7 +76298,7 @@ function createOrderRouter(ctx) {
     singleFile("image", MAX_IMAGE_BYTES, "IMAGE_TOO_LARGE"),
     async (req, res) => {
       const webp = await processImage(fileOf(req));
-      const url = await ctx.storage.put(`${(0, import_node_crypto4.randomUUID)()}.webp`, webp, "image/webp");
+      const url = await ctx.storage.put(`${(0, import_node_crypto3.randomUUID)()}.webp`, webp, "image/webp");
       res.status(201).json({ url });
     }
   );
@@ -76458,7 +76376,7 @@ var ClickPaymentProvider = class {
 };
 
 // src/modules/payments/internal.adapter.ts
-var import_node_crypto5 = require("node:crypto");
+var import_node_crypto4 = require("node:crypto");
 function isExpired(expiry, now) {
   const [monthPart, yearPart] = expiry.split("/");
   const month = Number(monthPart);
@@ -76472,13 +76390,13 @@ var InternalPaymentProvider = class {
   }
   name = "internal";
   async createPayment(order) {
-    return { providerRef: `int_${(0, import_node_crypto5.randomUUID)()}`, redirectUrl: `/tolov/${order.orderId}` };
+    return { providerRef: `int_${(0, import_node_crypto4.randomUUID)()}`, redirectUrl: `/tolov/${order.orderId}` };
   }
   async verifyCallback(payload) {
     if (!isValidCardNumber(payload.cardNumber) || isExpired(payload.expiry, this.now())) {
       return { status: "failed", reason: "card_invalid" };
     }
-    return { status: "paid", providerRef: `int_${(0, import_node_crypto5.randomUUID)()}` };
+    return { status: "paid", providerRef: `int_${(0, import_node_crypto4.randomUUID)()}` };
   }
   async refund() {
   }
@@ -76530,7 +76448,7 @@ function createPaymentProvider(config2) {
 var import_express12 = __toESM(require_express2(), 1);
 
 // src/modules/products/product.service.ts
-var import_node_crypto6 = require("node:crypto");
+var import_node_crypto5 = require("node:crypto");
 
 // ../../node_modules/.pnpm/property-graph@4.1.0/node_modules/property-graph/dist/index.mjs
 var EventDispatcher = class {
@@ -81629,7 +81547,7 @@ var ProductService = class {
     const existing = await this.repo.listImages(id);
     if (existing.length >= MAX_PRODUCT_IMAGES) throw AppError.conflict("IMAGE_LIMIT_REACHED");
     const webp = await processProductImage(file);
-    const url = await this.ctx.storage.put(`${(0, import_node_crypto6.randomUUID)()}.webp`, webp, "image/webp");
+    const url = await this.ctx.storage.put(`${(0, import_node_crypto5.randomUUID)()}.webp`, webp, "image/webp");
     await this.repo.addImage(id, url, existing.length);
     return this.get(id);
   }
@@ -81648,7 +81566,7 @@ var ProductService = class {
     await this.assertOwner(workerId, id);
     await validateGlb(file);
     const previous = await this.repo.getModelUrl(id);
-    const url = await this.ctx.storage.put(`${(0, import_node_crypto6.randomUUID)()}.glb`, file, MODEL_MIME_TYPE);
+    const url = await this.ctx.storage.put(`${(0, import_node_crypto5.randomUUID)()}.glb`, file, MODEL_MIME_TYPE);
     const poster = (await this.repo.listImages(id))[0]?.url ?? null;
     await this.repo.upsertModel(id, url, file.length, poster);
     if (previous) await this.ctx.storage.delete(previous);
@@ -81875,7 +81793,7 @@ async function migrateToLatest(db2, migrations = loadMigrations()) {
 }
 
 // src/db/seed.ts
-var import_node_crypto7 = require("node:crypto");
+var import_node_crypto6 = require("node:crypto");
 
 // src/modules/uploads/glb-fixture.ts
 var SEGMENTS = 32;
@@ -82110,7 +82028,7 @@ async function seedProduct(db2, storage, workerId, categoryId, product) {
   }
   if (product.model) {
     const glb = await buildVaseGlb(product.model);
-    const fileUrl = await storage.put(`${(0, import_node_crypto7.randomUUID)()}.glb`, glb, MODEL_MIME_TYPE);
+    const fileUrl = await storage.put(`${(0, import_node_crypto6.randomUUID)()}.glb`, glb, MODEL_MIME_TYPE);
     await db2.insertInto("product_models").values({
       product_id: row.id,
       file_url: fileUrl,

@@ -92,7 +92,7 @@ pnpm db:audit-orders
 
 ## Integratsiyalar
 
-- [ ] Real SMS provayderi (Eskiz yoki Play Mobile) va `EXPOSE_SMS_CODE=false`
+- [ ] Real SMS provayderi (Eskiz yoki Play Mobile): faqat buyurtma xabarlari uchun (kirishda SMS kod yoʻq)
 - [ ] Payme / Click / Uzum adapterlari (`PaymentProvider` interfeysi tayyor)
 - [ ] S3-mos `StorageProvider` (10 MB `.glb` va to'liq rasm hajmi uchun Vercel limitini chetlab o'tish)
 - [ ] BullMQ/Redis navbati va keshi (interfeyslar tayyor), WebSocket, PWA, `/biznes`
@@ -153,11 +153,7 @@ pnpm db:audit-orders
       (avvalgi "Administrator sign-in code issued" log qatori olib tashlandi)
 - Qaror: admin kodi sahifada faqat `EXPOSE_SMS_CODE=true` boʻlganda koʻrsatiladi (`/kirish` bilan bir xil qoida).
   `false` boʻlsa kod SMS provayderiga beriladi, u hozir ulanmagan (konsol), demak admin kira olmaydi
-- [ ] **XAVFSIZLIK. Sinov rejimi. Ommaviy ishga tushirishdan oldin EXPOSE_SMS_CODE=false va real SMS provayder
-      ulanishi shart.** Hozir admin raqamini bilgan har kim `/admin-kirish` orqali admin boʻlib kira oladi;
-      "Bu raqam admin emas" javobi qaysi raqam admin ekanini ham bildiradi
-- [ ] `/kirish`: `EXPOSE_SMS_CODE=false` boʻlganda kod SMS orqali kelishi kerak, lekin `SmsProvider` hozir faqat
-      konsol (Eskiz / Play Mobile adapteri yozilmagan)
+- (2026-10-11) Yuqoridagi kod qoidalari eskirdi: kirishda SMS kod butunlay olib tashlandi, quyidagi boʻlimga qarang
 
 ## Mahsulot rasmlari: avtomatik fon olib tashlash (2026-10-11)
 
@@ -188,3 +184,11 @@ pnpm db:audit-orders
 - [x] Navbardagi "Kirish" tugmasi menyu ochadi: **Mijoz** (`/kirish`), **Hunarmand**
       (`/royxatdan-otish?rol=hunarmand`: yangi hunarmand ariza beradi, mavjudi kiradi), **Admin** (`/admin-kirish`).
       Alohida "Admin" tugmasi shu menyuga koʻchdi (telefonda ham joy yetadi)
+
+## Kirish: faqat telefon raqami (2026-10-11)
+
+- [x] Egasining qarori: SMS kod olib tashlandi; `/kirish`, hunarmand roʻyxati va `/admin-kirish` bir qadamli
+- [ ] **XAVFSIZLIK.** Raqamga egalik tekshirilmaydi: birovning raqamini bilgan kishi uning hisobiga, admin
+      raqamini bilgan kishi admin paneliga kira oladi. Real foydalanuvchilar bilan ishga tushirishdan oldin
+      tasdiqlashni (SMS kod yoki boshqa usul) qaytarish tavsiya etiladi
+- [ ] Vercel'dagi `EXPOSE_SMS_CODE` endi ishlatilmaydi; xohlasangiz oʻchirib qoʻying (ixtiyoriy)

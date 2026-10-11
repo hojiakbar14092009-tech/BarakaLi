@@ -76,12 +76,6 @@ export interface AuthResponse {
   user: UserDto;
 }
 
-export interface RequestCodeResponse {
-  expiresInSeconds: number;
-  /** Present only when the deployment is configured to expose codes (no SMS gateway). */
-  code?: string;
-}
-
 export interface WorkerSummaryDto {
   id: string;
   displayName: string;

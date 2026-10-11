@@ -1,14 +1,14 @@
 import { Router, type Response } from 'express';
 import {
+  adminLoginSchema,
   becomeWorkerSchema,
-  requestCodeSchema,
+  loginSchema,
   updateProfileSchema,
-  verifyCodeSchema,
   workerProfileSchema,
 } from '@barakali/shared';
 import type { AppContext } from '../../context.js';
 import { createAuthMiddleware } from '../../middleware/auth.js';
-import { authLimiter, smsLimiter } from '../../middleware/rate-limit.js';
+import { authLimiter, loginLimiter } from '../../middleware/rate-limit.js';
 import { WorkersService } from '../workers/workers.service.js';
 import { AuthService, type IssuedSession } from './auth.service.js';
 
@@ -32,18 +32,15 @@ export function createAuthRouter(ctx: AppContext): Router {
   const { requireAuth, requireWorker } = createAuthMiddleware(ctx);
   const limited = ctx.config.nodeEnv !== 'test';
 
-  router.post('/auth/request-code', smsLimiter(limited), async (req, res) => {
-    const { phone } = requestCodeSchema.parse(req.body);
-    res.json(await auth.requestCode(phone));
+  router.post('/auth/login', loginLimiter(limited), async (req, res) => {
+    const session = await auth.login(loginSchema.parse(req.body));
+    setRefreshCookie(res, session, ctx.config.isProduction);
+    res.json(session.response);
   });
 
-  router.post('/auth/admin/request-code', smsLimiter(limited), async (req, res) => {
-    const { phone } = requestCodeSchema.parse(req.body);
-    res.json(await auth.requestAdminCode(phone));
-  });
-
-  router.post('/auth/verify', authLimiter(limited), async (req, res) => {
-    const session = await auth.verifyCode(verifyCodeSchema.parse(req.body));
+  router.post('/auth/admin/login', loginLimiter(limited), async (req, res) => {
+    const { phone } = adminLoginSchema.parse(req.body);
+    const session = await auth.adminLogin(phone);
     setRefreshCookie(res, session, ctx.config.isProduction);
     res.json(session.response);
   });

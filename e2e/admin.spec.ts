@@ -8,9 +8,10 @@ const PHONE_DIGITS = ADMIN_PHONE.slice(4);
 async function signInAsAdminThroughTheForm(page: Page): Promise<void> {
   await page.goto('/kirish');
   await page.getByLabel(t('auth.phoneLabel')).fill(PHONE_DIGITS);
-  await page.getByRole('button', { name: t('auth.sendCode') }).click();
-  await page.getByRole('button', { name: t('auth.fillCode') }).click();
-  await page.getByRole('button', { name: t('auth.verify') }).click();
+  await page
+    .getByRole('main')
+    .getByRole('button', { name: t('auth.submit'), exact: true })
+    .click();
 }
 
 for (const viewport of [

@@ -49,10 +49,6 @@ export const DEFAULT_PAGE_SIZE = 12;
 export const MAX_PAGE_SIZE = 20;
 
 export const PHONE_COUNTRY_PREFIX = '+998';
-export const SMS_CODE_LENGTH = 6;
-export const SMS_CODE_TTL_MINUTES = 5;
-export const SMS_MAX_ATTEMPTS = 5;
-
 export const ACCESS_TOKEN_TTL_SECONDS = 15 * 60;
 export const REFRESH_TOKEN_TTL_DAYS = 30;
 

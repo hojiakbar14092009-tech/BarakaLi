@@ -35,13 +35,9 @@ export async function signIn(
   name: string,
   phone = freshPhone(),
 ): Promise<Account> {
-  const request = context.request;
-  const codeRes = await request.post('/api/auth/request-code', { data: { phone } });
-  expect(codeRes.ok()).toBe(true);
-  const { code } = (await codeRes.json()) as { code: string };
-  const verify = await request.post('/api/auth/verify', { data: { phone, code, name } });
-  expect(verify.ok()).toBe(true);
-  const body = (await verify.json()) as { accessToken: string; user: { id: string } };
+  const res = await context.request.post('/api/auth/login', { data: { phone, name } });
+  expect(res.ok()).toBe(true);
+  const body = (await res.json()) as { accessToken: string; user: { id: string } };
   return { phone, token: body.accessToken, userId: body.user.id };
 }
 
@@ -57,7 +53,7 @@ const ORIGIN = 'http://localhost:4173';
 
 /**
  * One real admin sign-in for the whole suite happens in global setup (see global-setup.ts), which
- * writes the resulting `{ accessToken, user }` here — the same shape `/auth/verify` and
+ * writes the resulting `{ accessToken, user }` here — the same shape `/auth/login` and
  * `/auth/refresh` return. Every spec file gets its own module instance, so a cache kept in this
  * file's own module state would not be shared between them, and each would spend its own entry
  * from the 5-per-15-minutes SMS code limit on ADMIN_PHONE if it signed in again; reading the same
@@ -233,8 +229,6 @@ export async function productWithModelId(request: APIRequestContext): Promise<st
 
 /** Signs an existing account in again from a fresh browser context (new refresh cookie). */
 export async function signInAgain(context: BrowserContext, phone: string): Promise<void> {
-  const codeRes = await context.request.post('/api/auth/request-code', { data: { phone } });
-  const { code } = (await codeRes.json()) as { code: string };
-  const verify = await context.request.post('/api/auth/verify', { data: { phone, code } });
-  expect(verify.ok()).toBe(true);
+  const res = await context.request.post('/api/auth/login', { data: { phone } });
+  expect(res.ok()).toBe(true);
 }

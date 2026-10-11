@@ -26,7 +26,7 @@ beforeAll(async () => {
   db = createPgDb(`postgres://postgres:postgres@127.0.0.1:${PORT}/postgres?sslmode=disable`);
   await migrateToLatest(db);
   await seedSampleData(db);
-  app = createApp({ db, config: loadConfig({ NODE_ENV: 'test', EXPOSE_SMS_CODE: 'true' }) });
+  app = createApp({ db, config: loadConfig({ NODE_ENV: 'test' }) });
 });
 
 afterAll(async () => {

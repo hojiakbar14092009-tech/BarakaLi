@@ -3,11 +3,10 @@ import { useTranslation } from 'react-i18next';
 import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import { LoadingState } from '../../components/StateViews';
 import { useAuthStore } from '../../stores/auth';
-import { CodeStep } from './CodeStep';
-import { PhoneStep } from './PhoneStep';
+import { PhoneLoginForm } from './PhoneLoginForm';
 import { WorkerStep } from './WorkerStep';
 
-type Step = 'phone' | 'code' | 'worker';
+type Step = 'phone' | 'worker';
 
 interface AuthPageProps {
   mode: 'signin' | 'signup';
@@ -39,8 +38,6 @@ function AuthFlow({ mode }: AuthPageProps) {
   const needsWorkerOnly = Boolean(initialUser && wantsWorker && !initialUser.workerId);
 
   const [step, setStep] = useState<Step>(needsWorkerOnly ? 'worker' : 'phone');
-  const [phone, setPhone] = useState('');
-  const [exposedCode, setExposedCode] = useState<string | undefined>();
   const [name, setName] = useState(initialUser?.name ?? '');
 
   if (initialUser && !needsWorkerOnly) {
@@ -61,29 +58,12 @@ function AuthFlow({ mode }: AuthPageProps) {
       </header>
 
       {step === 'phone' && (
-        <PhoneStep
-          initialPhone={phone}
-          onSent={(digits, code) => {
-            setPhone(digits);
-            setExposedCode(code);
-            setStep('code');
-          }}
-        />
-      )}
-      {step === 'code' && (
-        <CodeStep
-          phone={phone}
-          exposedCode={exposedCode}
+        <PhoneLoginForm
           askName={mode === 'signup' || wantsWorker}
-          onChangePhone={() => setStep('phone')}
-          onResent={setExposedCode}
-          onVerified={(verifiedName, hasWorker) => {
-            setName(verifiedName);
-            if (wantsWorker && !hasWorker) setStep('worker');
-            else
-              navigate(landingFor(useAuthStore.getState().user?.role ?? '', next), {
-                replace: true,
-              });
+          onSignedIn={(user) => {
+            setName(user.name ?? '');
+            if (wantsWorker && !user.workerId) setStep('worker');
+            else navigate(landingFor(user.role, next), { replace: true });
           }}
         />
       )}

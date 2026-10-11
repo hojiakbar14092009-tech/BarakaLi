@@ -1,9 +1,5 @@
-import type { Selectable } from 'kysely';
 import type { UserDto } from '@barakali/shared';
 import type { Db } from '../../db/client.js';
-import type { SmsCodesTable } from '../../db/schema.js';
-
-export type SmsCodeRow = Selectable<SmsCodesTable>;
 
 interface UserRow {
   id: string;
@@ -38,52 +34,6 @@ function toUserDto(row: UserRow): UserDto {
 
 export class AuthRepository {
   constructor(private readonly db: Db) {}
-
-  async countRecentCodes(phone: string, since: Date): Promise<number> {
-    const row = await this.db
-      .selectFrom('sms_codes')
-      .select((eb) => eb.fn.countAll<number>().as('count'))
-      .where('phone', '=', phone)
-      .where('created_at', '>', since)
-      .executeTakeFirstOrThrow();
-    return Number(row.count);
-  }
-
-  async insertCode(phone: string, codeHash: string, expiresAt: Date): Promise<void> {
-    await this.db
-      .insertInto('sms_codes')
-      .values({ phone, code_hash: codeHash, expires_at: expiresAt })
-      .execute();
-  }
-
-  async findActiveCode(phone: string): Promise<SmsCodeRow | undefined> {
-    return this.db
-      .selectFrom('sms_codes')
-      .selectAll()
-      .where('phone', '=', phone)
-      .where('consumed_at', 'is', null)
-      .orderBy('created_at', 'desc')
-      .limit(1)
-      .executeTakeFirst();
-  }
-
-  async incrementAttempts(id: string): Promise<void> {
-    await this.db
-      .updateTable('sms_codes')
-      .set((eb) => ({ attempts: eb('attempts', '+', 1) }))
-      .where('id', '=', id)
-      .execute();
-  }
-
-  async consumeCode(id: string): Promise<boolean> {
-    const result = await this.db
-      .updateTable('sms_codes')
-      .set({ consumed_at: new Date() })
-      .where('id', '=', id)
-      .where('consumed_at', 'is', null)
-      .executeTakeFirst();
-    return Number(result.numUpdatedRows) === 1;
-  }
 
   async findUserById(id: string): Promise<UserDto | undefined> {
     const row = await this.userQuery().where('u.id', '=', id).executeTakeFirst();

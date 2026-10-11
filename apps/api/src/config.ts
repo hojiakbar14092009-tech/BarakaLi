@@ -35,7 +35,6 @@ const envSchema = z.object({
     ),
   ADMIN_NAME: z.string().trim().min(1).default('Hojiakbar'),
   SMS_PROVIDER: z.enum(['console']).default('console'),
-  EXPOSE_SMS_CODE: booleanString,
   SEED_SAMPLE_DATA: booleanString,
   PAYMENT_PROVIDER: z.enum(['internal', 'payme', 'click', 'uzum']).default('internal'),
   STORAGE_PROVIDER: z.enum(['db']).default('db'),
@@ -52,7 +51,6 @@ export interface AppConfig {
   adminPhones: string[];
   adminName: string;
   smsProvider: 'console';
-  exposeSmsCode: boolean;
   seedSampleData: boolean;
   paymentProvider: 'internal' | 'payme' | 'click' | 'uzum';
   storageProvider: 'db';
@@ -85,7 +83,6 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
     adminPhones: parsed.ADMIN_PHONES,
     adminName: parsed.ADMIN_NAME,
     smsProvider: parsed.SMS_PROVIDER,
-    exposeSmsCode: parsed.EXPOSE_SMS_CODE,
     seedSampleData: parsed.SEED_SAMPLE_DATA,
     paymentProvider: parsed.PAYMENT_PROVIDER,
     storageProvider: parsed.STORAGE_PROVIDER,
