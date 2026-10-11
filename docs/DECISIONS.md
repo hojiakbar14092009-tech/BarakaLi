@@ -363,3 +363,18 @@ Brifdagi noaniqliklar bo'yicha qabul qilingan qarorlar. Yangi qaror oxiriga qo's
 - `NotificationsDto.unread` endi faqat `order_new` ni sanaydi ("N ta yangi buyurtma" belgisi); ilgari ariza
   xabarlari ham qoʻshilib, yangi buyurtma boʻlmasa ham son chiqardi. Material xabarlari `unreadMaterials` da.
 - SMS matnida telefon raqami yoʻq: konsol SMS provayderi dev rejimida matnni loglashi mumkin.
+
+## Tavsiya etilgan hunarmandlar va namuna ishlar (2026-10-11)
+
+- Bosh sahifadagi "Tavsiya etilgan hunarmandlar" faqat administrator koʻrib tasdiqlagan hunarmandlar
+  (`status = 'approved'` va `reviewed_at` bor). Namuna (seed) va migratsiyada "approved" boʻlgan, lekin
+  admin koʻrmagan hunarmandlar tavsiya etilmaydi. Kartochkada "Tasdiqlangan" belgisi yoʻq: bu roʻyxatdagi
+  hammasi tasdiqlangan.
+- Migratsiya `1760001800000_reassign_sample_products`: namuna hunarmandlarning (+998900000001..4)
+  chop etilgan ishlari admin tasdiqlagan hunarmandlarga navbatma-navbat boʻlinadi, avval mahsulot toifasidagi
+  hunarmandga. Faqat egasi oʻzgaradi: rasmlar, 3D model va mahsulot qatori qoladi, hech narsa oʻchirilmaydi;
+  eski buyurtmalar oʻz hunarmandida qoladi. Har koʻchirish `sample_product_reassignments` ga yoziladi
+  (down migratsiya qaytaradi). Yashirin namuna mahsulot (somsa) koʻchirilmaydi. Deploy paytida admin
+  tasdiqlagan hunarmand boʻlmasa, hech narsa koʻchmaydi va migratsiya qayta ishlamaydi.
+- `pnpm test` paketlarni ketma-ket ishga tushiradi (`--workspace-concurrency=1`): web va API toʻplamlari
+  bir vaqtda CPU ni toʻldirib, vaqt chegarasi xatolariga olib kelardi.

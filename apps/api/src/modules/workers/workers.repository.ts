@@ -85,9 +85,14 @@ export class WorkersRepository {
     });
   }
 
+  /**
+   * Only workers an administrator has actually reviewed and approved are recommended: sample and
+   * migrated workers are 'approved' without a review (no reviewed_at), so they never show here.
+   */
   async findFeatured(limit: number): Promise<WorkerSummaryDto[]> {
     const rows = await this.summaryQuery()
       .where('w.status', '=', 'approved')
+      .where('w.reviewed_at', 'is not', null)
       .where('c.is_active', '=', true)
       .having(sql<number>`count(p.id)`, '>', 0)
       .orderBy('w.rating', 'desc')

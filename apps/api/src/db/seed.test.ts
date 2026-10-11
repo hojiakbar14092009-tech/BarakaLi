@@ -29,7 +29,8 @@ describe('seed', () => {
     expect(titles.some((title) => /s[ao]msa/.test(title))).toBe(false);
     const withModel = res.body.items.filter((p: { model: unknown }) => p.model);
     expect(withModel).toHaveLength(1);
+    // Sample workers are not reviewed by an administrator, so none of them is recommended.
     const featured = await request(app).get('/api/workers/featured');
-    expect(featured.body).toHaveLength(4);
+    expect(featured.body).toHaveLength(0);
   });
 });

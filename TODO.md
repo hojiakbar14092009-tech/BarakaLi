@@ -174,3 +174,11 @@ pnpm db:audit-orders
 - [ ] Adminga SMS yoki Telegram orqali xabar: hozir faqat ilova ichida (SMS provayder ulanmagan)
 - [ ] Hunarmandga "yoʻlga chiqdi" SMS nusxasi kodda bor, lekin SMS provayder ulanmaguncha yetib bormaydi
 - [ ] Yetkazib berish narxi va hududi hisobga olinmaydi (hozircha bepul, manzil erkin matn)
+
+## Tavsiya etilgan hunarmandlar (2026-10-11)
+
+- [x] Faqat admin tasdiqlagan hunarmandlar tavsiya etiladi; "Tasdiqlangan" belgisi tavsiya kartochkasidan olindi
+- [x] Namuna hunarmandlarning chop etilgan ishlari admin tasdiqlagan hunarmandlarga boʻlib berildi (rasmlar saqlandi)
+- [ ] Deploy'dan keyin tekshirish: `SELECT count(*) FROM sample_product_reassignments;` — 0 boʻlsa, deploy paytida
+      admin tasdiqlagan hunarmand boʻlmagan; unda ishlar namuna hunarmandlarda qoldi
+- [ ] Namuna hunarmandlarning oʻzi katalogda (hunarmand sahifasi) hali koʻrinadi; kerak boʻlsa ularni `suspended` qilish

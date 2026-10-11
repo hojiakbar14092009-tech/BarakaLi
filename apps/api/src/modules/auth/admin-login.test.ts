@@ -1,5 +1,5 @@
 import request from 'supertest';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { createTestApp, nextPhone, type TestApp } from '../../testing/helpers.js';
 
 const ADMIN = '+998909999977';
@@ -10,6 +10,18 @@ async function app(env: Record<string, string>): Promise<TestApp> {
   opened.push(created);
   return created;
 }
+
+// One database for the tests that run with the usual settings; each fresh one replays every
+// migration, which is the slow part of these tests.
+let listed: TestApp;
+beforeAll(async () => {
+  listed = await createTestApp({
+    NODE_ENV: 'development',
+    ADMIN_PHONES: ADMIN,
+    EXPOSE_SMS_CODE: 'true',
+  });
+});
+afterAll(() => listed.close());
 
 afterEach(async () => {
   vi.restoreAllMocks();
@@ -23,7 +35,7 @@ const askAdminCode = (t: TestApp, phone: string) =>
 describe('/admin-kirish code request', () => {
   it('shows the code for an ADMIN_PHONES number and signs in as admin', async () => {
     const out = vi.spyOn(process.stdout, 'write');
-    const t = await app({ ADMIN_PHONES: ADMIN, EXPOSE_SMS_CODE: 'true' });
+    const t = listed;
     const sent = await askAdminCode(t, ADMIN);
     expect(sent.status).toBe(200);
     const code = sent.body.code as string;
@@ -43,7 +55,7 @@ describe('/admin-kirish code request', () => {
   });
 
   it('gives no code to a number outside the list', async () => {
-    const t = await app({ ADMIN_PHONES: ADMIN, EXPOSE_SMS_CODE: 'true' });
+    const t = listed;
     const stranger = nextPhone();
     const res = await askAdminCode(t, stranger);
     expect(res.status).toBe(403);
@@ -72,7 +84,7 @@ describe('/admin-kirish code request', () => {
   });
 
   it('never lets a customer into the admin API', async () => {
-    const t = await app({ ADMIN_PHONES: ADMIN, EXPOSE_SMS_CODE: 'true' });
+    const t = listed;
     const phone = nextPhone();
     const { body } = await request(t.app).post('/api/auth/request-code').send({ phone });
     const session = await request(t.app)

@@ -1,4 +1,4 @@
-import { BadgeCheck, Star } from 'lucide-react';
+import { Star } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import type { WorkerSummaryDto } from '@barakali/shared';
@@ -27,12 +27,6 @@ function WorkerCard({ worker }: { worker: WorkerSummaryDto }) {
           <Star className="size-4" aria-hidden="true" />
           {worker.rating.toFixed(1)} ({worker.reviewsCount})
         </span>
-        {worker.isVerified && (
-          <span className="inline-flex items-center gap-1 rounded-full bg-pistachio px-2 py-0.5 font-medium text-espresso">
-            <BadgeCheck className="size-4" aria-hidden="true" />
-            {t('home.verified')}
-          </span>
-        )}
       </div>
       {worker.minPrice !== null && (
         <p className="font-semibold">

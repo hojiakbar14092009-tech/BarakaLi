@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import '../i18n';
 import { Logo } from '../components/Logo';
 import { HomePage } from '../features/home/HomePage';
@@ -21,6 +21,17 @@ function renderHome() {
     </QueryClientProvider>,
   );
 }
+
+// The desktop opening is a lazy chunk; loading it up front keeps the test independent of how long
+// the first on-the-fly compile takes when other suites run in parallel.
+const CHUNK_COMPILE_TIMEOUT_MS = 60_000;
+beforeAll(async () => {
+  await import('../features/home/HomeLanding');
+}, CHUNK_COMPILE_TIMEOUT_MS);
+// Restored even when a test fails, so a desktop stub never leaks into the phone layout tests.
+afterEach(() => {
+  Reflect.deleteProperty(window, 'matchMedia');
+});
 
 describe('home page', () => {
   it('on desktop opens with the hero, then the story, then the catalog', async () => {
@@ -53,7 +64,6 @@ describe('home page', () => {
     expect(
       hero && catalog && hero.compareDocumentPosition(catalog) & Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
-    Reflect.deleteProperty(window, 'matchMedia');
   });
 
   it('on phones and tablets keeps the plain catalog page without the hero', () => {

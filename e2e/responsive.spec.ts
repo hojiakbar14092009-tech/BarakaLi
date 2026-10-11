@@ -16,15 +16,17 @@ for (const viewport of VIEWPORTS) {
 
     test('public pages have no horizontal scroll and 48px targets', async ({ page, request }) => {
       const productId = await publishedProductId(request);
-      const workers = (await (await request.get('/api/workers/featured')).json()) as {
-        id: string;
-      }[];
+      // Any public worker profile will do; the featured list may be empty on a fresh database.
+      const listed = (await (await request.get('/api/products?pageSize=1')).json()) as {
+        items: { worker: { id: string } }[];
+      };
+      const workerId = listed.items[0]?.worker.id ?? '';
       const routes = [
         '/',
         '/xizmatlar/tikuvchilik',
         '/xizmatlar/barchasi',
         `/mahsulot/${productId}`,
-        `/hunarmand/${workers[0]?.id ?? ''}`,
+        `/hunarmand/${workerId}`,
         '/darslar',
         '/kirish',
         '/royxatdan-otish',

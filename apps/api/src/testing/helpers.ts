@@ -74,7 +74,8 @@ export async function makeWorker(
   if (options.approved !== false) {
     await t.db
       .updateTable('workers')
-      .set({ status: 'approved' })
+      // As an administrator's approval does: status plus the review time (featured needs both).
+      .set({ status: 'approved', reviewed_at: new Date() })
       .where('id', '=', workerId)
       .execute();
   }
