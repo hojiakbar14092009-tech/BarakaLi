@@ -35,7 +35,21 @@
   "header": {
     "signIn": "Kirish",
     "cart": "Savat",
-    "admin": "Admin"
+    "signInAs": "Kim sifatida kirasiz?",
+    "roles": {
+      "customer": {
+        "title": "Mijoz",
+        "text": "Xarid qilish va buyurtma berish"
+      },
+      "worker": {
+        "title": "Hunarmand",
+        "text": "Ishlaringizni joylash va buyurtma olish"
+      },
+      "admin": {
+        "title": "Admin",
+        "text": "Platformani boshqarish"
+      }
+    }
   },
   "categories": {
     "tikuvchilik": "Tikuvchilik",

@@ -378,3 +378,10 @@ Brifdagi noaniqliklar bo'yicha qabul qilingan qarorlar. Yangi qaror oxiriga qo's
   tasdiqlagan hunarmand boʻlmasa, hech narsa koʻchmaydi va migratsiya qayta ishlamaydi.
 - `pnpm test` paketlarni ketma-ket ishga tushiradi (`--workspace-concurrency=1`): web va API toʻplamlari
   bir vaqtda CPU ni toʻldirib, vaqt chegarasi xatolariga olib kelardi.
+
+## Navbar: rol boʻyicha kirish menyusi (2026-10-11)
+
+- "Kirish" tugmasi disclosure menyu (`aria-expanded`, Esc/tashqariga bosish/navigatsiya yopadi, fokus tugmaga
+  qaytadi): Mijoz → `/kirish` (birinchi SMS tasdiqlashda hisob oʻzi yaratiladi), Hunarmand →
+  `/royxatdan-otish?rol=hunarmand`, Admin → `/admin-kirish`. Avvalgi alohida "Admin" tugmasi shu menyuga
+  koʻchirildi: bitta joyda uch rol, telefonda header bir qatorda qoladi.

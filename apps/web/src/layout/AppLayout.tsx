@@ -1,13 +1,13 @@
-import { ShieldCheck, ShoppingBasket } from 'lucide-react';
+import { ShoppingBasket } from 'lucide-react';
 import { Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, Outlet } from 'react-router-dom';
-import { buttonClasses } from '../components/Button';
 import { LanguageSwitch } from '../components/LanguageSwitch';
 import { Logo } from '../components/Logo';
 import { useAuthStore } from '../stores/auth';
 import { selectCartCount, useCartStore } from '../stores/cart';
 import { NavBar } from './NavBar';
+import { SignInMenu } from './SignInMenu';
 
 function CartLink() {
   const { t } = useTranslation();
@@ -29,7 +29,6 @@ function CartLink() {
 }
 
 function Header() {
-  const { t } = useTranslation();
   const user = useAuthStore((s) => s.user);
   const status = useAuthStore((s) => s.status);
   return (
@@ -41,22 +40,7 @@ function Header() {
         <div className="flex items-center gap-1">
           <LanguageSwitch />
           <CartLink />
-          {status === 'ready' && !user && (
-            <>
-              <Link to="/kirish" className={buttonClasses('primary', 'md', 'px-3!')}>
-                {t('header.signIn')}
-              </Link>
-              <Link
-                to="/admin-kirish"
-                aria-label={t('header.admin')}
-                title={t('header.admin')}
-                className={buttonClasses('secondary', 'md', 'w-12 px-0! sm:w-auto sm:px-3!')}
-              >
-                <ShieldCheck className="size-5 sm:hidden" aria-hidden="true" />
-                <span className="hidden sm:inline">{t('header.admin')}</span>
-              </Link>
-            </>
-          )}
+          {status === 'ready' && !user && <SignInMenu />}
         </div>
       </div>
     </header>

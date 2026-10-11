@@ -7,7 +7,7 @@ Qisqa yoʻriqnoma: BarakaLi boshqaruv paneli (`/admin`) bilan ishlash.
 - Administrator roli faqat `ADMIN_PHONES` muhit oʻzgaruvchisidan keladi: vergul bilan ajratilgan
   `+998XXXXXXXXX` raqamlar. Qiymatni hosting muhitida (masalan, Vercel) egasi oʻzi qoʻyadi, u
   repozitoriyga yozilmaydi.
-- Navbardagi **Admin** tugmasi → `/admin-kirish`. Shu raqamni kiriting: `EXPOSE_SMS_CODE=true`
+- Navbardagi **Kirish** → **Admin** → `/admin-kirish`. Shu raqamni kiriting: `EXPOSE_SMS_CODE=true`
   boʻlsa kod shu sahifada chiqadi (SMS yuborilmaydi); kodni tasdiqlang va `/admin` ga oʻtasiz.
   Roʻyxatda boʻlmagan raqamga kod berilmaydi ("Bu raqam admin emas"); roʻyxat boʻsh boʻlsa sahifa
   "Admin kirish sozlanmagan" deydi. `/kirish` sahifasi admin kodini hech qachon koʻrsatmaydi.

@@ -182,3 +182,9 @@ pnpm db:audit-orders
 - [ ] Deploy'dan keyin tekshirish: `SELECT count(*) FROM sample_product_reassignments;` — 0 boʻlsa, deploy paytida
       admin tasdiqlagan hunarmand boʻlmagan; unda ishlar namuna hunarmandlarda qoldi
 - [ ] Namuna hunarmandlarning oʻzi katalogda (hunarmand sahifasi) hali koʻrinadi; kerak boʻlsa ularni `suspended` qilish
+
+## Navbar: kirish menyusi (2026-10-11)
+
+- [x] Navbardagi "Kirish" tugmasi menyu ochadi: **Mijoz** (`/kirish`), **Hunarmand**
+      (`/royxatdan-otish?rol=hunarmand`: yangi hunarmand ariza beradi, mavjudi kiradi), **Admin** (`/admin-kirish`).
+      Alohida "Admin" tugmasi shu menyuga koʻchdi (telefonda ham joy yetadi)

@@ -10,24 +10,57 @@ async function askCode(page: Page, phone: string) {
   await page.getByRole('button', { name: t('auth.sendCode') }).click();
 }
 
+const ROLES = [
+  { key: 'customer', url: /\/kirish$/ },
+  { key: 'worker', url: /\/royxatdan-otish\?rol=hunarmand$/ },
+  { key: 'admin', url: /\/admin-kirish$/ },
+] as const;
+
+const SHOTS = process.env.E2E_SCREENSHOT_DIR;
+
 for (const width of [360, 1280]) {
-  test.describe(`header admin entry (${width}px)`, () => {
+  test.describe(`header sign-in menu (${width}px)`, () => {
     test.use({ viewport: { width, height: 800 } });
 
-    test('"Admin" sits next to "Kirish", both 48 px, without sideways scroll', async ({ page }) => {
+    test('"Kirish" opens the customer, worker and admin entries, each 48 px or taller', async ({
+      page,
+    }) => {
       await page.goto('/');
-      const banner = page.getByRole('banner');
-      const signInLink = banner.getByRole('link', { name: t('header.signIn'), exact: true });
-      const adminLink = banner.getByRole('link', { name: t('header.admin'), exact: true });
-      const [signInBox, adminBox] = [await signInLink.boundingBox(), await adminLink.boundingBox()];
-      expect(signInBox?.height).toBeGreaterThanOrEqual(48);
-      expect(adminBox?.height).toBeGreaterThanOrEqual(48);
-      expect(adminBox?.width).toBeGreaterThanOrEqual(48);
-      expect(adminBox?.y).toBeCloseTo(signInBox?.y ?? 0, 0);
+      const trigger = page.getByRole('banner').getByRole('button', { name: t('header.signIn') });
+      expect((await trigger.boundingBox())?.height).toBeGreaterThanOrEqual(48);
+      await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+      await trigger.click();
+      await expect(trigger).toHaveAttribute('aria-expanded', 'true');
+      await expect(page.getByText(t('header.signInAs'))).toBeVisible();
+      for (const role of ROLES) {
+        const link = page.getByRole('banner').getByRole('link', {
+          name: new RegExp(t(`header.roles.${role.key}.title`)),
+        });
+        expect((await link.boundingBox())?.height).toBeGreaterThanOrEqual(48);
+      }
       expect(await hasHorizontalScroll(page)).toBe(false);
-      await adminLink.click();
-      await expect(page).toHaveURL(/\/admin-kirish$/);
+      if (SHOTS) await page.screenshot({ path: `${SHOTS}/signin-menu-${width}.png` });
+
+      await page.keyboard.press('Escape');
+      await expect(page.getByText(t('header.signInAs'))).toHaveCount(0);
+      await expect(trigger).toBeFocused();
     });
+
+    for (const role of ROLES) {
+      test(`the ${role.key} entry opens its sign-in page`, async ({ page }) => {
+        await page.goto('/');
+        await page
+          .getByRole('banner')
+          .getByRole('button', { name: t('header.signIn') })
+          .click();
+        await page
+          .getByRole('banner')
+          .getByRole('link', { name: new RegExp(t(`header.roles.${role.key}.title`)) })
+          .click();
+        await expect(page).toHaveURL(role.url);
+        await expect(page.getByText(t('header.signInAs'))).toHaveCount(0);
+      });
+    }
   });
 }
 
